@@ -1,8 +1,22 @@
-KERNEL_DIR = kernel
+KERNEL_DIR := kernel
+LIBC_DIR := libc
 
-.PHONY: all kernel
+export ASM := nasm
+export CC := i686-elf-g++
+export LD = i686-elf-ld
+export CFLAGS := -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti
+export LDFLAGS := -ffreestanding -O2 -nostdlib
 
-all: kernel
+.PHONY: all libc kernel
+
+all: libc kernel
+
+libc:
+	make -C $(LIBC_DIR)/
 
 kernel:
 	make -C $(KERNEL_DIR)/
+
+clean:
+	make -C $(KERNEL_DIR)/ clean
+	make -C $(LIBC_DIR)/ clean
