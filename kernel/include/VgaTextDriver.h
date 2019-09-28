@@ -34,8 +34,12 @@ namespace VgaText {
     
     // A VGA text entry is composed of color, character
     uint16_t compose_entry(unsigned char uc, uint8_t color);
+    void decompose_entry(uint16_t entry, unsigned char& uc, uint8_t& color);
 
     void clear(uint8_t color);
     
     void putchar(char c, uint8_t color, size_t x, size_t y);
+
+    uint16_t get_entry(size_t x, size_t y);
+
 }

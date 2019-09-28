@@ -22,5 +22,14 @@ extern "C" void kernel_main(void)
 {
 	auto tty = VgaTTY();
  
-	tty.write("Hello, kernel World!");
+	tty.write("up1\n");
+	tty.write("up2\n");
+	tty.write("up3\n");
+	for(int i = 0; i < 20; i++) {
+		tty.write("another line\n");
+	}
+	tty.write("down1\n");
+	tty.write("down2\n");
+	tty.write("down3fshakfa\n");
+	tty.write("down4\n");
 }
