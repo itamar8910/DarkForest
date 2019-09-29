@@ -1,5 +1,5 @@
 
-#include "VgaTextDriver.h"
+#include "VgaText.h"
 
 
 uint8_t VgaText::compose_color(VgaText::VgaColor fg, VgaText::VgaColor bg) {

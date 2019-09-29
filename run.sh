@@ -1,6 +1,6 @@
 #!/bin/bash
 
 qemu=qemu-system-i386
-image=kernel/build/myos.bin
+image=kernel/myos.bin
 
 $qemu -kernel $image -serial stdio

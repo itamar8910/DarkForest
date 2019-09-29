@@ -1,27 +1,35 @@
 
 
-LIBC_INCLUDE := ../libc/include
-KERNEL_INCLUDE := include
-INCLUDE := -I$(LIBC_INCLUDE) -I$(KERNEL_INCLUDE)
-LIBC_BUILD := ../libc/build
+LIBC_INCLUDE := ../libc
+DRIVERS_DIR := drivers
+INCLUDE := -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
 
-BUILD := build
+KERN_OBJS := \
+	kernel.o \
+	VgaTTY.o
 
-all: boot kernel VgaTTY VgaTextDriver
-	$(CC) -T linker.ld -o $(BUILD)/myos.bin $(LDFLAGS) $(BUILD)/boot.o $(BUILD)/kernel.o $(LIBC_BUILD)/libc.o $(BUILD)/VgaTextDriver.o $(BUILD)/VgaTTY.o -lgcc
+DRIV_OBJS := \
+	$(DRIVERS_DIR)/VgaText.o
 
-boot:
-	$(ASM) -felf32 boot.S -o $(BUILD)/boot.o
+HEADERS := $(OBJS:.o=.h)
 
-kernel:
-	$(CC) $(INCLUDE) -c kernel.cpp -o $(BUILD)/kernel.o $(CFLAGS)
+OBJS := $(KERN_OBJS) $(DRIV_OBJS) boot.ao
 
-VgaTTY:
-	$(CC) $(INCLUDE) -c VgaTTY.cpp -o $(BUILD)/VgaTTY.o $(CFLAGS)
+LIBC_OBJ := ../libc/libc.o
 
-VgaTextDriver:
-	$(CC) $(INCLUDE) -c VgaTextDriver.cpp -o $(BUILD)/VgaTextDriver.o $(CFLAGS)
+TARGET = myos.bin
 
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) -T linker.ld -o $@ $(LDFLAGS) $^ $(LIBC_OBJ) -lgcc
+
+# has .ao suffix so we can know to assemble it (instead of compiling)
+boot.ao: boot.S
+	$(ASM) -felf32 $< -o $@
+
+%.o: %.cpp $(HEADERS)
+	$(CC) $(INCLUDE) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f $(BUILD)/*
+	rm -f *.o $(DRIVERS_DIR)/*.o *.ao

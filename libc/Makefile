@@ -1,15 +1,21 @@
 
-BUILD := build
-INCLUDE_DIR := include
-INCLUDE := -I$(INCLUDE_DIR)
+
+OBJS := \
+	Cstring.o
+
+HEADERS := $(OBJS:.o=.h)
+
+TARGET := libc.o
+
+all: $(TARGET)
 
 
-all: $(BUILD)/Cstring.o
-	$(LD) --relocatable $(BUILD)/Cstring.o -o $(BUILD)/libc.o	
+$(TARGET): $(OBJS)
+	$(LD) --relocatable $^ -o $@
 
-$(BUILD)/Cstring.o: Cstring.cpp $(INCLUDE_DIR)/Cstring.h
-	$(CC) $(INCLUDE) -c Cstring.cpp -o $(BUILD)/Cstring.o $(CFLAGS)
+%.o: %.cpp $(HEADERS)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f $(BUILD)/*
+	rm -f *.o
 

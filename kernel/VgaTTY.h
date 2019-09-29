@@ -6,7 +6,7 @@
 
 #include "Cstring.h"
 
-#include "VgaTextDriver.h"
+#include "VgaText.h"
 
 class VgaTTY {
 private:
