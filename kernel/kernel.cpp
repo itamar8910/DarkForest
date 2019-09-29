@@ -6,6 +6,7 @@
 
 #include "VgaTTY.h"
 #include "DebugPort.h"
+#include "cpu_descriptors.h"
  
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -28,6 +29,7 @@ A a1;
 extern "C" void kernel_main(void) 
 {
 	DebugPort::write("kernel_main\n");
+   init_descriptor_tables();
 	auto tty = VgaTTY();
  
 	tty.write("up1\n");

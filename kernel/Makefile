@@ -6,7 +6,10 @@ INCLUDE := -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
 
 KERN_OBJS := \
 	kernel.o \
-	VgaTTY.o
+	boot.ao \
+	VgaTTY.o \
+	gdt.ao \
+	cpu_descriptors.o \
 
 DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \
@@ -14,7 +17,7 @@ DRIV_OBJS := \
 
 HEADERS := $(OBJS:.o=.h)
 
-OBJS := $(KERN_OBJS) $(DRIV_OBJS) boot.ao
+OBJS := $(KERN_OBJS) $(DRIV_OBJS)
 LIBC_OBJ := ../libc/libc.o
  
 # stubs for gcc to insert code for calling ctors of globals
