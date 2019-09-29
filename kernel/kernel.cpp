@@ -16,10 +16,18 @@
 #if !defined(__i386__)
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
- 
 
+class A {
+   public:
+      A() {
+         DebugPort::write("A ctor called\n");
+      }
+};
+
+A a1;
 extern "C" void kernel_main(void) 
 {
+	DebugPort::write("kernel_main\n");
 	auto tty = VgaTTY();
  
 	tty.write("up1\n");
@@ -33,5 +41,4 @@ extern "C" void kernel_main(void)
 	tty.write("down3fshakfa\n");
 	tty.write("down4\n");
 
-	DebugPort::write("hello\n");
 }

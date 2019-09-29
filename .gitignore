@@ -1,6 +1,10 @@
 
 todo
 
-**/build/
+# build artifcats
+**/*.o
+**/*.ao
+# ignore the kernel's image
+**/*.bin
 
 

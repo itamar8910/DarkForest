@@ -15,22 +15,32 @@ DRIV_OBJS := \
 HEADERS := $(OBJS:.o=.h)
 
 OBJS := $(KERN_OBJS) $(DRIV_OBJS) boot.ao
-
 LIBC_OBJ := ../libc/libc.o
+ 
+# stubs for gcc to insert code for calling ctors of globals
+CRTI_OBJ=init/crti.ao
+CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
+CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
+CRTN_OBJ=init/crtn.ao
+
+OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(CRTN_OBJ)
+
 
 TARGET = myos.bin
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) -T linker.ld -o $@ $(LDFLAGS) $^ $(LIBC_OBJ) -lgcc
+$(TARGET): init $(OBJS)
+	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJ_TO_LINK) -lgcc
 
-# has .ao suffix so we can know to assemble it (instead of compiling)
-boot.ao: boot.S
+init: $(CRTI_OBJ) $(CRTN_OBJ)
+
+# has .ao suffix so we can know to use assembler instead of compiler
+%.ao: %.S
 	$(ASM) -felf32 $< -o $@
 
 %.o: %.cpp $(HEADERS)
 	$(CC) $(INCLUDE) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o $(DRIVERS_DIR)/*.o *.ao
+	rm -f *.o $(DRIVERS_DIR)/*.o *.ao init/*.ao
