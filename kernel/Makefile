@@ -9,7 +9,8 @@ KERN_OBJS := \
 	VgaTTY.o
 
 DRIV_OBJS := \
-	$(DRIVERS_DIR)/VgaText.o
+	$(DRIVERS_DIR)/VgaText.o \
+	$(DRIVERS_DIR)/DebugPort.o
 
 HEADERS := $(OBJS:.o=.h)
 
