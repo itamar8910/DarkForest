@@ -16,7 +16,9 @@ isr_common_stub:
    mov fs, ax
    mov gs, ax
 
+   push esp ; push address of register dump
    call isr_handler
+   add esp, 0x4 ; pop argument
 
    pop eax        ; reload the original data segment descriptor
    mov ds, ax
@@ -26,8 +28,7 @@ isr_common_stub:
 
    popa                     ; Pops edi,esi,ebp...
    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
-   sti
-   iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP 
+   iret           ; re-enabled interrupts, pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP 
 
 ; macros for ISR entries
 ; ISR entry for which the CPU pushes an error code on the stack

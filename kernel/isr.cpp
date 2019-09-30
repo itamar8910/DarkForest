@@ -11,30 +11,20 @@ static inline void outb(uint16_t port, uint8_t val) {
     asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
 }
 
-void aaa(char* data) {
-   outb(0xe9 ,'Y');
+
+// This gets called from our ASM interrupt handler stub.
+// Note: although the registers state itself is on the stack,
+// we pass by regerence instead of by value
+// because otherwise g++ optimization could overwrite the regs argument
+// (this took a couple of hours to debug haha)
+extern "C" void isr_handler(isr_saved_registers& regs)
+{
+   outb(0xe9 ,'X');
    DebugPort::write("recieved interrupt: \n");
-}
+   char buff[3];
+   buff[0] = '0' + regs.int_no;
+   buff[1] = '\n';
+   buff[2] = 0;
+   DebugPort::write(buff);
 
-// This gets called from our ASM interrupt handler stub.
-extern "C" void isr_handler(char* data)
-{
-   outb(0xe9 ,'X');
-   aaa(data);
 }
-
-/*
-void insr_handle_cpp(isr_saved_registers regs) {
-   outb(0xe9 ,'Y');
-   DebugPort::write("recieved interrupt: ");
-}
-// This gets called from our ASM interrupt handler stub.
-extern "C" void isr_handler(isr_saved_registers regs)
-{
-   outb(0xe9 ,'X');
-   insr_handle_cpp(regs);
-   // DebugPort::write("recieved interrupt: ");
-   // DebugPort::write_dec(regs.int_no);
-   // DebugPort::write("\n");
-}
-*/
