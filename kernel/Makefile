@@ -10,6 +10,8 @@ KERN_OBJS := \
 	VgaTTY.o \
 	gdt.ao \
 	cpu_descriptors.o \
+	isr.ao \
+	isr.o\
 
 DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \

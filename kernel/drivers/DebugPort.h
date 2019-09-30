@@ -8,11 +8,8 @@
 
 #define DEBUG_PORT_ADDR 0xe9
 
-class DebugPort {
-
-    private:
-        static void write(const char*, size_t size);
-    public:
-        static void write(const char*);
-
+namespace DebugPort {
+    void write(const char*, size_t size);
+    void write(const char*);
+    void write_dec(int);
 };

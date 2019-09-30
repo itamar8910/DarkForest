@@ -22,3 +22,8 @@ void DebugPort::write(const char* data, size_t size) {
 void DebugPort::write(const char* str) {
     DebugPort::write(str, strlen(str));
 }
+
+void DebugPort::write_dec(int) {
+    // TODO: impl
+    DebugPort::write("DebugPort::write_dec: implement me!");
+}
