@@ -8,10 +8,8 @@ KERN_OBJS := \
 	kernel.o \
 	boot.ao \
 	VgaTTY.o \
-	gdt.ao \
 	cpu_descriptors.o \
-	isr.ao \
-	isr.o\
+	logging.o \
 
 DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \

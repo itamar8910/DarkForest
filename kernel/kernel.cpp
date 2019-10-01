@@ -39,7 +39,8 @@ extern "C" void kernel_main(void)
    init_descriptor_tables();
    // test ISRs
    asm volatile ("int $0x3");
-   asm volatile ("int $0x4"); 
+   asm volatile ("int $0x3");
+//    asm volatile ("int $0x4"); 
    do_vga_tty_stuff();
 	DebugPort::write("kernel_main end \n");
 }
