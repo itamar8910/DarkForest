@@ -6,7 +6,7 @@
 
 #include "VgaTTY.h"
 #include "DebugPort.h"
-#include "cpu_descriptors.h"
+#include "cpu.h"
  
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -36,11 +36,7 @@ void do_vga_tty_stuff() {
 extern "C" void kernel_main(void) 
 {
 	DebugPort::write("kernel_main\n");
-   init_descriptor_tables();
-   // test ISRs
-//    asm volatile ("int $0x10");
-//    asm volatile ("int $0x3");
-//    asm volatile ("int $0x4"); 
-   do_vga_tty_stuff();
+	init_descriptor_tables();
+	do_vga_tty_stuff();
 	DebugPort::write("kernel_main end \n");
 }
