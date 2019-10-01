@@ -163,15 +163,35 @@ static void unimpl_trap() {
    );
 
 #define UNHANDLED_EXCEPTION(idx, msg) \
-   extern "C" void isr_exception_##idx() { \
+   static void isr_exception_##idx##_entry() { \
       kprint(msg "\n"); \
       hang(); \
    }
 
-ISR_EXCEPTION_NO_ERRCODE(3);
-void isr_exception_3_handler(RegisterDump& regs) {
-   (void)regs; // to suppress unused
-   kprint("exception3  handler\n");
+UNHANDLED_EXCEPTION(0, "Division by 0") // TODO: dont crash if happened in uermode
+UNHANDLED_EXCEPTION(1, "Debug exception") 
+UNHANDLED_EXCEPTION(2, "Unknown error")
+UNHANDLED_EXCEPTION(3, "Breakpoint")
+UNHANDLED_EXCEPTION(4, "Overflow")
+UNHANDLED_EXCEPTION(5, "Bounds check")
+UNHANDLED_EXCEPTION(6, "Illegal Instruction") // TODO: dont crash if happened in uermode
+UNHANDLED_EXCEPTION(7, "No Math Coprocessor")
+UNHANDLED_EXCEPTION(8, "Double fault")
+UNHANDLED_EXCEPTION(9, "Coprocessor segment overrun")
+UNHANDLED_EXCEPTION(10, "Invalid TSS")
+UNHANDLED_EXCEPTION(11, "Segment not present")
+UNHANDLED_EXCEPTION(12, "Stack exception")
+UNHANDLED_EXCEPTION(13, "General protection fault") // TODO: dont crash if happened in uermode
+UNHANDLED_EXCEPTION(15, "Unknown error")
+UNHANDLED_EXCEPTION(16, "Coprocessor error")
+
+// Page fault
+ISR_EXCEPTION_WITH_ERRCODE(14);
+void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
+   (void)regs;
+   kprint("Page fault\n");
+   // TODO: handle page fault
+   hang(); // until we implement
 }
 
 static void register_interrupt_handler(int num, void (*func)()) {
@@ -186,8 +206,23 @@ static void init_idt() {
       register_interrupt_handler(i, unimpl_trap);
    }
 
+   register_interrupt_handler(0, isr_exception_0_entry);
+   register_interrupt_handler(1, isr_exception_1_entry);
+   register_interrupt_handler(2, isr_exception_2_entry);
    register_interrupt_handler(3, isr_exception_3_entry);
-
+   register_interrupt_handler(4, isr_exception_4_entry);
+   register_interrupt_handler(5, isr_exception_5_entry);
+   register_interrupt_handler(6, isr_exception_6_entry);
+   register_interrupt_handler(7, isr_exception_7_entry);
+   register_interrupt_handler(8, isr_exception_8_entry);
+   register_interrupt_handler(9, isr_exception_9_entry);
+   register_interrupt_handler(10, isr_exception_10_entry);
+   register_interrupt_handler(11, isr_exception_11_entry);
+   register_interrupt_handler(12, isr_exception_12_entry);
+   register_interrupt_handler(13, isr_exception_13_entry);
+   register_interrupt_handler(14, isr_exception_14_entry);
+   register_interrupt_handler(15, isr_exception_15_entry);
+   register_interrupt_handler(16, isr_exception_16_entry);
 
    idt_flush((uint32_t)&idt_ptr);
 
