@@ -39,6 +39,8 @@ extern "C" void kernel_main(void)
 	kprint("kernel_main\n");
 	init_descriptor_tables();
 	do_vga_tty_stuff();
-	kprintf("hello %d\n", 0);
+	int val = 256;
+	// kprintf("%s\n", "hello");
+	kprintf("%d %s 0x%x %s\n", val, "in decimal is", val, "in hex");
 	kprint("kernel_main end \n");
 }
