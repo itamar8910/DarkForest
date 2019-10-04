@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdarg.h"
-
+#include "DebugPort.h"
 // template <typename PutcFunc>
 // void print_int_dec(PutcFunc putc_f, int val);
 
@@ -12,79 +12,85 @@ const char digits_dec[] = "0123456789";
 const char digits_hex[] = "0123456789abcdef";
 
 template <int Base, typename PutcFunc>
-void print_int(PutcFunc putc_f, const char digits[], int val) {
+int print_int(PutcFunc putc_f, const char digits[], uint32_t val, int is_signed=false) {
+    int ret = 0;
     if(val == 0) {
         putc_f('0');
-        return;
+        return 1;
     }
-    int sign_pos = (val > 0); // sign positive flag
-    if(!sign_pos) {
-        val *= -1;
+    int sign_positive = (!is_signed || (int)val > 0); // sign positive flag
+    if(!sign_positive) { // if negative
+        val = (uint32_t)((int)val * -1);
     }
     int n_digits = 0;
-    int temp = val;
-    int pow = 1;
+    uint32_t temp = val;
+    uint32_t pow = 0;
     while(temp > 0) {
         n_digits += 1;
-        pow *= Base;
+        pow = (pow == 0) ? 1 : pow * Base;
         temp /= Base;
     }
-    pow /= Base;
-    if(!sign_pos) {
+    if(!sign_positive) {
         putc_f('-');
+        ret++;
     }
-    for(int i = n_digits - 1; i >= 0; i--, pow /= 10) {
+    for(int i = n_digits - 1; i >= 0; i--, pow /= Base) {
         uint8_t dig = (val / pow);
         putc_f(digits[dig]);
+        ret++;
         val = val % pow;
     }
+    return ret;
 }
 
 template <typename PutcFunc>
-void print_int_dec(PutcFunc putc_f, int val) {
-    print_int<10>(putc_f, digits_dec, val);
+int print_int_dec(PutcFunc putc_f, int val) {
+    return print_int<10>(putc_f, digits_dec, val, true);
 }
 
 template <typename PutcFunc>
-void print_int_hex(PutcFunc putc_f, int val) {
-    print_int<16>(putc_f, digits_hex, val);
+int print_int_hex(PutcFunc putc_f, uint32_t val) {
+    return print_int<16>(putc_f, digits_hex, val);
 }
 
 template <typename PutcFunc>
-void print_string(PutcFunc putc_f, char* str) {
+int print_string(PutcFunc putc_f, char* str) {
+    int ret = 0;
     while(*str) {
         putc_f(*(str++));
+        ret ++;
     }
+    return ret;
 }
 
 template <typename PutcFunc>
-void printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
-    int intval = 0;
-    char* strval = 0;
-    while(*fmt != '\0') {
-        if(*fmt == '%') {
-            switch(fmt[1]) {
+int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
+    int ret = 0;
+    for(;*fmt != '\0'; fmt++) {
+        if(*fmt == '%' && *(fmt+1)) {
+            fmt++;
+            switch(*fmt) {
                 case 'd':
-                    intval = va_arg(args, int);
-                    print_int_dec(putc_f, intval);
-                    fmt+=2;
+                    ret += print_int_dec(putc_f, va_arg(args, int));
                     break;
                 case 'x':
-                    intval = va_arg(args, int);
-                    print_int_hex(putc_f, intval);
-                    fmt+=2;
+                    ret += print_int_hex(putc_f, va_arg(args, uint32_t));
                     break;
                 case 's':
-                    strval = va_arg(args, char*);
-                    // print_int_dec(putc_f, strval[0]);
-                    print_string(putc_f, strval);
-                    fmt += 2;
-
+                    ret += print_string(putc_f, va_arg(args, char*));
+                    break;
+                case '%':
+                    putc_f('%');
+                    ret++;
+                    break;
+                default:
+                    // TODO: kprintf("bad format specifier") 
+                    return -1;
             }
-
         } else {
             putc_f(*fmt);
-            fmt++;
+            ret ++;
         }
     }
+    return ret;
 }
