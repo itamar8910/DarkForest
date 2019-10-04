@@ -1,7 +1,8 @@
 
 
 OBJS := \
-	Cstring.o
+	string.o \
+	printf.o \
 
 HEADERS := $(OBJS:.o=.h)
 

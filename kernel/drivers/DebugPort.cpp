@@ -13,9 +13,13 @@ static inline uint8_t inb(uint16_t port) {
     return ret;
 }
 
+void DebugPort::putc(char c) {
+        outb(DEBUG_PORT_ADDR, c);
+}
+
 void DebugPort::write(const char* data, size_t size) {
     for(size_t i = 0; i < size; i++) {
-        outb(DEBUG_PORT_ADDR, data[i]);
+        DebugPort::putc(data[i]);
     }
 }
 

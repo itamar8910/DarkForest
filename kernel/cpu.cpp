@@ -1,7 +1,7 @@
 // Based on: james molloy's tutorials & SerenityOS
 
 
-#include "Cstring.h"
+#include "string.h"
 #include "cpu.h"
 #include "DebugPort.h"
 #include "logging.h"

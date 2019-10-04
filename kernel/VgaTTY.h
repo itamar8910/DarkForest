@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "Cstring.h"
+#include "string.h"
 
 #include "VgaText.h"
 

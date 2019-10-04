@@ -2,11 +2,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "Cstring.h"
+#include "string.h"
 
 #include "VgaTTY.h"
 #include "DebugPort.h"
 #include "cpu.h"
+#include "logging.h"
  
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -35,8 +36,9 @@ void do_vga_tty_stuff() {
 
 extern "C" void kernel_main(void) 
 {
-	DebugPort::write("kernel_main\n");
+	kprint("kernel_main\n");
 	init_descriptor_tables();
 	do_vga_tty_stuff();
-	DebugPort::write("kernel_main end \n");
+	kprintf("hello %d\n", 0);
+	kprint("kernel_main end \n");
 }
