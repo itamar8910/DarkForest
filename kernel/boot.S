@@ -73,6 +73,9 @@ _start:
         ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kernel_main
 
 	; Call the global constructors
+	push eax ; multiboot magic
+	push ebx ; multiboot struct
+
 	extern _init
 	call _init
 

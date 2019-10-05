@@ -55,3 +55,5 @@ struct [[gnu::packed]] RegisterDumpWithErrCode
 };
 
 void init_descriptor_tables();
+
+[[noreturn]] void cpu_hang();

@@ -96,14 +96,14 @@ static void idt_register_entry_raw(uint8_t num, uint32_t base, uint16_t sel=0x08
 } 
 
 // hang cpu
-[[noreturn]] static void hang() {
+[[noreturn]] void cpu_hang() {
    asm volatile("cli; hlt");
    while(1);
 }
 
 static void unimpl_trap() {
    DebugPort::write("unimplemented trap");
-   hang();
+   cpu_hang();
 }
 
 // exception handler for exception without error codes
@@ -165,7 +165,7 @@ static void unimpl_trap() {
 #define UNHANDLED_EXCEPTION(idx, msg) \
    static void isr_exception_##idx##_entry() { \
       kprint(msg "\n"); \
-      hang(); \
+      cpu_hang(); \
    }
 
 UNHANDLED_EXCEPTION(0, "Division by 0") // TODO: dont crash if happened in uermode
@@ -191,7 +191,7 @@ void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
    (void)regs;
    kprint("Page fault\n");
    // TODO: handle page fault
-   hang(); // until we implement
+   cpu_hang(); // until we implement
 }
 
 static void register_interrupt_handler(int num, void (*func)()) {
