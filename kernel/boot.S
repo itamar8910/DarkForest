@@ -6,7 +6,8 @@ MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
 CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 
 KERNEL_BASE_PHYSICAL equ 0x100000
-KERNEL_BASE_VIRTUAL equ 0x100000 ; TODO: when we move to higher half, set this to 3GB+1MB
+KERNEL_BASE_VIRTUAL equ 0xC0100000 
+; KERNEL_BASE_VIRTUAL equ 0x100000 ; TODO: when we move to higher half, set this to 3GB+1MB
  
 ; Declare a multiboot header that marks the program as a kernel
 section .multiboot
@@ -34,15 +35,12 @@ resb 4096
 section .text
 global _start:function (_start.end - _start)
 _start:
- 
-	; setup the stack
-	mov esp, stack_top
- 
+	
 	; setup paging
 	; identity map the first 4MB
-	; setup PT1 to point to 0...4MB
+	; setup PT0 to point to 0...4MB
 	mov edi, 0 ; current pysical address
-	mov esi, PT_0 - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL ; current PT1 entry, physical address
+	mov esi, PT_0 - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL ; current PT0 entry, physical address
 	.l1:
 	mov edx, edi
 	or edx, 0x3 ; set present, writable
@@ -52,28 +50,41 @@ _start:
 	cmp edi, 0x400000 ; while edi < 4MB
 	jl _start.l1
 
-    mov esi, PT_0 - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL ; PT1, physical address
-	mov edi, page_directory - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL ; page directory physical address
+	
+	; setup PD[0],PD[768] to point at PT0
+	; PD[0] corresponds to first 0..4MB
+	; PD[768] corresponds to 3GB...3GM+4MB
+    mov esi, PT_0 - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL ; PT0, physical address
 	or esi, 0x03 ; set present, writable
-	or [edi], esi
+	mov edi, page_directory - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL ; page directory physical address
+	mov [edi], esi ; set PD[0]
+	add edi, 768*4
+	mov [edi], esi ; set PD[768]
+
 
 	; load addr of page directory to cr3
-	mov esi, page_directory
+	mov esi, page_directory - KERNEL_BASE_VIRTUAL + KERNEL_BASE_PHYSICAL
 	mov cr3, esi
 	; enable paging
 	mov esi, cr0
 	or esi, 0x80000001
 	mov cr0, esi
 
-	; far jump TODO: (will only be needed in high half kernel)
+
+	; far jump to virtual address in code
+	; this will only works because we setup the virtual mapping for the "higher half" kernel
 	lea ecx, [_start.l2]
 	jmp ecx
 	.l2:
 
+	; setup the stack
+	mov esp, stack_top
+
 	; Call the global constructors
-	push eax ; dummy value for alignment
-	push eax ; dummt value for alignment
+	push 0 ; dummy value for alignment
+	push 0 ; dummt value for alignment
 	push eax ; multiboot magic
+	add ebx, KERNEL_BASE_VIRTUAL-KERNEL_BASE_PHYSICAL
 	push ebx ; multiboot struct
 	; the stack is now 16-byte aligned
 
@@ -83,16 +94,8 @@ _start:
 	extern kernel_main
 	call kernel_main
  
-	; If the system has nothing more to do, put the computer into an
-	; infinite loop. To do that:
-	; 1) Disable interrupts with cli (clear interrupt enable in eflags).
-	;    They are already disabled by the bootloader, so this is not needed.
-	;    Mind that you might later enable interrupts and return from
-	;    kernel_main (which is sort of nonsensical to do).
-	; 2) Wait for the next interrupt to arrive with hlt (halt instruction).
-	;    Since they are disabled, this will lock up the computer.
-	; 3) Jump to the hlt instruction if it ever wakes up due to a
-	;    non-maskable interrupt occurring or due to system management mode.
+	; kernel_main should never exit
+	; but if it does, halt cpu
 	cli
 .hang:	hlt
 	jmp .hang

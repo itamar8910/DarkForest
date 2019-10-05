@@ -8,33 +8,32 @@ SECTIONS
 {
 	/* Kernel is loaded at 1MB physical address by GRUB*/
 	/* Kernel lives in 3GB+1MB virtual address (higher half kernel) */
-	/*. = 0xC0100000; */
-	/* TODO: enable higher half kernel, this is for dbg */
-	. = 1M;
+	. = 0xC0100000;
+	/*. = 1M; */
  
 	/* First put the multiboot header, as it is required to be put very early
 	   early in the image or the bootloader won't recognize the file format.
 	   Next we'll put the .text section. */
-	.text BLOCK(4K) : ALIGN(4K)
+	.text ALIGN(4K) : AT (ADDR (.text) - 0xC0000000)
 	{
 		*(.multiboot)
 		*(.text)
 	}
  
 	/* Read-only data. */
-	.rodata BLOCK(4K) : ALIGN(4K)
+	.rodata ALIGN(4K) : AT (ADDR (.rodata) - 0xC0000000)
 	{
 		*(.rodata)
 	}
  
 	/* Read-write data (initialized) */
-	.data BLOCK(4K) : ALIGN(4K)
+	.data ALIGN(4K) : AT (ADDR (.data) - 0xC0000000)
 	{
 		*(.data)
 	}
  
 	/* Read-write data (uninitialized) and stack */
-	.bss BLOCK(4K) : ALIGN(4K)
+	.bss ALIGN(4K) : AT (ADDR (.bss) - 0xC0000000)
 	{
 		*(COMMON)
 		*(.bss)
