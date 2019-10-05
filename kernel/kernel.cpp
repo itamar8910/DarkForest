@@ -63,6 +63,8 @@ void init_memory(multiboot_info_t* mbt) {
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
+	(void)mbt;
+	(void)magic;
 	kprint("kernel_main\n");
 	kprintf("I smell %x\n", 0xdeadbeef);
 	init_descriptor_tables();

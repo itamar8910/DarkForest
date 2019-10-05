@@ -6,8 +6,10 @@ ENTRY(_start)
    kernel image. */
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
+	/* Kernel is loaded at 1MB physical address by GRUB*/
+	/* Kernel lives in 3GB+1MB virtual address (higher half kernel) */
+	/*. = 0xC0100000; */
+	/* TODO: enable higher half kernel, this is for dbg */
 	. = 1M;
  
 	/* First put the multiboot header, as it is required to be put very early
