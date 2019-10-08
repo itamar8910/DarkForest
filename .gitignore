@@ -1,6 +1,6 @@
 
 todo
-
+settings.json
 # build artifcats
 **/*.o
 **/*.ao
