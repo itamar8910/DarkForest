@@ -17,9 +17,11 @@ DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \
 	$(DRIVERS_DIR)/DebugPort.o
 
-HEADERS := $(OBJS:.o=.h)
 
 OBJS := $(KERN_OBJS) $(DRIV_OBJS)
+
+HEADERS := $(shell find . -name '*.h')
+
 LIBC_OBJ := ../libc/libc.o
  
 # stubs for gcc to insert code for calling ctors of globals
@@ -29,7 +31,6 @@ CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 CRTN_OBJ=init/crtn.ao
 
 OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(CRTN_OBJ)
-
 
 TARGET = myos.bin
 
