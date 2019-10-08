@@ -11,6 +11,7 @@ KERN_OBJS := \
 	cpu.o \
 	logging.o \
 	assert.o \
+	MemoryManager.o \
 	
 
 DRIV_OBJS := \
