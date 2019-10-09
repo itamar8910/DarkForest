@@ -7,7 +7,6 @@ CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 
 KERNEL_BASE_PHYSICAL equ 0x100000
 KERNEL_BASE_VIRTUAL equ 0xC0100000 
-; KERNEL_BASE_VIRTUAL equ 0x100000 ; TODO: when we move to higher half, set this to 3GB+1MB
  
 ; Declare a multiboot header that marks the program as a kernel
 section .multiboot

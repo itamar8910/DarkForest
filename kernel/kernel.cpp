@@ -1,6 +1,4 @@
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 #include "types.h"
 #include "multiboot.h"
@@ -42,10 +40,21 @@ void do_vga_tty_stuff() {
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("kernel_main\n");
+	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
 	init_descriptor_tables();
-	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	MemoryManager::initialize(mbt);
 	do_vga_tty_stuff();
+	char* buff = new char[50];
+	kprintf("buff addr: 0x%x\n", buff);
+	buff[0] = 'a';
+	buff[1] = 'b';
+	buff[2] = 'c';
+	buff[3] = 0;
+	kprintf("buff: %s\n", buff);
+	buff = new char[100];
+	kprintf("buff addr: 0x%x\n", buff);
+	buff = new char[100];
+	kprintf("buff addr: 0x%x\n", buff);
 	kprint("kernel_main end \n");
 }

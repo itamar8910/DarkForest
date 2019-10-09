@@ -4,6 +4,7 @@ OBJS := \
 	string.o \
 	printf.o \
 	stdlib.o \
+	bits.o \
 
 HEADERS := $(OBJS:.o=.h)
 INCLUDE = -I../kernel/

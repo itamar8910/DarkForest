@@ -12,6 +12,7 @@ KERN_OBJS := \
 	logging.o \
 	assert.o \
 	MemoryManager.o \
+	kmalloc.o \
 	
 
 DRIV_OBJS := \
