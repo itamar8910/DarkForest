@@ -44,6 +44,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprintf("I smell %x\n", 0xdeadbeef);
 	init_descriptor_tables();
 	MemoryManager::initialize(mbt);
+	kprintf("frame available: %d\n", MemoryManager::the().is_frame_available(0x000800000 + PAGE_SIZE));
 	do_vga_tty_stuff();
 	char* buff = new char[50];
 	kprintf("buff addr: 0x%x\n", buff);
