@@ -5,7 +5,7 @@ DRIVERS_DIR := drivers
 INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
 
 KERN_OBJS := \
-	kernel.o \
+	_init.o \
 	boot.ao \
 	VgaTTY.o \
 	cpu.o \

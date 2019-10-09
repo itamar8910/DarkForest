@@ -1,9 +1,10 @@
 #include "kmalloc.h"
 #include "types.h"
 #include "assert.h"
+#include "MemoryManager.h"
 
 void* KMALLOC_START = (void*) (3 * MB);
-void* KMALLOC_END = (void*) (4 * MB);
+void* KMALLOC_END = (void*) (4 * MB - PAGE_SIZE);
 
 /*
 Initial implementation: advance next_free pointer,

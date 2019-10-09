@@ -4,6 +4,16 @@
 #include "types.h"
 #include "stdlib.h"
 #include "bits.h"
+#include "assert.h"
+
+/*
+    Virtual Memory map:
+    (0MB-4MB - identity mapped)
+    3MB - 4MB: kmalloc
+	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
+    0xc0000000 - 0xffffffff : kernel address space
+*/
+
 
 #define MULTIBOOT_MEMORY_AVAILABLE 1
 
@@ -31,8 +41,15 @@ class PhysicalAddress {
 				frame_idx % 32
 			);
 		}
+		bool is_frame_aligned() {
+			return m_addr % PAGE_SIZE == 0;
+		}
+		void assert_aligned() {
+			ASSERT(is_frame_aligned(), "frame not aligned");
+		}
 };
 
+typedef u32 VirtualAddress;
 
 struct [[gnu::packed]] MultibootMemMapEntry {
 	unsigned int size;
@@ -54,7 +71,10 @@ public:
     static void initialize(multiboot_info_t* mbt);
 	static MemoryManager& the();
 
+	int allocate(VirtualAddress virt_addr);
+
 	void set_frame_available(PhysicalAddress frame) {
+		frame.assert_aligned();
 		auto bitmap_entry = frame.get_bitmap_entry();
 		set_bit(
 			m_frames_avail_bitmap[bitmap_entry.m_entry_idx],
@@ -62,6 +82,7 @@ public:
 		);
 	}
 	bool is_frame_available(PhysicalAddress frame) {
+		frame.assert_aligned();
 		auto bitmap_entry = frame.get_bitmap_entry();
 		return get_bit(
 			m_frames_avail_bitmap[bitmap_entry.m_entry_idx],
