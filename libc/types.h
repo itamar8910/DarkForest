@@ -16,3 +16,5 @@ static_assert(sizeof(u64)==8);
 constexpr u32 KB = 1024;
 constexpr u32 MB = 0x100000;
 constexpr u32 GB = 0x40000000;
+
+typedef u32 Err;

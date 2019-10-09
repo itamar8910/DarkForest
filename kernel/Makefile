@@ -34,7 +34,7 @@ CRTN_OBJ=init/crtn.ao
 
 OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(CRTN_OBJ)
 
-TARGET = myos.bin
+TARGET := myos.bin
 
 all: $(TARGET)
 
@@ -48,7 +48,7 @@ init: $(CRTI_OBJ) $(CRTN_OBJ)
 	$(ASM) -felf32 $< -o $@
 
 %.o: %.cpp $(HEADERS)
-	$(CC) $(INCLUDE) -c $< -o $@ $(CFLAGS)
+	$(CC) $(INCLUDE) $(CPP_FLAGS) -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm -f *.o $(DRIVERS_DIR)/*.o *.ao init/*.ao

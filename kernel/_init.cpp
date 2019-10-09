@@ -9,6 +9,11 @@
 #include "cpu.h"
 #include "logging.h"
 #include "MemoryManager.h"
+#include "flags.h"
+
+#ifdef TESTS
+#include "tests.h"
+#endif
 
  
 /* Check if the compiler thinks you are targeting the wrong operating system. */
@@ -46,6 +51,27 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	MemoryManager::initialize(mbt);
 	kprintf("frame available: %d\n", MemoryManager::the().is_frame_available(0x000800000 + PAGE_SIZE));
 	do_vga_tty_stuff();
+
+#ifdef TESTS
+	run_tests();
+	return;
+#endif
+
+	// testing frame allocation
+	Err err;
+	for(int i = 0; i < 10; i++) {
+		auto addr = MemoryManager::the().get_free_frame(err);
+		MemoryManager::the().set_frame_used(addr);
+		kprintf("frame: 0x%x, err:%d\n", addr, err);
+	}
+	kprintf("---\n");
+	MemoryManager::the().set_frame_available(0x503000);
+	for(int i = 0; i < 10; i++) {
+		auto addr = MemoryManager::the().get_free_frame(err);
+		MemoryManager::the().set_frame_used(addr);
+		kprintf("frame: 0x%x, err:%d\n", addr, err);
+	}
+
 	char* buff = new char[50];
 	kprintf("buff addr: 0x%x\n", buff);
 	buff[0] = 'a';
