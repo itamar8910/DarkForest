@@ -1,19 +1,8 @@
 #pragma once
 
-#include "multiboot.h"
 #include "types.h"
-#include "stdlib.h"
 #include "bits.h"
 #include "assert.h"
-
-/*
-    Virtual Memory map:
-    (0MB-4MB - identity mapped)
-    3MB - 4MB: kmalloc
-	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
-    0xc0000000 - 0xffffffff : kernel address space
-*/
-
 
 #define MULTIBOOT_MEMORY_AVAILABLE 1
 
@@ -21,8 +10,6 @@ constexpr u32 MAX_MEMORY_SIZE = UINT32_MAX;
 constexpr u32 PAGE_SIZE = 4 * KB;
 constexpr u32 N_FRAMES = MAX_MEMORY_SIZE / PAGE_SIZE;
 constexpr u32 N_FRAME_BITMAP_ENTRIES = N_FRAMES / 32;
-
-#define ERR_NO_FREE_FRAMES 1
 
 struct BitmapEntry {
 	u32 m_entry_idx;
@@ -81,27 +68,39 @@ struct [[gnu::packed]] MultibootMemMapEntry {
 
 static_assert(sizeof(MultibootMemMapEntry)==24);
 
-
-class MemoryManager {
-private:
-	MemoryManager(); // singelton
-	~MemoryManager();
-    void init(multiboot_info_t* mbt);
-
-
+/**
+ * Page Directory Entry
+ */
+struct PDE {
 public:
-    static void initialize(multiboot_info_t* mbt);
-	static MemoryManager& the();
-
-	Frame get_free_frame(Err&);
-	void set_frame_used(const Frame& frame);
-	int allocate(VirtualAddress virt_addr, int &err);
-
-	void set_frame_available(Frame frame);
-	bool is_frame_available(const Frame frame);
-
+	enum Flags {
+		User = 1<<2, // can user access ?
+		Write = 1<<3, // is writable?
+		Present = 1<<0, // is present?
+	};
+	PDE(u64 entry) :
+		m_PT_addr((u32)(entry>>22)) ,
+		m_user(get_bit((u32)(entry&0xfff), User)){
+			
+	}
 private:
-	u32 m_frames_avail_bitmap[N_FRAME_BITMAP_ENTRIES]; // is the frame available for the OS? can it be accessed?
-	// u32 m_frames_free_bitmap[N_FRAME_BITMAP_ENTRIES]; // is the frame currently free?
 
+
+	PhysicalAddress m_PT_addr; // page table address
+	bool m_user;
+	bool m_write;
+	bool m_present;
+	
+};
+
+/**
+ * Page Table Entry
+ */
+struct PTE {
+private:
+	Frame frame;
+	bool user;
+	bool write;
+	bool present;
+	
 };

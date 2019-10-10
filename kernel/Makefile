@@ -1,8 +1,6 @@
 
 
 LIBC_INCLUDE := ../libc
-DRIVERS_DIR := drivers
-INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
 
 KERN_OBJS := \
 	_init.o \
@@ -11,16 +9,22 @@ KERN_OBJS := \
 	cpu.o \
 	logging.o \
 	assert.o \
-	MemoryManager.o \
 	kmalloc.o \
 	
 
+DRIVERS_DIR := drivers
 DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \
 	$(DRIVERS_DIR)/DebugPort.o
 
+MM_DIR := MM
+MM_OBJS := \
+	$(MM_DIR)/MemoryManager.o \
+	$(MM_DIR)/PageDirectory.o \
 
-OBJS := $(KERN_OBJS) $(DRIV_OBJS)
+INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
+
+OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS)
 
 HEADERS := $(shell find . -name '*.h')
 

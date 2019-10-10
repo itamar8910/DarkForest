@@ -12,5 +12,4 @@ namespace DebugPort {
     void putc(char c);
     void write(const char*, size_t size);
     void write(const char*);
-    void write_dec(int);
 };

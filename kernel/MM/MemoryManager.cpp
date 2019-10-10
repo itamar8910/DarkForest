@@ -15,6 +15,7 @@ void MemoryManager::initialize(multiboot_info_t* mbt) {
 }
 
 void MemoryManager::init(multiboot_info_t* mbt) {
+    mm->m_page_directory = new PageDirectory(PhysicalAddress(PageDirectory::get_cr3()));
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
 	for(
@@ -70,7 +71,6 @@ void MemoryManager::set_frame_used(const Frame& frame) {
 }
 
 void MemoryManager::set_frame_available(Frame frame) {
-    frame.assert_aligned();
     auto bitmap_entry = frame.get_bitmap_entry();
     set_bit(
         m_frames_avail_bitmap[bitmap_entry.m_entry_idx],
@@ -88,6 +88,12 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 
 }
 
+int MemoryManager::allocate(VirtualAddress virt_addr) {
+    bool exists = false;
+    // auto pde = m_page_table.get_pde(virt_addr, exists);
+    auto pte = m_page_directory->ensure_pte(virt_addr);
+    // TODO: cont.
+}
 
 MemoryManager& MemoryManager::the() {
     ASSERT(mm != nullptr, "MemoryManager is uninitialized");

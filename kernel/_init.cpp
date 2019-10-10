@@ -8,8 +8,9 @@
 #include "DebugPort.h"
 #include "cpu.h"
 #include "logging.h"
-#include "MemoryManager.h"
 #include "flags.h"
+#include "MM/MemoryManager.h"
+#include "MM/MM_types.h"
 
 #ifdef TESTS
 #include "tests.h"

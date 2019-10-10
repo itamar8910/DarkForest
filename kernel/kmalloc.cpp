@@ -1,7 +1,7 @@
 #include "kmalloc.h"
 #include "types.h"
 #include "assert.h"
-#include "MemoryManager.h"
+#include "MM/MM_types.h"
 
 void* KMALLOC_START = (void*) (3 * MB);
 void* KMALLOC_END = (void*) (4 * MB - PAGE_SIZE);

@@ -105,7 +105,7 @@ int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
     int i = 0;
     for(; is_digit(fmt_start[i]); i++) {
         if(i >= MAX_FILL_NUMBER_LEN - 2) { // leave space for null terminator
-            // TODO: set errno
+            // FIXME: set errno
             return 1;
         }
         fill_number[i] = fmt_start[i];
