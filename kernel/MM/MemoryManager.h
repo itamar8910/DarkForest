@@ -5,7 +5,7 @@
 #include "types.h"
 #include "stdlib.h"
 #include "bits.h"
-#include "assert.h"
+#include "Kassert.h"
 #include "MM/MM_types.h"
 #include "types.h"
 #include "PageDirectory.h"
@@ -22,6 +22,8 @@
 
 #define ERR_NO_FREE_FRAMES 1
 
+constexpr u32 TEMPMAP_ADDR = (u32)((4*MB) - PAGE_SIZE);
+
 
 
 class MemoryManager {
@@ -35,7 +37,10 @@ public:
     static void initialize(multiboot_info_t* mbt);
 	static MemoryManager& the();
 
-	int allocate(VirtualAddress virt_addr);
+	VirtualAddress temp_map(PhysicalAddress addr);
+	void allocate(VirtualAddress virt_addr, bool writable, bool user_allowed);
+	void flush_tlb(VirtualAddress addr);
+    PTE ensure_pte(VirtualAddress addr, bool create_new);
 	PDE get_pde(VirtualAddress virt_addr);
 	PTE get_pte(VirtualAddress virt_addr, const PDE& pde);
 

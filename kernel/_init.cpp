@@ -2,7 +2,7 @@
 
 #include "types.h"
 #include "multiboot.h"
-#include "assert.h"
+#include "Kassert.h"
 #include "string.h"
 #include "VgaTTY.h"
 #include "DebugPort.h"

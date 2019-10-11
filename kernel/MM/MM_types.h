@@ -2,7 +2,7 @@
 
 #include "types.h"
 #include "bits.h"
-#include "assert.h"
+#include "Kassert.h"
 
 #define MULTIBOOT_MEMORY_AVAILABLE 1
 
@@ -23,7 +23,7 @@ class PhysicalAddress {
 	protected:
 		u32 m_addr;
 	public:
-		explicit PhysicalAddress(u32 addr) : m_addr(addr) {}
+		PhysicalAddress(u32 addr) : m_addr(addr) {}
 		BitmapEntry get_bitmap_entry() const {
 			u32 frame_idx = m_addr / PAGE_SIZE;
 			return BitmapEntry(
@@ -68,39 +68,71 @@ struct [[gnu::packed]] MultibootMemMapEntry {
 
 static_assert(sizeof(MultibootMemMapEntry)==24);
 
-/**
- * Page Directory Entry
- */
-struct PDE {
+enum PageFlags {
+	User = 2, // can user access ?
+	Write = 3, // is writable?
+	Present = 0, // is present?
+};
+
+struct TableEntry {
 public:
-	enum Flags {
-		User = 1<<2, // can user access ?
-		Write = 1<<3, // is writable?
-		Present = 1<<0, // is present?
-	};
-	PDE(u64 entry) :
-		m_PT_addr((u32)(entry>>22)) ,
-		m_user(get_bit((u32)(entry&0xfff), User)){
-			
+	TableEntry(u32& entry) : m_entry(entry) {}
+
+	u16 flags() const {
+		return m_entry & 0xfff;
 	}
+	PhysicalAddress addr() const {
+		return m_entry & ~0xfff; // clear flags
+	}
+
+	void set_addr(PhysicalAddress addr) {
+		m_entry &= 0xfff; // clear addr
+		m_entry |= addr << 12;
+	}
+	void set_flags(u16 flags) {
+		m_entry &= ~0xfff; // clear addr
+		m_entry |= flags;
+	}
+
+	bool is_present() {
+		return flags() & (1<<PageFlags::Present);
+	}
+	bool is_writable() {
+		return flags() & (1<<PageFlags::Write);
+	}
+	bool is_user_allowed() {
+		return flags() & (1<<PageFlags::User);
+	}
+	void set_present(bool val) {
+		u16 f = flags();
+		set_bit(f, PageFlags::Present, val);
+		set_flags(f);
+	}
+	void set_writable(bool val) {
+		u16 f = flags();
+		set_bit(f, PageFlags::Write, val);
+		set_flags(f);
+	}
+	void set_user_allowed(bool val) {
+		u16 f = flags();
+		set_bit(f, PageFlags::User, val);
+		set_flags(f);
+	}
+
 private:
+	u32& m_entry;
 
-
-	PhysicalAddress m_PT_addr; // page table address
-	bool m_user;
-	bool m_write;
-	bool m_present;
-	
 };
 
-/**
- * Page Table Entry
- */
-struct PTE {
-private:
-	Frame frame;
-	bool user;
-	bool write;
-	bool present;
-	
+
+
+struct PDE : public TableEntry {
+public:
+	PDE(u32& addr) : TableEntry(addr) {}
+
 };
+struct PTE : public TableEntry {
+	PTE(u32& addr) : TableEntry(addr) {}
+};
+
+

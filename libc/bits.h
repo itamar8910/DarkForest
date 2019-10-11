@@ -3,17 +3,18 @@
 #include "types.h"
 #include "flags.h"
 #include "logging.h"
-#include "assert.h"
+#include "Kassert.h"
 
-static inline u32 set_bit(u32& num, u8 bit) {
-    num |= (1<<bit);
+template <typename I>
+static inline I set_bit(I& num, u8 bit, bool val) {
+    if(val)
+        num |= (1<<bit);
+    else
+        num &= ~(1<<bit);
     return num;
 }
-static inline u32 unset_bit(u32& num, u8 bit) {
-    num &= ~(1<<bit);
-    return num;
-}
-static inline bool get_bit(u32 num, u8 bit) {
+template <typename I>
+static inline bool get_bit(I num, u8 bit) {
     return (num & (1<<bit)) != 0;
 }
 

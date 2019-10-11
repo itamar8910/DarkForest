@@ -12,11 +12,12 @@ public:
         addr.assert_aligned();
     }
 
-    PTE ensure_pte(VirtualAddress addr);
     static u32 get_cr3();
+    PDE get_pde(VirtualAddress addr);
+    static u32 get_index(VirtualAddress);
 
 private:
-    PDE get_pde(VirtualAddress addr);
+    u32* entries();
 
     PhysicalAddress m_addr;
     

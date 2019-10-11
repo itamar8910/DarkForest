@@ -1,9 +1,11 @@
 
 #include "MemoryManager.h"
 #include "logging.h"
-#include "assert.h"
+#include "Kassert.h"
 #include "string.h"
 #include "bits.h"
+#include "PageTable.h"
+#include "PageDirectory.h"
 
 
 static MemoryManager* mm = nullptr;
@@ -67,14 +69,16 @@ Frame MemoryManager::get_free_frame(Err& err) {
 
 void MemoryManager::set_frame_used(const Frame& frame) {
     auto bmp_entry = frame.get_bitmap_entry();
-    unset_bit(m_frames_avail_bitmap[bmp_entry.m_entry_idx], bmp_entry.m_entry_bit);
+    set_bit(m_frames_avail_bitmap[bmp_entry.m_entry_idx], bmp_entry.m_entry_bit, false);
+
 }
 
 void MemoryManager::set_frame_available(Frame frame) {
     auto bitmap_entry = frame.get_bitmap_entry();
     set_bit(
         m_frames_avail_bitmap[bitmap_entry.m_entry_idx],
-        bitmap_entry.m_entry_bit
+        bitmap_entry.m_entry_bit,
+        true
     );
 }
 
@@ -88,11 +92,61 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 
 }
 
-int MemoryManager::allocate(VirtualAddress virt_addr) {
-    bool exists = false;
-    // auto pde = m_page_table.get_pde(virt_addr, exists);
-    auto pte = m_page_directory->ensure_pte(virt_addr);
-    // TODO: cont.
+VirtualAddress MemoryManager::temp_map(PhysicalAddress addr) {
+    auto pte = ensure_pte(TEMPMAP_ADDR, false);
+    pte.set_addr(addr);
+    pte.set_present(true);
+    pte.set_writable(true);
+    pte.set_user_allowed(false);
+    flush_tlb(TEMPMAP_ADDR);
+    return TEMPMAP_ADDR;
+
+}
+
+void MemoryManager::flush_tlb(VirtualAddress addr) {
+    asm volatile("invlpg %0"
+                :
+                : "m"(addr)
+                : "memory");
+}
+
+PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new=true) {
+    auto pde = m_page_directory->get_pde(addr);
+    if(!pde.is_present() && create_new) {
+        kprintf("no PDE for virt addr: 0x%x, creating a new page table\n", addr);
+        NOT_IMPLEMENTED("page table allocation");
+        // we need to create a new page table
+        Err err;
+        Frame pt_frame = get_free_frame(err);
+        ASSERT(!err, "could not allocate page table");
+        pde.set_addr(pt_frame);
+        pde.set_present(true);
+        pde.set_writable(true);
+        pde.set_user_allowed(true);
+
+
+    }
+    ASSERT(pde.is_present(), "page table not present");
+
+    auto pt_addr = temp_map(pde.addr()); // map page table so we can access it
+
+    auto page_table = PageTable(pt_addr);
+
+    return page_table.get_pte(addr);
+
+}
+
+void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_allowed) {
+    auto pte = ensure_pte(virt_addr);
+    Err err;
+    Frame pt_frame = get_free_frame(err);
+    ASSERT(!err, "could not allocate frame");
+    pte.set_addr(pt_frame);
+    pte.set_present(true);
+    pte.set_writable(writable);
+    pte.set_user_allowed(user_allowed);
+    flush_tlb(virt_addr);
+
 }
 
 MemoryManager& MemoryManager::the() {

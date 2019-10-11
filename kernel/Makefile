@@ -8,7 +8,7 @@ KERN_OBJS := \
 	VgaTTY.o \
 	cpu.o \
 	logging.o \
-	assert.o \
+	Kassert.o \
 	kmalloc.o \
 	
 
@@ -21,6 +21,7 @@ MM_DIR := MM
 MM_OBJS := \
 	$(MM_DIR)/MemoryManager.o \
 	$(MM_DIR)/PageDirectory.o \
+	$(MM_DIR)/PageTable.o \
 
 INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
 
