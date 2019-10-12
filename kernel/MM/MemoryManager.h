@@ -13,9 +13,12 @@
 /*
     Virtual Memory map:
     (0MB-4MB - identity mapped)
-    3MB - 4MB: kmalloc
+    3MB - 4MB: kmalloc_eternal
 	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
+
     0xc0000000 - 0xffffffff : kernel address space
+    0xc0000000 - 0xc0ffffff : kernel image (code + data)
+    0xc1000000 - 0xc5000000 : kernel heap
 */
 
 

@@ -11,6 +11,7 @@
 #include "flags.h"
 #include "MM/MemoryManager.h"
 #include "MM/MM_types.h"
+#include "kmalloc.h"
 
 #ifdef TESTS
 #include "tests.h"
@@ -89,15 +90,17 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
 	init_descriptor_tables();
+	kmalloc_set_mode(KMallocMode::KMALLOC_ETERNAL);
 	MemoryManager::initialize(mbt);
-	kprintf("frame available: %d\n", MemoryManager::the().is_frame_available(0x000800000 + PAGE_SIZE));
-	do_vga_tty_stuff();
+	KMalloc::initialize();
+	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
 #ifdef TESTS
 	run_tests();
 	return;
 #endif
 
+	do_vga_tty_stuff();
 	try_frame_alloc();
 	try_malloc();
 	try_virtual_alloc();

@@ -23,7 +23,7 @@ MM_OBJS := \
 	$(MM_DIR)/PageDirectory.o \
 	$(MM_DIR)/PageTable.o \
 
-INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR)
+INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR) -I$(MM_DIR)
 
 OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS)
 

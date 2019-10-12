@@ -7,6 +7,7 @@
 #include "PageTable.h"
 #include "PageDirectory.h"
 #include "cpu.h"
+#include "kmalloc.h"
 
 
 static MemoryManager* mm = nullptr;
@@ -18,7 +19,6 @@ void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::
 
 void MemoryManager::init(multiboot_info_t* mbt) {
     mm->m_page_directory = new PageDirectory(PhysicalAddress(get_cr3()));
-    mm->m_tempmap_used = false;
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
 	for(
@@ -191,6 +191,7 @@ MemoryManager& MemoryManager::the() {
 
 MemoryManager::MemoryManager() { 
     memset(m_frames_avail_bitmap, 0, sizeof(m_frames_avail_bitmap));
+    m_tempmap_used = false;
 }
 
 MemoryManager::~MemoryManager() {

@@ -9,6 +9,11 @@ void ASSERT(bool x, const char* msg = "[Unnamed]") {
 }
 
 void NOT_IMPLEMENTED(const char* msg = "[Unnamed]") {
-    kprintf("NOT IMPLEMENTED: %s\n", msg);
+    kprintf("\n*** NOT IMPLEMENTED: %s\n", msg);
+    cpu_hang();
+}
+
+void ASSERT_NOT_REACHED(const char* msg) {
+    kprintf("\n*** ASSERT NOT REACHED: %s\n", msg);
     cpu_hang();
 }
