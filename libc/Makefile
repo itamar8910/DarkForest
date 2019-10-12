@@ -7,7 +7,7 @@ OBJS := \
 	bits.o \
 
 HEADERS := $(OBJS:.o=.h)
-INCLUDE = -I../kernel/
+INCLUDE = -I../kernel/ -I.
 
 TARGET := libc.o
 

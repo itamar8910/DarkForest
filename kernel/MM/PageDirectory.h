@@ -12,7 +12,6 @@ public:
         addr.assert_aligned();
     }
 
-    static u32 get_cr3();
     PDE get_pde(VirtualAddress addr);
     static u32 get_index(VirtualAddress);
 

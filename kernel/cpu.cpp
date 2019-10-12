@@ -5,6 +5,7 @@
 #include "cpu.h"
 #include "DebugPort.h"
 #include "logging.h"
+#include "types.h"
 
 
 extern "C" void gdt_flush(uint32_t); // arg is ptr to descriptor ptr struct
@@ -185,11 +186,39 @@ UNHANDLED_EXCEPTION(13, "General protection fault") // TODO: dont crash if happe
 UNHANDLED_EXCEPTION(15, "Unknown error")
 UNHANDLED_EXCEPTION(16, "Coprocessor error")
 
+template <typename RegsDump>
+void print_register_dump(RegsDump& regs) {
+   kprintf(
+      "Register Dump:\n"
+      "edi: 0x%x\n"
+      "esi: 0x%x\n"
+      "ebp: 0x%x\n"
+      "esp: 0x%x\n"
+      "ebx: 0x%x\n"
+      "edx: 0x%x\n"
+      "ecx: 0x%x\n"
+      "eax: 0x%x\n"
+      "eip: 0x%x\n",
+      regs.edi,
+      regs.esi,
+      regs.ebp,
+      regs.esp,
+      regs.ebx,
+      regs.edx,
+      regs.ecx,
+      regs.eax,
+      regs.eip
+      );
+}
+
 // Page fault
 ISR_EXCEPTION_WITH_ERRCODE(14);
 void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
    (void)regs;
-   kprint("Page fault\n");
+   kprint("*** Page Fault\n");
+   kprintf("Address that generated Page Fault: 0x%x\n", get_cr2());
+   print_register_dump(regs);
+   // kprintf("Register dump: eax: ")
    // TODO: handle page fault
    cpu_hang(); // until we implement
 }
@@ -226,4 +255,17 @@ static void init_idt() {
 
    idt_flush((uint32_t)&idt_ptr);
 
+}
+
+
+u32 get_cr3() {
+    u32 val;
+    asm("movl %%cr3, %%eax" : "=a"(val));
+    return val;
+}
+
+u32 get_cr2() {
+    u32 val;
+    asm("movl %%cr2, %%eax" : "=a"(val));
+    return val;
 }

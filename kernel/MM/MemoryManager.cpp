@@ -6,18 +6,18 @@
 #include "bits.h"
 #include "PageTable.h"
 #include "PageDirectory.h"
+#include "cpu.h"
 
 
 static MemoryManager* mm = nullptr;
 
-void MemoryManager::initialize(multiboot_info_t* mbt) {
-    kprintf("MemoryManager::initialize()\n");
+void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::initialize()\n");
     mm = new MemoryManager();
     mm->init(mbt);
 }
 
 void MemoryManager::init(multiboot_info_t* mbt) {
-    mm->m_page_directory = new PageDirectory(PhysicalAddress(PageDirectory::get_cr3()));
+    mm->m_page_directory = new PageDirectory(PhysicalAddress(get_cr3()));
     mm->m_tempmap_used = false;
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
@@ -182,6 +182,7 @@ void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_
     flush_tlb(virt_addr);
 
 }
+
 
 MemoryManager& MemoryManager::the() {
     ASSERT(mm != nullptr, "MemoryManager is uninitialized");

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "types.h"
 
 // Based on:
 // http://www.jamesmolloy.co.uk/tutorial_html/4.-The%20GDT%20and%20IDT.html
@@ -57,3 +58,7 @@ struct [[gnu::packed]] RegisterDumpWithErrCode
 void init_descriptor_tables();
 
 [[noreturn]] void cpu_hang();
+
+u32 get_cr3();
+
+u32 get_cr2();

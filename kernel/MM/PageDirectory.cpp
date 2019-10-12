@@ -10,11 +10,6 @@ PDE PageDirectory::get_pde(VirtualAddress addr) {
 }
 
 
-u32 PageDirectory::get_cr3() {
-    u32 val;
-    asm("movl %%cr3, %%eax" : "=a"(val));
-    return val;
-}
 
 u32* PageDirectory::entries() {
     return (u32*)((u32)m_addr);
