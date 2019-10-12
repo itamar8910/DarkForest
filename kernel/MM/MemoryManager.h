@@ -38,13 +38,15 @@ public:
 	static MemoryManager& the();
 
 	VirtualAddress temp_map(PhysicalAddress addr);
+	// TODO: implemente un_temp_map, use a flag is_tempmap_used to avoid collisions (assert this falg is false before temp-mpaping)
 	void allocate(VirtualAddress virt_addr, bool writable, bool user_allowed);
 	void flush_tlb(VirtualAddress addr);
-    PTE ensure_pte(VirtualAddress addr, bool create_new);
+	void flush_entire_tlb();
+    PTE ensure_pte(VirtualAddress addr, bool create_new, bool tempMap_pageTable);
 	PDE get_pde(VirtualAddress virt_addr);
 	PTE get_pte(VirtualAddress virt_addr, const PDE& pde);
 
-	Frame get_free_frame(Err&);
+	Frame get_free_frame(Err&, bool set_used=true);
 	void set_frame_used(const Frame& frame);
 
 	void set_frame_available(Frame frame);

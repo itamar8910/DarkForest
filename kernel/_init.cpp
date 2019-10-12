@@ -42,6 +42,50 @@ void do_vga_tty_stuff() {
 	tty.write("down4\n");
 }
 
+void try_malloc() {
+	char* buff = new char[50];
+	kprintf("buff addr: 0x%x\n", buff);
+	buff[0] = 'a';
+	buff[1] = 'b';
+	buff[2] = 'c';
+	buff[3] = 0;
+	kprintf("buff: %s\n", buff);
+	buff = new char[100];
+	kprintf("buff addr: 0x%x\n", buff);
+	buff = new char[100];
+	kprintf("buff addr: 0x%x\n", buff);
+}
+
+void try_frame_alloc() {
+	// testing frame allocation
+	Err err;
+	for(int i = 0; i < 10; i++) {
+		auto addr = MemoryManager::the().get_free_frame(err);
+		kprintf("frame: 0x%x, err:%d\n", addr, err);
+	}
+	kprintf("---\n");
+	MemoryManager::the().set_frame_available(0x503000);
+	for(int i = 0; i < 10; i++) {
+		auto addr = MemoryManager::the().get_free_frame(err);
+		kprintf("frame: 0x%x, err:%d\n", addr, err);
+	}
+}
+
+void try_virtual_alloc() {
+	u32 addr = 0x80000000;
+	kprintf("allocating: 0x%x\n", addr);
+	MemoryManager::the().allocate(addr, true, true);
+	kprintf("allocated\n");
+	char* str = (char*)addr;
+	str[0] ='X';
+	str[1] = '!';
+	str[2] = 0;
+	// str[4*1024 ] = 1; this will generate a page fault
+
+	kprintf("%s\n", str);
+
+
+}
 
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
@@ -58,31 +102,9 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	return;
 #endif
 
-	// testing frame allocation
-	Err err;
-	for(int i = 0; i < 10; i++) {
-		auto addr = MemoryManager::the().get_free_frame(err);
-		MemoryManager::the().set_frame_used(addr);
-		kprintf("frame: 0x%x, err:%d\n", addr, err);
-	}
-	kprintf("---\n");
-	MemoryManager::the().set_frame_available(0x503000);
-	for(int i = 0; i < 10; i++) {
-		auto addr = MemoryManager::the().get_free_frame(err);
-		MemoryManager::the().set_frame_used(addr);
-		kprintf("frame: 0x%x, err:%d\n", addr, err);
-	}
+	try_frame_alloc();
+	try_malloc();
+	try_virtual_alloc();
 
-	char* buff = new char[50];
-	kprintf("buff addr: 0x%x\n", buff);
-	buff[0] = 'a';
-	buff[1] = 'b';
-	buff[2] = 'c';
-	buff[3] = 0;
-	kprintf("buff: %s\n", buff);
-	buff = new char[100];
-	kprintf("buff addr: 0x%x\n", buff);
-	buff = new char[100];
-	kprintf("buff addr: 0x%x\n", buff);
 	kprint("kernel_main end \n");
 }

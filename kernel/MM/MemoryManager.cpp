@@ -52,7 +52,7 @@ void MemoryManager::init(multiboot_info_t* mbt) {
 	}
 }
 
-Frame MemoryManager::get_free_frame(Err& err) {
+Frame MemoryManager::get_free_frame(Err& err, bool set_used) {
     for(u32 i = 0; i < N_FRAME_BITMAP_ENTRIES; i++) {
         u32 avail_entry = m_frames_avail_bitmap[i];
         if(!avail_entry)
@@ -61,7 +61,11 @@ Frame MemoryManager::get_free_frame(Err& err) {
         if(set_bit_i < 0)
             continue;
         err = 0;
-        return Frame::from_bitmap_entry(BitmapEntry{i, (u32)set_bit_i});
+        auto frame = Frame::from_bitmap_entry(BitmapEntry{i, (u32)set_bit_i});
+        if(set_used) {
+            set_frame_used(frame);
+        }
+        return frame;
     }
     err = ERR_NO_FREE_FRAMES;
     return 0;
@@ -93,42 +97,65 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 }
 
 VirtualAddress MemoryManager::temp_map(PhysicalAddress addr) {
-    auto pte = ensure_pte(TEMPMAP_ADDR, false);
+    kprintf("MM:temp_map for addr: 0x%x\n", addr);
+    auto pte = ensure_pte(TEMPMAP_ADDR, false, false);
     pte.set_addr(addr);
     pte.set_present(true);
     pte.set_writable(true);
     pte.set_user_allowed(false);
     flush_tlb(TEMPMAP_ADDR);
+    // flush_entire_tlb(); // TODO: for dbg
     return TEMPMAP_ADDR;
 
 }
 
 void MemoryManager::flush_tlb(VirtualAddress addr) {
-    asm volatile("invlpg %0"
-                :
-                : "m"(addr)
-                : "memory");
+    asm volatile("invlpg (%0)" ::"r" ((u32)addr) : "memory");
+    // asm volatile("invlpg %0"
+    //             :
+    //             : "m"(addr)
+    //             : "memory");
+}
+void MemoryManager::flush_entire_tlb()
+{
+    asm volatile(
+        "mov %%cr3, %%eax\n"
+        "mov %%eax, %%cr3\n" ::
+            : "%eax", "memory");
 }
 
-PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new=true) {
+PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new=true, bool tempMap_pageTable=true) {
+    kprintf("ensure_pte\n");
     auto pde = m_page_directory->get_pde(addr);
     if(!pde.is_present() && create_new) {
         kprintf("no PDE for virt addr: 0x%x, creating a new page table\n", addr);
-        NOT_IMPLEMENTED("page table allocation");
+        // NOT_IMPLEMENTED("page table allocation");
         // we need to create a new page table
         Err err;
         Frame pt_frame = get_free_frame(err);
         ASSERT(!err, "could not allocate page table");
+        auto temp_vaddr = temp_map(pt_frame);
+        // char* data = (char*)(u32)temp_vaddr;
+        // kprintf("accessing temp vaddr: 0x%x\n", temp_vaddr);
+        // data[0] = 'a';
+
+        kprint("memsetting...\n");
+        // TODO: we page fault here,
+        // it seems that temp_map doesn't work
+        memset((void*)(u32)temp_vaddr, 0, PAGE_SIZE); // zero frame
+        kprint("done memsetting\n");
         pde.set_addr(pt_frame);
         pde.set_present(true);
         pde.set_writable(true);
         pde.set_user_allowed(true);
 
-
     }
     ASSERT(pde.is_present(), "page table not present");
 
-    auto pt_addr = temp_map(pde.addr()); // map page table so we can access it
+    VirtualAddress pt_addr = pde.addr();
+    if(tempMap_pageTable) {
+        pt_addr = temp_map(pde.addr()); // map page table so we can access it
+    }
 
     auto page_table = PageTable(pt_addr);
 
@@ -138,6 +165,7 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new=true) {
 
 void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_allowed) {
     auto pte = ensure_pte(virt_addr);
+    ASSERT(!pte.is_present(), "allocate: PTE already present for this virtual addr");
     Err err;
     Frame pt_frame = get_free_frame(err);
     ASSERT(!err, "could not allocate frame");
@@ -146,6 +174,8 @@ void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_
     pte.set_writable(writable);
     pte.set_user_allowed(user_allowed);
     flush_tlb(virt_addr);
+    auto pte2 = ensure_pte(virt_addr);
+    ASSERT(pte2.is_present(), "PTE not present after allocation");
 
 }
 

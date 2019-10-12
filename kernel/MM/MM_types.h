@@ -87,7 +87,7 @@ public:
 
 	void set_addr(PhysicalAddress addr) {
 		m_entry &= 0xfff; // clear addr
-		m_entry |= addr << 12;
+		m_entry |= addr;
 	}
 	void set_flags(u16 flags) {
 		m_entry &= ~0xfff; // clear addr

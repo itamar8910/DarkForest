@@ -10,7 +10,7 @@ size_t strlen(const char* str)
 }
 
 void* memset(void* s, int c, size_t n) {
-	char* p = (char*)((char*)s+n);
+	char* p = (char*)((char*)s+n-1);
 	for(; (void*)p != s; p--) {
 		*p = c;
 	}

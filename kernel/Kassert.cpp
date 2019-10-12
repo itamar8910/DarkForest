@@ -10,4 +10,5 @@ void ASSERT(bool x, const char* msg = "[Unnamed]") {
 
 void NOT_IMPLEMENTED(const char* msg = "[Unnamed]") {
     kprintf("NOT IMPLEMENTED: %s\n", msg);
+    cpu_hang();
 }
