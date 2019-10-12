@@ -75,9 +75,7 @@ void try_virtual_alloc() {
 	u32 addr = 0x80000000;
 	MemoryManager::the().allocate(addr, true, true);
 	char* str = (char*)addr;
-	str[0] ='X';
-	str[1] = '!';
-	str[2] = 0;
+	strncpy(str, "I am allocated", 100);
 	// str[4*1024 ] = 1; this will generate a page fault
 
 	kprintf("%s\n", str);
