@@ -73,9 +73,7 @@ void try_frame_alloc() {
 
 void try_virtual_alloc() {
 	u32 addr = 0x80000000;
-	kprintf("allocating: 0x%x\n", addr);
 	MemoryManager::the().allocate(addr, true, true);
-	kprintf("allocated\n");
 	char* str = (char*)addr;
 	str[0] ='X';
 	str[1] = '!';

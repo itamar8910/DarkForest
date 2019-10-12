@@ -18,6 +18,7 @@ void MemoryManager::initialize(multiboot_info_t* mbt) {
 
 void MemoryManager::init(multiboot_info_t* mbt) {
     mm->m_page_directory = new PageDirectory(PhysicalAddress(PageDirectory::get_cr3()));
+    mm->m_tempmap_used = false;
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
 	for(
@@ -97,16 +98,26 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 }
 
 VirtualAddress MemoryManager::temp_map(PhysicalAddress addr) {
-    kprintf("MM:temp_map for addr: 0x%x\n", addr);
+    ASSERT(!m_tempmap_used, "TempMap is already used");
     auto pte = ensure_pte(TEMPMAP_ADDR, false, false);
     pte.set_addr(addr);
     pte.set_present(true);
     pte.set_writable(true);
     pte.set_user_allowed(false);
     flush_tlb(TEMPMAP_ADDR);
-    // flush_entire_tlb(); // TODO: for dbg
+    m_tempmap_used = true;
     return TEMPMAP_ADDR;
 
+}
+
+void MemoryManager::un_temp_map() {
+    auto pte = ensure_pte(TEMPMAP_ADDR, false, false);
+    pte.set_addr(0);
+    pte.set_present(false);
+    pte.set_writable(false);
+    pte.set_user_allowed(false);
+    flush_tlb(TEMPMAP_ADDR);
+    m_tempmap_used = false;
 }
 
 void MemoryManager::flush_tlb(VirtualAddress addr) {
@@ -124,26 +135,19 @@ void MemoryManager::flush_entire_tlb()
             : "%eax", "memory");
 }
 
-PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new=true, bool tempMap_pageTable=true) {
-    kprintf("ensure_pte\n");
+PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bool tempMap_pageTable) {
     auto pde = m_page_directory->get_pde(addr);
-    if(!pde.is_present() && create_new) {
+    if(!pde.is_present() && create_new_PageTable) {
         kprintf("no PDE for virt addr: 0x%x, creating a new page table\n", addr);
-        // NOT_IMPLEMENTED("page table allocation");
         // we need to create a new page table
         Err err;
         Frame pt_frame = get_free_frame(err);
         ASSERT(!err, "could not allocate page table");
+        // zero page table
         auto temp_vaddr = temp_map(pt_frame);
-        // char* data = (char*)(u32)temp_vaddr;
-        // kprintf("accessing temp vaddr: 0x%x\n", temp_vaddr);
-        // data[0] = 'a';
+        memset((void*)(u32)temp_vaddr, 0, PAGE_SIZE);
+        un_temp_map();
 
-        kprint("memsetting...\n");
-        // TODO: we page fault here,
-        // it seems that temp_map doesn't work
-        memset((void*)(u32)temp_vaddr, 0, PAGE_SIZE); // zero frame
-        kprint("done memsetting\n");
         pde.set_addr(pt_frame);
         pde.set_present(true);
         pde.set_writable(true);
@@ -164,6 +168,7 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new=true, bool te
 }
 
 void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_allowed) {
+    kprintf("MM: allocate: 0x%x\n", virt_addr);
     auto pte = ensure_pte(virt_addr);
     ASSERT(!pte.is_present(), "allocate: PTE already present for this virtual addr");
     Err err;
@@ -173,9 +178,8 @@ void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_
     pte.set_present(true);
     pte.set_writable(writable);
     pte.set_user_allowed(user_allowed);
+    un_temp_map(); // page table of PTE is temp mapped
     flush_tlb(virt_addr);
-    auto pte2 = ensure_pte(virt_addr);
-    ASSERT(pte2.is_present(), "PTE not present after allocation");
 
 }
 

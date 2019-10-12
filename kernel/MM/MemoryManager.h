@@ -38,11 +38,20 @@ public:
 	static MemoryManager& the();
 
 	VirtualAddress temp_map(PhysicalAddress addr);
-	// TODO: implemente un_temp_map, use a flag is_tempmap_used to avoid collisions (assert this falg is false before temp-mpaping)
+	void un_temp_map();
 	void allocate(VirtualAddress virt_addr, bool writable, bool user_allowed);
 	void flush_tlb(VirtualAddress addr);
 	void flush_entire_tlb();
-    PTE ensure_pte(VirtualAddress addr, bool create_new, bool tempMap_pageTable);
+	/**
+	 * Returns the Page table Entry for given virtual address
+	 * - If create_new=true, and there is no Page Directory Entry for the address,
+	 *   a new page table will be created
+	 * -  if tempMap_PageTable=true, the Page Table responsible for this address will be temp_mapped to virtual address so it can be accessed.
+	 * 
+	 * Note: if tempMap_PageTable=true, you should make sure to call un_temp_map after you're done
+	 *       manipulating the PTE
+	 */
+    PTE ensure_pte(VirtualAddress addr, bool create_new_PageTable=true, bool tempMap_pageTable=true);
 	PDE get_pde(VirtualAddress virt_addr);
 	PTE get_pte(VirtualAddress virt_addr, const PDE& pde);
 
@@ -56,5 +65,6 @@ private:
 	u32 m_frames_avail_bitmap[N_FRAME_BITMAP_ENTRIES]; // is the frame available for the OS? can it be accessed?
 	// u32 m_frames_free_bitmap[N_FRAME_BITMAP_ENTRIES]; // is the frame currently free?
 	PageDirectory* m_page_directory; // TODO: make this a shared_ptr
+	bool m_tempmap_used;
 
 };
