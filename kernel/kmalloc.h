@@ -10,6 +10,13 @@ enum KMallocMode {
 #define MAGIC_FREE 0xc001beef
 #define MAGIC_USED 0xdeadbeef
 
+/**
+ * Basic free list
+ * each allocated memory block is preceded by a MemBlock structure
+ * 
+*/
+
+
 struct MemBlock {
     u32 magic; // used to avoid corrupted blocks
     MemBlock* next;
@@ -22,8 +29,6 @@ struct MemBlock {
                                           u32 size);
     bool is_magic_free() {return magic == MAGIC_FREE;}
     bool is_magic_used() {return magic == MAGIC_USED;}
-                        
-
 };
 
 class KMalloc {
@@ -34,6 +39,8 @@ public:
 
     void* allocate(u32 size);
     void free(void* addr);
+
+    u32 current_free_space();
 
 private:
     KMalloc(void* addr, u32 size);

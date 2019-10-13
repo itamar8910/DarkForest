@@ -51,20 +51,16 @@ char* alloc(int size) {
 }
 
 void try_malloc() {
+	kprintf("1: Heap space: %d\n", KMalloc::the().current_free_space());
 	char* b1;
 	char* b2;
-	b1 = alloc(50);
-	b2 = alloc(50);
+	b1 = alloc(0x20);
+	b2 = alloc(0x20);
+	kprintf("2: Heap space: %d\n", KMalloc::the().current_free_space());
 	delete[] b1;
 	delete[] b2;
-	b1 = alloc(50);
-	b2 = alloc(50);
-	delete[] b2;
-	delete[] b1;
-	b1 = alloc(5000);
-	delete[] b1;
-	b2 = alloc(50);
-	delete[] b2;
+	// b1 = alloc(0x20);
+	kprintf("3: Heap space: %d\n", KMalloc::the().current_free_space());
 }
 
 void try_frame_alloc() {

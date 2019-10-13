@@ -114,8 +114,36 @@ void KMalloc::exapnd_heap(u32 num_pages) {
 
 void KMalloc::add_mem_block(MemBlock* block) {
     ASSERT(block->is_magic_free(), "KMalloc::add_mem_block - bad block magic");
+    // if the new block we add forms a
+    // consecutive memory block with the first free chunk
+    // then we merge the new block + its MemBlock structure
+    // to the first free chunk's space
+
+    // Note: with this approach we lose memory due to fragmentation.
+    // for example, new(A) -> new(B) -> del(A) -> del(B)
+    // A, B would not be consolidated & we would lose 2*sizeof(MemBlock) bytes from heap space
+    // but new(A) -> new(B) -> del(B) -> del(A) would consolidate all space.
+    // to fix: instead of only looking at the first block,
+    // we could loop over all blocks
+    // to find a chunk to consolidate with
+    // doing it would improve the fragmantation of heap space
+    // at the price of runtime performance
+
+    if((u32)block->addr + block->size == (u32)m_first_free->addr) {
+        m_first_free->size += block->size + sizeof(MemBlock);
+        m_first_free->addr = (void*)((u32)block->addr - sizeof(MemBlock));
+        return;
+    }
     block->next = m_first_free;
     m_first_free = block;
+}
+
+u32 KMalloc::current_free_space() {
+    u32 free_bytes = 0;
+    for(MemBlock* cur = m_first_free; cur != nullptr; cur = cur->next) {
+        free_bytes += cur->size;
+    }
+    return free_bytes;
 }
 
 void KMalloc::free(void* addr) {
