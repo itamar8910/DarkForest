@@ -61,6 +61,9 @@ void try_malloc() {
 	delete[] b2;
 	// b1 = alloc(0x20);
 	kprintf("3: Heap space: %d\n", KMalloc::the().current_free_space());
+	b1 = alloc(0x2000);
+	delete[] b1;
+	alloc(0x200);
 }
 
 void try_frame_alloc() {
