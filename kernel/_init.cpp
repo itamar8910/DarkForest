@@ -43,18 +43,28 @@ void do_vga_tty_stuff() {
 	tty.write("down4\n");
 }
 
+char* alloc(int size) {
+	char* buff = new char[size];
+	memset(buff, 0, size);
+	kprintf("buff addr: 0x%x\n", buff);
+	return buff;
+}
+
 void try_malloc() {
-	char* buff = new char[50];
-	kprintf("buff addr: 0x%x\n", buff);
-	buff[0] = 'a';
-	buff[1] = 'b';
-	buff[2] = 'c';
-	buff[3] = 0;
-	kprintf("buff: %s\n", buff);
-	buff = new char[100];
-	kprintf("buff addr: 0x%x\n", buff);
-	buff = new char[100];
-	kprintf("buff addr: 0x%x\n", buff);
+	char* b1;
+	char* b2;
+	b1 = alloc(50);
+	b2 = alloc(50);
+	delete[] b1;
+	delete[] b2;
+	b1 = alloc(50);
+	b2 = alloc(50);
+	delete[] b2;
+	delete[] b1;
+	b1 = alloc(5000);
+	delete[] b1;
+	b2 = alloc(50);
+	delete[] b2;
 }
 
 void try_frame_alloc() {
@@ -101,9 +111,9 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 #endif
 
 	do_vga_tty_stuff();
-	try_frame_alloc();
+	// try_frame_alloc();
 	try_malloc();
-	try_virtual_alloc();
+	// try_virtual_alloc();
 
 	kprint("kernel_main end \n");
 }

@@ -4,7 +4,7 @@ LIBC_DIR := libc
 export ASM := nasm
 export CC := i686-elf-g++
 export LD = i686-elf-ld
-export CFLAGS := --std=c++17 -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone
+export CFLAGS := --std=c++17 -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone -fno-sized-deallocation
 
 export LDFLAGS := -ffreestanding -O2 -nostdlib
 
