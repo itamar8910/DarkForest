@@ -177,7 +177,7 @@ UNHANDLED_EXCEPTION(4, "Overflow")
 UNHANDLED_EXCEPTION(5, "Bounds check")
 UNHANDLED_EXCEPTION(6, "Illegal Instruction") // TODO: dont crash if happened in uermode
 UNHANDLED_EXCEPTION(7, "No Math Coprocessor")
-UNHANDLED_EXCEPTION(8, "Double fault")
+// UNHANDLED_EXCEPTION(8, "Double fault")
 UNHANDLED_EXCEPTION(9, "Coprocessor segment overrun")
 UNHANDLED_EXCEPTION(10, "Invalid TSS")
 UNHANDLED_EXCEPTION(11, "Segment not present")
@@ -223,6 +223,17 @@ void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
    cpu_hang(); // until we implement
 }
 
+// Double fault
+ISR_EXCEPTION_NO_ERRCODE(8);
+void isr_exception_8_handler(RegisterDump& regs) {
+   (void)regs;
+   kprint("*** Double fault\n");
+   print_register_dump(regs);
+   // kprintf("Register dump: eax: ")
+   // TODO: handle page fault
+   // cpu_hang(); // until we implement
+}
+
 static void register_interrupt_handler(int num, void (*func)()) {
    idt_register_entry_raw(num, (uint32_t)func);
 }
@@ -230,6 +241,7 @@ static void register_interrupt_handler(int num, void (*func)()) {
 static void init_idt() {
    idt_ptr.base = (uint32_t) &idt_entries;
    idt_ptr.limit = NUM_IDT_ENTRIES*sizeof(IdtEntry) - 1;
+   memset((void*)idt_ptr.base, 0, idt_ptr.limit);
 
    for(int i = 0; i < NUM_IDT_ENTRIES; i++) {
       register_interrupt_handler(i, unimpl_trap);
