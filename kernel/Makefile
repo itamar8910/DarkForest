@@ -10,6 +10,8 @@ KERN_OBJS := \
 	logging.o \
 	Kassert.o \
 	kmalloc.o \
+	task.o \
+	task.ao \
 	
 
 DRIVERS_DIR := drivers
@@ -56,4 +58,4 @@ init: $(CRTI_OBJ) $(CRTN_OBJ)
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o $(DRIVERS_DIR)/*.o *.ao init/*.ao
+	rm -f *.o $(DRIVERS_DIR)/*.o *.ao init/*.ao $(TARGET)

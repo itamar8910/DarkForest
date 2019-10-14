@@ -12,6 +12,7 @@
 #include "MM/MemoryManager.h"
 #include "MM/MM_types.h"
 #include "kmalloc.h"
+#include "task.h"
 
 #ifdef TESTS
 #include "tests.h"
@@ -93,6 +94,28 @@ void try_virtual_alloc() {
 
 }
 
+ThreadControlBlock* task1;
+ThreadControlBlock* task2;
+
+void task1_func() {
+	while(1) {
+		kprint("task1\n");
+		switch_to_task(task2);
+	}
+}
+void task2_func() {
+	while(1) {
+		kprint("task2\n");
+		switch_to_task(task1);
+	}
+}
+
+void try_multitasking() {
+	task1 = create_kernel_task(task1_func);
+	task2 = create_kernel_task(task2_func);
+	kprintf("switching to task1\n");
+	switch_to_task(task1);
+}
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("kernel_main\n");
@@ -104,6 +127,12 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	KMalloc::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
+
+	// asm volatile("int $0x40");
+	kprintf("enableing interrupts\n");
+	asm volatile("sti");
+	kprintf("enabled interrupts\n");
+
 #ifdef TESTS
 	run_tests();
 	return;
@@ -113,6 +142,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	// try_frame_alloc();
 	try_malloc();
 	// try_virtual_alloc();
+	try_multitasking();
 
 	kprint("kernel_main end \n");
 }
