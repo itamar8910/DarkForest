@@ -13,6 +13,7 @@
 #include "MM/MM_types.h"
 #include "kmalloc.h"
 #include "task.h"
+#include "PIC.h"
 
 #ifdef TESTS
 #include "tests.h"
@@ -98,14 +99,14 @@ ThreadControlBlock* task1;
 ThreadControlBlock* task2;
 
 void task1_func() {
-	while(1) {
-		kprint("task1\n");
+	for(int i = 0; ; i++) {
+		kprintf("task1: %d\n", i);
 		switch_to_task(task2);
 	}
 }
 void task2_func() {
-	while(1) {
-		kprint("task2\n");
+	for(int i = 0; ; i++) {
+		kprintf("task2: %d\n", i);
 		switch_to_task(task1);
 	}
 }
@@ -122,6 +123,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
 	init_descriptor_tables();
+	PIC::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_ETERNAL);
 	MemoryManager::initialize(mbt);
 	KMalloc::initialize();
@@ -142,7 +144,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	// try_frame_alloc();
 	try_malloc();
 	// try_virtual_alloc();
-	try_multitasking();
+	// try_multitasking();
 
 	kprint("kernel_main end \n");
 }

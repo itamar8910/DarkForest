@@ -17,7 +17,8 @@ KERN_OBJS := \
 DRIVERS_DIR := drivers
 DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \
-	$(DRIVERS_DIR)/DebugPort.o
+	$(DRIVERS_DIR)/DebugPort.o \
+	$(DRIVERS_DIR)/PIC.o \
 
 MM_DIR := MM
 MM_OBJS := \

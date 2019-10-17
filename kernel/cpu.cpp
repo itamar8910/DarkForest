@@ -224,6 +224,10 @@ void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
 }
 
 // Double fault
+// NOTE: for some reason this crashes if we
+// make this a hadnler WITH_ERRCODE,
+// but works if its NO_ERRCODE
+// but #DF exception should push an error code of 0
 ISR_EXCEPTION_NO_ERRCODE(8);
 void isr_exception_8_handler(RegisterDump& regs) {
    (void)regs;
