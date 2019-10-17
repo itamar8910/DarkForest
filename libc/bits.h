@@ -33,6 +33,9 @@ static inline int get_on_bit_idx(u32 num) {
     return -1;
 }
 
+#define LSB(x) ((x)&0xFF)
+#define MSB(x) (((x) >> 8) & 0xFF)
+
 #ifdef TESTS
 static void bits_tests() {
     kprintf("[BITS_TESTS]\n");

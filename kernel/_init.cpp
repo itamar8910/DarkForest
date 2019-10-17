@@ -14,6 +14,7 @@
 #include "kmalloc.h"
 #include "task.h"
 #include "PIC.h"
+#include "PIT.h"
 
 #ifdef TESTS
 #include "tests.h"
@@ -118,19 +119,29 @@ void try_multitasking() {
 	switch_to_task(task1);
 }
 
+void try_count_seconds() {
+	int x = 9999;
+	while(1) {
+		int y = PIT::seconds_since_boot();
+		if(x != y) {
+			x = y;
+			kprintf("Seconds: %d\n", x);
+		}
+	}
+}
+
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("kernel_main\n");
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
-	init_descriptor_tables();
 	PIC::initialize();
+	init_descriptor_tables();
+	PIT::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_ETERNAL);
 	MemoryManager::initialize(mbt);
 	KMalloc::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
-
-	// asm volatile("int $0x40");
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");
 	kprintf("enabled interrupts\n");
@@ -145,6 +156,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	try_malloc();
 	// try_virtual_alloc();
 	// try_multitasking();
+	try_count_seconds();
+
 
 	kprint("kernel_main end \n");
 }

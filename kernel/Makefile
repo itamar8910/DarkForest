@@ -19,6 +19,7 @@ DRIV_OBJS := \
 	$(DRIVERS_DIR)/VgaText.o \
 	$(DRIVERS_DIR)/DebugPort.o \
 	$(DRIVERS_DIR)/PIC.o \
+	$(DRIVERS_DIR)/PIT.o \
 
 MM_DIR := MM
 MM_OBJS := \

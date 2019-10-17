@@ -47,7 +47,9 @@ namespace PIC {
     
         IO::outb(PIC1_COMMAND,PIC_EOI);
     }
+
     void enable_irq(u8 irq) {
+
         u16 port;
         if(irq < 8) {
             port = PIC1_DATA;
@@ -56,7 +58,9 @@ namespace PIC {
             irq -= 8;
         }
         u8 orig_mask = IO::inb(port);
-        IO::outb(port, orig_mask | (1 << irq));  
+        IO::outb(port, orig_mask & ~(1 << irq));  
+
+
     }
     void disable_irq(u8 irq) {
         u16 port;
@@ -67,6 +71,6 @@ namespace PIC {
             irq -= 8;
         }
         u8 orig_mask = IO::inb(port);
-        IO::outb(port, orig_mask & ~(1 << irq));  
+        IO::outb(port, orig_mask | (1 << irq));  
     }
 }
