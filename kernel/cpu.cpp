@@ -107,67 +107,7 @@ static void unimpl_trap() {
    cpu_hang();
 }
 
-// exception handler for exception without error codes
-#define ISR_EXCEPTION_NO_ERRCODE(idx) \
-   extern "C" void isr_exception_##idx##_handler(RegisterDump&); \
-   extern "C" void isr_exception_##idx##_entry(); \
-   asm( \
-      ".globl isr_exception_" #idx "_entry\n" \
-      "isr_exception_" #idx "_entry:\n" \
-      "pusha\n"\
-      "mov %ds, %ax # lower 16 bits of eax = ds \n"  \
-      "pushl %eax\n" \
-      "mov $0x10, %ax # load kernel data segment descriptor\n"\
-      "mov %ax, %ds\n"\
-      "mov %ax, %es\n"\
-      "mov %ax, %fs\n"\
-      "mov %ax, %gs\n"\
-      "pushl %esp # arg is ref to RegisterDump\n"\
-      "call isr_exception_" #idx "_handler\n"\
-      "addl $0x4, %esp\n"\
-      "popl %eax # reload original DS\n"\
-      "mov %ax, %ds\n"\
-      "mov %ax, %es\n"\
-      "mov %ax, %fs\n"\
-      "mov %ax, %gs\n"\
-      "popa\n"\
-      "iret\n"\
-   );
 
-
-// exception handler for exception with error codes
-#define ISR_EXCEPTION_WITH_ERRCODE(idx) \
-   extern "C" void isr_exception_##idx##_handler(RegisterDumpWithErrCode&); \
-   extern "C" void isr_exception_##idx##_entry(); \
-   asm( \
-      ".globl isr_exception_" #idx "_entry\n" \
-      "isr_exception_" #idx "_entry:\n" \
-      "pusha\n"\
-      "mov %ds, %ax # lower 16 bits of eax = ds \n"  \
-      "pushl %eax\n" \
-      "mov $0x10, %ax # load kernel data segment descriptor\n"\
-      "mov %ax, %ds\n"\
-      "mov %ax, %es\n"\
-      "mov %ax, %fs\n"\
-      "mov %ax, %gs\n"\
-      "pushl %esp # arg is ref to RegisterDump\n"\
-      "call isr_exception_" #idx "_handler\n"\
-      "addl $0x4, %esp\n"\
-      "popl %eax # reload original DS\n"\
-      "mov %ax, %ds\n"\
-      "mov %ax, %es\n"\
-      "mov %ax, %fs\n"\
-      "mov %ax, %gs\n"\
-      "popa\n"\
-      "addl $0x4, %esp\n"\
-      "iret\n"\
-   );
-
-#define UNHANDLED_EXCEPTION(idx, msg) \
-   static void isr_exception_##idx##_entry() { \
-      kprint(msg "\n"); \
-      cpu_hang(); \
-   }
 
 UNHANDLED_EXCEPTION(0, "Division by 0") // TODO: dont crash if happened in uermode
 UNHANDLED_EXCEPTION(1, "Debug exception") 
@@ -213,7 +153,7 @@ void print_register_dump(RegsDump& regs) {
 
 // Page fault
 ISR_EXCEPTION_WITH_ERRCODE(14);
-void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
+void isr_14_handler(RegisterDumpWithErrCode& regs) {
    (void)regs;
    kprint("*** Page Fault\n");
    kprintf("Address that generated Page Fault: 0x%x\n", get_cr2());
@@ -229,7 +169,7 @@ void isr_exception_14_handler(RegisterDumpWithErrCode& regs) {
 // but works if its NO_ERRCODE
 // but #DF exception should push an error code of 0
 ISR_EXCEPTION_NO_ERRCODE(8);
-void isr_exception_8_handler(RegisterDump& regs) {
+void isr_8_handler(RegisterDump& regs) {
    (void)regs;
    kprint("*** Double fault\n");
    print_register_dump(regs);
@@ -238,7 +178,7 @@ void isr_exception_8_handler(RegisterDump& regs) {
    // cpu_hang(); // until we implement
 }
 
-static void register_interrupt_handler(int num, void (*func)()) {
+void register_interrupt_handler(int num, void (*func)()) {
    idt_register_entry_raw(num, (uint32_t)func);
 }
 
@@ -247,27 +187,29 @@ static void init_idt() {
    idt_ptr.limit = NUM_IDT_ENTRIES*sizeof(IdtEntry) - 1;
    memset((void*)idt_ptr.base, 0, idt_ptr.limit);
 
-   for(int i = 0; i < NUM_IDT_ENTRIES; i++) {
+   for(int i = 1; i < NUM_IDT_ENTRIES; i++) {
       register_interrupt_handler(i, unimpl_trap);
    }
 
-   register_interrupt_handler(0, isr_exception_0_entry);
-   register_interrupt_handler(1, isr_exception_1_entry);
-   register_interrupt_handler(2, isr_exception_2_entry);
-   register_interrupt_handler(3, isr_exception_3_entry);
-   register_interrupt_handler(4, isr_exception_4_entry);
-   register_interrupt_handler(5, isr_exception_5_entry);
-   register_interrupt_handler(6, isr_exception_6_entry);
-   register_interrupt_handler(7, isr_exception_7_entry);
-   register_interrupt_handler(8, isr_exception_8_entry);
-   register_interrupt_handler(9, isr_exception_9_entry);
-   register_interrupt_handler(10, isr_exception_10_entry);
-   register_interrupt_handler(11, isr_exception_11_entry);
-   register_interrupt_handler(12, isr_exception_12_entry);
-   register_interrupt_handler(13, isr_exception_13_entry);
-   register_interrupt_handler(14, isr_exception_14_entry);
-   register_interrupt_handler(15, isr_exception_15_entry);
-   register_interrupt_handler(16, isr_exception_16_entry);
+   register_interrupt_handler(0, isr_0_entry);
+   register_interrupt_handler(1, isr_1_entry);
+   register_interrupt_handler(2, isr_2_entry);
+   register_interrupt_handler(3, isr_3_entry);
+   register_interrupt_handler(4, isr_4_entry);
+   register_interrupt_handler(5, isr_5_entry);
+   register_interrupt_handler(6, isr_6_entry);
+   register_interrupt_handler(7, isr_7_entry);
+   register_interrupt_handler(8, isr_8_entry);
+   register_interrupt_handler(9, isr_9_entry);
+   register_interrupt_handler(10, isr_10_entry);
+   register_interrupt_handler(11, isr_11_entry);
+   register_interrupt_handler(12, isr_12_entry);
+   register_interrupt_handler(13, isr_13_entry);
+   register_interrupt_handler(14, isr_14_entry);
+   register_interrupt_handler(15, isr_15_entry);
+   register_interrupt_handler(16, isr_16_entry);
+
+   // register_interrupt_handler(0x50, isr_15_entry);
 
    idt_flush((uint32_t)&idt_ptr);
 

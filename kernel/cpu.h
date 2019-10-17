@@ -62,3 +62,70 @@ void init_descriptor_tables();
 u32 get_cr3();
 
 u32 get_cr2();
+
+void register_interrupt_handler(int num, void (*func)());
+
+
+#define ISR_HANDLER(name) \
+   extern "C" void isr_##name##_handler(RegisterDump&); \
+   extern "C" void isr_##name##_entry(); \
+   asm( \
+      ".globl isr_" #name "_entry\n" \
+      "isr_" #name "_entry:\n" \
+      "pusha\n"\
+      "mov %ds, %ax # lower 16 bits of eax = ds \n"  \
+      "pushl %eax\n" \
+      "mov $0x10, %ax # load kernel data segment descriptor\n"\
+      "mov %ax, %ds\n"\
+      "mov %ax, %es\n"\
+      "mov %ax, %fs\n"\
+      "mov %ax, %gs\n"\
+      "pushl %esp # arg is ref to RegisterDump\n"\
+      "call isr_" #name "_handler\n"\
+      "addl $0x4, %esp\n"\
+      "popl %eax # reload original DS\n"\
+      "mov %ax, %ds\n"\
+      "mov %ax, %es\n"\
+      "mov %ax, %fs\n"\
+      "mov %ax, %gs\n"\
+      "popa\n"\
+      "iret\n"\
+   );
+
+// exception handler for exception without error codes
+#define ISR_EXCEPTION_NO_ERRCODE(name) ISR_HANDLER(name)
+
+// exception handler for exception with error codes
+#define ISR_EXCEPTION_WITH_ERRCODE(name) \
+   extern "C" void isr_##name##_handler(RegisterDumpWithErrCode&); \
+   extern "C" void isr_##name##_entry(); \
+   asm( \
+      ".globl isr_" #name "_entry\n" \
+      "isr_" #name "_entry:\n" \
+      "pusha\n"\
+      "mov %ds, %ax # lower 16 bits of eax = ds \n"  \
+      "pushl %eax\n" \
+      "mov $0x10, %ax # load kernel data segment descriptor\n"\
+      "mov %ax, %ds\n"\
+      "mov %ax, %es\n"\
+      "mov %ax, %fs\n"\
+      "mov %ax, %gs\n"\
+      "pushl %esp # arg is ref to RegisterDump\n"\
+      "call isr_" #name "_handler\n"\
+      "addl $0x4, %esp\n"\
+      "popl %eax # reload original DS\n"\
+      "mov %ax, %ds\n"\
+      "mov %ax, %es\n"\
+      "mov %ax, %fs\n"\
+      "mov %ax, %gs\n"\
+      "popa\n"\
+      "addl $0x4, %esp\n"\
+      "iret\n"\
+   );
+
+#define UNHANDLED_EXCEPTION(idx, msg) \
+   static void isr_##idx##_entry() { \
+      kprint(msg "\n"); \
+      cpu_hang(); \
+   }
+
