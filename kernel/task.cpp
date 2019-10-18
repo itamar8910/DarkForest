@@ -11,6 +11,7 @@ void* next_task_stack_virtual_addr = (void*)0xd0000000;
 u32 current_thread_id = 1;
 
 void initialize_multitasking() {
+    // just a dummy initial TCB
     current_TCB = new ThreadControlBlock();
     current_TCB->id = 1;
     current_TCB->CR3 = (void*) get_cr3();

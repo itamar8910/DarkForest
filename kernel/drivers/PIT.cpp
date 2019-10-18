@@ -4,10 +4,12 @@
 #include "logging.h"
 #include "IO.h"
 #include "bits.h"
+#include "Scheduler.h"
 
 // based on serenity OS
 
 #define IRQ_TIMER 0
+// #define PRINT_SECONDS
 
 static u32 s_ticks_this_second;
 static u32 s_seconds_since_boot;
@@ -18,8 +20,12 @@ void isr_timer_handler(RegisterDump& regs) {
     if (++s_ticks_this_second >= TICKS_PER_SECOND) {
         ++s_seconds_since_boot;
         s_ticks_this_second = 0;
+        #ifdef PRINT_SECONDS
+        kprintf("Seconds: %d\n", s_seconds_since_boot);
+        #endif
     }
     PIC::eoi(IRQ_TIMER);
+    Scheduler::the().tick(regs);
 }
 
 

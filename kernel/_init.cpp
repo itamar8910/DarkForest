@@ -15,6 +15,7 @@
 #include "task.h"
 #include "PIC.h"
 #include "PIT.h"
+#include "Scheduler.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -96,28 +97,28 @@ void try_virtual_alloc() {
 
 }
 
-ThreadControlBlock* task1;
-ThreadControlBlock* task2;
+// ThreadControlBlock* task1;
+// ThreadControlBlock* task2;
 
 void task1_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task1: %d\n", i);
-		switch_to_task(task2);
+		// switch_to_task(task2);
 	}
 }
 void task2_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
-		switch_to_task(task1);
+		// switch_to_task(task1);
 	}
 }
 
-void try_multitasking() {
-	task1 = create_kernel_task(task1_func);
-	task2 = create_kernel_task(task2_func);
-	kprintf("switching to task1\n");
-	switch_to_task(task1);
-}
+// void try_multitasking() {
+// 	task1 = create_kernel_task(task1_func);
+// 	task2 = create_kernel_task(task2_func);
+// 	kprintf("switching to task1\n");
+// 	switch_to_task(task1);
+// }
 
 void try_count_seconds() {
 	int x = 9999;
@@ -127,6 +128,13 @@ void try_count_seconds() {
 			x = y;
 			kprintf("Seconds: %d\n", x);
 		}
+	}
+}
+
+void idle() {
+	for(;;) {
+		kprintf("idle\n");
+		// cpu_hang();
 	}
 }
 
@@ -142,21 +150,25 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	KMalloc::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
-	kprintf("enableing interrupts\n");
-	asm volatile("sti");
-	kprintf("enabled interrupts\n");
-
 #ifdef TESTS
 	run_tests();
 	return;
 #endif
 
 	do_vga_tty_stuff();
-	// try_frame_alloc();
-	try_malloc();
-	// try_virtual_alloc();
-	try_multitasking();
-	// try_count_seconds();
+
+
+	Scheduler::initialize(idle);
+	Scheduler::the().add_task(create_kernel_task(task1_func));
+	Scheduler::the().add_task(create_kernel_task(task2_func));
+
+	kprintf("enableing interrupts\n");
+	asm volatile("sti");
+	kprintf("enabled interrupts\n");
+
+
+	// hang until scheduler ticks & switches to the idle task
+	for(;;){}
 
 
 	kprint("kernel_main end \n");

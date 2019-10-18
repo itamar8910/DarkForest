@@ -4,9 +4,10 @@
 #include "std_misc.h"
 #include "new.h"
 #include "string.h"
+#include "Kassert.h"
 
 #define DEFAULT_VECTOR_CAPACITY 8
-#define VECTOR_DBG
+// #define VECTOR_DBG
 
 template <typename T>
 class Vector {

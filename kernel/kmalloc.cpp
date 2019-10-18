@@ -5,6 +5,8 @@
 #include "MemoryManager.h"
 #include "new.h"
 
+// #define KMALLOC_DBG
+
 KMallocMode kmalloc_mode = KMALLOC_ETERNAL;
 
 void* KMALLOC_ETERNAL_START = (void*) (3 * MB);
@@ -52,7 +54,9 @@ KMalloc& KMalloc::the() {
 }
 
 void* KMalloc::allocate(u32 size) {
+    #ifdef KMALLOC_DBG
     kprintf("KMalloc::allocate: %d bytes\n", size);
+    #endif
     // loop over free list
     // find a block with size` >=  size+sizeof(FreeBlock)
     /*
@@ -147,7 +151,9 @@ u32 KMalloc::current_free_space() {
 }
 
 void KMalloc::free(void* addr) {
+    #ifdef KMALLOC_DBG
     kprintf("KMalloc::free: 0x%x\n", addr);
+    #endif
     // MemBlock should be stored before address
     MemBlock* block = (MemBlock*)((u32)addr - sizeof(MemBlock));
     ASSERT(block->is_magic_used(), "KMalloc::free - bad block magic - double free / corrupted magic");
