@@ -17,7 +17,7 @@
 #include "PIT.h"
 
 #ifdef TESTS
-#include "tests.h"
+#include "tests/tests.h"
 #endif
 
  
@@ -155,8 +155,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	// try_frame_alloc();
 	try_malloc();
 	// try_virtual_alloc();
-	// try_multitasking();
-	try_count_seconds();
+	try_multitasking();
+	// try_count_seconds();
 
 
 	kprint("kernel_main end \n");
