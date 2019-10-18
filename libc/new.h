@@ -1,4 +1,4 @@
-
+#pragma once
 // declarations to make "placement new" work
 // e.g new(buffer) Object()
 

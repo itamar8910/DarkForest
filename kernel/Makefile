@@ -12,6 +12,7 @@ KERN_OBJS := \
 	kmalloc.o \
 	task.o \
 	task.ao \
+	Scheduler.o \
 	
 
 DRIVERS_DIR := drivers
