@@ -15,6 +15,8 @@ public:
 
     static u32 get_index(VirtualAddress);
 
+    PhysicalAddress get_base() {return m_addr;}
+
 private:
 
     u32* entries();

@@ -5,7 +5,7 @@ image=kernel/myos.bin
 
 $qemu -kernel $image \
     -debugcon stdio\
-    -m 2G \
+    -m 1G \
     -d guest_errors
 
 

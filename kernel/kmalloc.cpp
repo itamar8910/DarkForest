@@ -31,6 +31,7 @@ void kmalloc_set_mode(KMallocMode mode) {
 
 KMalloc* km = nullptr;
 void KMalloc::initialize() {
+    kprintf("KMalloc::initialize\n");
     // allocate first page of kernel heap
 
     km = (KMalloc*) kmalloc_eternal(sizeof(KMalloc));

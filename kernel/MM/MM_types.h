@@ -119,6 +119,8 @@ public:
 		set_flags(f);
 	}
 
+	void zero() {m_entry = 0;}
+
 private:
 	u32& m_entry;
 

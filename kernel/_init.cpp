@@ -139,7 +139,7 @@ void idle() {
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
-	kprint("kernel_main\n");
+	kprint("*******\nkernel_main\n*******\n\n");
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
 	PIC::initialize();

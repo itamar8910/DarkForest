@@ -47,7 +47,7 @@ void initialize() {
 
     timer_reload = (BASE_FREQUENCY / TICKS_PER_SECOND);
 
-    kprintf("PIT: %d Hz, square wave (%x)\n", TICKS_PER_SECOND, timer_reload);
+    kprintf("PIT: %d Hz\n", TICKS_PER_SECOND);
 
     IO::outb(TIMER0_CTL, LSB(timer_reload));
     IO::outb(TIMER0_CTL, MSB(timer_reload));

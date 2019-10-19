@@ -48,7 +48,7 @@ TARGET := myos.bin
 
 all: $(TARGET)
 
-$(TARGET): init $(OBJS)
+$(TARGET): init $(OBJ_TO_LINK)
 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJ_TO_LINK) -lgcc
 
 init: $(CRTI_OBJ) $(CRTN_OBJ)

@@ -19,9 +19,13 @@ u32 PageDirectory::get_index(VirtualAddress addr) {
     return (((u32)addr) >> 22) & 0x3ff;
 }
 
-// void PageDirectory::commit_pte(PTE pte, VirtualAddress addr) {
-//     auto pde = get_pde(addr);
-//     ASSERT(pde.is_present(), "commit_pte: PDE for addr is not present");
-//     auto page_table = PageTable(pde.get_page_table());
-//     page_table.entries()[PageTable::get_index(addr)] = pte.to_raw();
+u32 inline PageDirectory::get_entry(int idx) const {
+    return ((u32*)((u32)m_addr))[idx];
+}
+
+// void PageDirectory::copy_entries_from( const PageDirectory& other) {
+//     auto my_entries = this->entries();
+//     for(size_t pde_idx = 0; pde_idx < NUM_PAGE_DIRECTORY_ENTRIES; ++pde_idx) {
+//         my_entries[pde_idx] = other.get_entry(pde_idx);
+//     }
 // }
