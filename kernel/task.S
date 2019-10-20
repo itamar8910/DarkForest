@@ -9,6 +9,7 @@ STRUC ThreadControlBlock
 .id:  RESB (4)
 .ESP:   RESB (4)
 .CR3: RESB (4)
+.meta_data: RESB(4)
 ENDSTRUC
 
 ;C declaration:

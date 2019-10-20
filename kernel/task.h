@@ -2,10 +2,29 @@
 
 #include "types.h"
 
+struct TaskMetaData {
+    enum class State {
+        Running,
+        Blocking,
+    };
+    State state;
+    u8 priority;
+    TaskMetaData(): state(State::Running), priority(128) {}
+};
+
 struct [[gnu::packed]] ThreadControlBlock {
     u32 id;
     void* ESP;
     void* CR3;
+    // we have a ptr here to keep the structure simple,
+    // because we handle it in ASM
+    TaskMetaData* meta_data;
+    ThreadControlBlock(): id(0), 
+                          ESP(nullptr),
+                          CR3(nullptr),
+                          meta_data(new TaskMetaData())
+                          {}
+    ~ThreadControlBlock() {delete meta_data;}
 };
 
 extern ThreadControlBlock* current_TCB;

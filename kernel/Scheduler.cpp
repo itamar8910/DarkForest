@@ -29,7 +29,7 @@ void Scheduler::tick(RegisterDump& regs) {
     }
 
     // cpu_hang();
-    if(m_tick_since_switch < 500) {
+    if(m_tick_since_switch < 5) {
         m_tick_since_switch++;
         return;
     }
