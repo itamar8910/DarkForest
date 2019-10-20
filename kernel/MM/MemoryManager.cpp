@@ -104,7 +104,7 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 
 
 VirtualAddress MemoryManager::temp_map(PhysicalAddress addr) {
-    kprintf("temp_map: 0x%x\n", (u32)addr);
+    // kprintf("temp_map: 0x%x\n", (u32)addr);
     ASSERT(!m_tempmap_used, "TempMap is already used");
     auto pte = ensure_pte(TEMPMAP_ADDR, false, false);
     pte.set_addr(addr);
@@ -139,11 +139,17 @@ void MemoryManager::flush_entire_tlb()
 }
 
 PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bool tempMap_pageTable) {
-    kprintf("MemoryManager::ensure_pte: 0x%x\n", (u32)addr);
+    // kprintf("MemoryManager::ensure_pte: 0x%x\n", (u32)addr);
     auto pde = m_page_directory->get_pde(addr);
     bool new_pagetable = false;
     if(!pde.is_present() && create_new_PageTable) {
         kprintf("no PDE for virt addr: 0x%x, creating a new page table\n", addr);
+        
+        if(address_in_kernel_space(addr)) {
+            // see comment above lock_kernel_PDEs()
+            ASSERT(!m_kernel_PDEs_locked, "cannot create new kernel-space page table: kernel_PDEs is locked!");
+        }
+
         // we need to create a new page table
         Err err;
         Frame pt_frame = get_free_frame(err);
@@ -230,6 +236,14 @@ void MemoryManager::memcpy_frames(PhysicalAddress dst, PhysicalAddress src) {
 
 #define DBG_CLONE_PAGE_DIRECTORY
 
+/**
+ * only clones userspace page tables
+ * kernel-space PDEs point to the same page table
+ * 
+ * NOTE: if we create a new PDE in kernel-space,
+ * it will not be synced across all kernel tasks!
+ * that's why we have m_kernel_PDEs_locked
+ */
 PageDirectory MemoryManager::clone_page_directory() {
     #ifdef DBG_CLONE_PAGE_DIRECTORY
     kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory->get_base());
@@ -250,8 +264,10 @@ PageDirectory MemoryManager::clone_page_directory() {
     memset(new_page_tables_addresses, 0, NUM_PAGE_DIRECTORY_ENTRIES*sizeof(u32));
 
     // two passess over original page directory
-    // first pass: alocate & copy new page tables for each present PDE
-    // seconds pass: update PDEs in new page directory to point to the new (copied) page tables
+    // first pass: 
+    //            - if PDE points to user space: alocate & copy new page tables for each present PDE
+    //            - otherwise, point to the same PT (don't copy page table) 
+    // seconds pass: update PDEs in new page directory to point to the new page tables
 
     for(size_t pde_idx = 0; pde_idx < NUM_PAGE_DIRECTORY_ENTRIES; ++pde_idx) {
         // If this PDE entry is identity mapped,
@@ -265,6 +281,14 @@ PageDirectory MemoryManager::clone_page_directory() {
         if(!pde.is_present())
             continue;
         auto page_table_addr = pde.addr();
+        // don't copy page tables of kernel space
+        // (kernel memory is shared among all tasks)
+        if(address_in_kernel_space(pde_idx * PDE_MAP_SIZE)) {
+            kprintf("address in kernel sapce for pde_idx: %d\n", pde_idx);
+            // kprintf("page table addr: 0x%x\n", page_table_addr);
+            new_page_tables_addresses[pde_idx] = page_table_addr;
+            continue;
+        }
         #ifdef DBG_CLONE_PAGE_DIRECTORY
         kprintf("MemoryManager::clone page table: 0x%x\n", (u32)page_table_addr);
         #endif
@@ -274,6 +298,7 @@ PageDirectory MemoryManager::clone_page_directory() {
         auto new_PT_addr = get_free_frame(err);
         ASSERT(!err, "couldn't get frame for new page table");
         new_page_tables_addresses[pde_idx] = new_PT_addr;
+        // kprintf("new page table addr: 0x%x\n", new_PT_addr);
         auto new_page_table = PageTable(new_PT_addr);
         // shallow copy of page table
         memcpy_frames(new_page_table.get_base(), page_table.get_base());
@@ -303,11 +328,23 @@ MemoryManager& MemoryManager::the(u32 cr3) {
     return *mm;
 }
 
-MemoryManager::MemoryManager() { 
+MemoryManager::MemoryManager()
+    :  m_page_directory(nullptr),
+     m_tempmap_used(false),
+      m_kernel_PDEs_locked(false)
+{
     memset(m_frames_avail_bitmap, 0, sizeof(m_frames_avail_bitmap));
     m_tempmap_used = false;
 }
 
 MemoryManager::~MemoryManager() {
     ASSERT(false, "MM should not be destructed");
+}
+
+bool address_in_user_space(VirtualAddress addr) {
+    return addr >= USERSPACE_START && addr < KERNELSPACE_START;
+
+}
+bool address_in_kernel_space(VirtualAddress addr) {
+    return addr < USERSPACE_START || addr >= KERNELSPACE_START;
 }

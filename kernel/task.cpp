@@ -29,16 +29,7 @@ void stack_push(u32** esp, u32 val) {
     **esp = val;
 }
 
-/**
- * TODO: if we want to CLONE_PAGE_DIRECTORY when create a new kernel task
- * we need to modify MM::clone_page_directory
- * to only clone page tables in USER SPACE
- * otherwise, when one kernel task changes its memory map (e.g KMalloc allocating more pages)
- * the change does not affect other kernel tasks because they have different page tables
- * which leads to problems (page faults when accessing shared data between tasks, data discrepancies etc)
- * 
-*/
-// #define CLONE_PAGE_DIRECTORY
+#define CLONE_PAGE_DIRECTORY
 
 ThreadControlBlock* create_kernel_task(void (*func)()) {
     ThreadControlBlock* tcb = new ThreadControlBlock();
@@ -65,7 +56,6 @@ ThreadControlBlock* create_kernel_task(void (*func)()) {
 
     #ifdef CLONE_PAGE_DIRECTORY
     tcb->CR3 = (void*) (u32)MemoryManager::the().clone_page_directory().get_base();
-    MemoryManager::the().deallocate((u32)next_task_stack_virtual_addr, false);
     #else
     tcb->CR3 = (void*) (u32)get_cr3();
     #endif

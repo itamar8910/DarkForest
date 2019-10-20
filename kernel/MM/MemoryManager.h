@@ -17,6 +17,8 @@
     3MB - 4MB: kmalloc_eternal
 	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
 
+	4MB - 0xc0000000 - User space
+
     0xc0000000 - 0xffffffff : kernel address space
     0xc0000000 - 0xc0ffffff : kernel image (code + data)
     0xc1000000 - 0xc5000000 : kernel heap
@@ -25,7 +27,12 @@
 */
 
 constexpr u32 IDENTITY_MAP_END = 4*MB;
+constexpr u32 USERSPACE_START = 4*MB;
+constexpr u32 KERNELSPACE_START = 0xc0000000;
 
+
+// each PDE entry is responsible for 4MB of memory
+constexpr u32 PDE_MAP_SIZE = 4 * MB;
 
 
 #define ERR_NO_FREE_FRAMES 1
@@ -33,6 +40,8 @@ constexpr u32 IDENTITY_MAP_END = 4*MB;
 constexpr u32 TEMPMAP_ADDR = (u32)((4*MB) - PAGE_SIZE);
 
 
+bool address_in_user_space(VirtualAddress);
+bool address_in_kernel_space(VirtualAddress);
 
 class MemoryManager {
 private:
@@ -84,9 +93,18 @@ public:
 	void copy_to_physical_frame(PhysicalAddress dst, u8* src);
 	void memcpy_frames(PhysicalAddress dst, PhysicalAddress src);
 
+	// after calling this method
+	// it will not be possible anymore to create new kernel-space PDEs
+	// this is useful to avoid discrepancies between kernel-sapce
+	// memory across different tasks (because all tasks share the same kernel-space page tables)
+	// if we want to disable this limitation in the future,
+	// we will need to implement a mechanism to sync kernel-space PDEs between tasks
+	void lock_kernel_PDEs() {m_kernel_PDEs_locked = true;}
+
 private:
 	u32 m_frames_avail_bitmap[N_FRAME_BITMAP_ENTRIES];
 	PageDirectory* m_page_directory;
 	bool m_tempmap_used;
+	bool m_kernel_PDEs_locked;
 
 };
