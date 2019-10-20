@@ -19,7 +19,7 @@ private:
 
 
     void try_unblock_tasks();
-    ThreadControlBlock* pick_next();
+    size_t pick_next();
 
 
     Vector<ThreadControlBlock*> m_tasks;

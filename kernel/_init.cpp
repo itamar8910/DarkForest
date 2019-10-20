@@ -110,6 +110,7 @@ void task3_func() {
 void task1_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task1: %d\n", i);
+		Scheduler::the().sleep_ms(500);
 		// switch_to_task(task2);
 	}
 }
@@ -117,6 +118,7 @@ void task2_func() {
 	// Scheduler::the().add_task(create_kernel_task(task3_func));
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
+		Scheduler::the().sleep_ms(1000);
 		// switch_to_task(task1);
 	}
 }
@@ -141,7 +143,7 @@ void try_count_seconds() {
 
 void idle() {
 	for(;;) {
-		kprintf("idle\n");
+		// kprintf("idle\n");
 		// cpu_hang();
 	}
 }

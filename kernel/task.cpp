@@ -19,9 +19,7 @@ void initialize_multitasking() {
 }
 
 void switch_to_task(ThreadControlBlock* next) {
-    kprintf("switch_to_task: ID %d\n", next->id);
     asm_switch_to_task(next);
-    kprintf("done\n");
 }
 
 void stack_push(u32** esp, u32 val) {
