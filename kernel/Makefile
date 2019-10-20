@@ -13,6 +13,7 @@ KERN_OBJS := \
 	task.o \
 	task.ao \
 	Scheduler.o \
+	TaskBlocker.o \
 	
 
 DRIVERS_DIR := drivers

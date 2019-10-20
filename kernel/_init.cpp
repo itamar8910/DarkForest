@@ -114,7 +114,7 @@ void task1_func() {
 	}
 }
 void task2_func() {
-	Scheduler::the().add_task(create_kernel_task(task3_func));
+	// Scheduler::the().add_task(create_kernel_task(task3_func));
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
 		// switch_to_task(task1);

@@ -1,15 +1,20 @@
 #pragma once
 
 #include "types.h"
+#include "TaskBlocker.h"
 
 struct TaskMetaData {
     enum class State {
         Running,
+        Runnable,
         Blocking,
     };
     State state;
     u8 priority;
-    TaskMetaData(): state(State::Running), priority(128) {}
+    TaskBlocker* blocker;
+    TaskMetaData(): state(State::Runnable),
+                    priority(128),
+                    blocker(nullptr) {}
 };
 
 struct [[gnu::packed]] ThreadControlBlock {
@@ -39,3 +44,4 @@ void initialize_multitasking();
 void switch_to_task(ThreadControlBlock* next);
 
 ThreadControlBlock* create_kernel_task(void (*func)());
+
