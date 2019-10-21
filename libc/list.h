@@ -3,6 +3,11 @@
 #include "types.h"
 #include "logging.h"
 #include "std_misc.h"
+#include "Kassert.h"
+
+#define ASSERT_LIST_SIZE
+
+#define MAX_REASONABLE_LIST_SIZE 10000
 
 // TODO: add iterator
 
@@ -23,6 +28,11 @@ public:
     Node* tail(){return m_tail;}
 
     void append(const T& t) {
+        #ifdef ASSERT_LIST_SIZE
+            if(m_size > MAX_REASONABLE_LIST_SIZE) {
+                ASSERT_NOT_REACHED("list size exceeded MAX_REASONABLE_LIST_SIZE");
+            }
+        #endif
         append(T(t));
     } 
 

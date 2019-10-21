@@ -4,6 +4,9 @@
 #include "Kassert.h"
 
 // #define DBG_SCHEDULER
+// #define DBG_SCHEDULER_2
+
+#define ASSERTS_SCHEDULER
 
 static Scheduler* s_the = nullptr;
 
@@ -28,7 +31,7 @@ constexpr u32 TIME_SLICE_MS = 5;
 void Scheduler::tick(RegisterDump& regs) {
     (void)regs;
 
-    #ifdef DBG_SCHEDULER
+    #ifdef DBG_SCHEDULER_2
     kprintf("Scheduler::tick()\n");
     #endif
     
@@ -45,11 +48,16 @@ void Scheduler::tick(RegisterDump& regs) {
 
     // if current task is not blocked
     // check if exceeded time slice
-    #ifdef DBG_SCHEDULER
+    #ifdef DBG_SCHEDULER_2
     kprintf("current task id: %d\n", m_current_task->id);
     #endif
-    if(m_current_task
-        ->meta_data->state == TaskMetaData::State::Running) {
+    if(m_current_task == m_idle_task) {
+        // we always want to preempt the idle task
+        m_current_task->meta_data->state = TaskMetaData::State::Runnable;
+        m_current_task = nullptr;
+    }
+    else if( 
+         m_current_task ->meta_data->state == TaskMetaData::State::Running) {
         if(m_tick_since_switch < TIME_SLICE_MS) {
             // continue with current task
             m_tick_since_switch++;
@@ -57,6 +65,9 @@ void Scheduler::tick(RegisterDump& regs) {
         } else{
             // preempt task
             m_current_task->meta_data->state = TaskMetaData::State::Runnable;
+            #ifdef ASSERTS_SCHEDULER
+            ASSERT(!m_runanble_tasks.find(m_current_task), "currently runing task should not be in runnable list");
+            #endif
             m_runanble_tasks.append(m_current_task);
             m_current_task = nullptr;
         }
