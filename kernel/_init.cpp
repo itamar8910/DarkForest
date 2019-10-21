@@ -119,6 +119,9 @@ void task2_func() {
 	// Scheduler::the().add_task(create_kernel_task(task3_func));
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
+		u32 n_blocks = 0;
+		u32 free_heapspace = KMalloc::the().current_free_space(n_blocks);
+		kprintf("available heap space: %d bytes, #blocks: %d\n", free_heapspace, n_blocks);
 		// Scheduler::the().sleep_ms(1000);
 		Scheduler::the().sleep_ms(2);
 		// switch_to_task(task1);

@@ -40,7 +40,8 @@ public:
     void* allocate(u32 size);
     void free(void* addr);
 
-    u32 current_free_space();
+    u32 current_free_space(u32& num_blocks);
+    u32 current_free_space() {u32 x = 0; return current_free_space(x);}
 
 private:
     KMalloc(void* addr, u32 size);
