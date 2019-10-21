@@ -62,4 +62,4 @@ init: $(CRTI_OBJ) $(CRTN_OBJ)
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o $(DRIVERS_DIR)/*.o *.ao init/*.ao $(TARGET)
+	rm -f *.o $(DRIVERS_DIR)/*.o $(MM_DIR)/*.o *.ao init/*.ao $(TARGET)

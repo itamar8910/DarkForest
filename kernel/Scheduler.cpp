@@ -69,7 +69,7 @@ void Scheduler::try_unblock_tasks() {
     for(size_t i = 0; i < m_tasks.size(); i++) {
         ThreadControlBlock* task = m_tasks.at(i);
 
-        if(task->meta_data->state != TaskMetaData::State::Blocking)
+        if(task->meta_data->state != TaskMetaData::State::Blocked)
             continue;
         TaskBlocker* blocker = task->meta_data->blocker;
         ASSERT(blocker != nullptr, "Task is blocked but has no TaskBlocker");
@@ -113,6 +113,6 @@ void Scheduler::sleep_ms(u32 ms) {
     }
     SleepBlocker* blocker = new SleepBlocker(sleep_until_sec, leftover_ms);
     current.meta_data->blocker = blocker;
-    current.meta_data->state = TaskMetaData::State::Blocking;
+    current.meta_data->state = TaskMetaData::State::Blocked;
     asm volatile("hlt"); // stop until next interrupt
 }

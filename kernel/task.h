@@ -7,7 +7,7 @@ struct TaskMetaData {
     enum class State {
         Running,
         Runnable,
-        Blocking,
+        Blocked,
     };
     State state;
     u8 priority;
