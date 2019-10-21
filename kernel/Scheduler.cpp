@@ -30,6 +30,9 @@ constexpr u32 TIME_SLICE_MS = 5;
 
 void Scheduler::tick(RegisterDump& regs) {
     (void)regs;
+    ASSERT_INTERRUPTS_DISABLED();
+
+
 
     #ifdef DBG_SCHEDULER_2
     kprintf("Scheduler::tick()\n");
@@ -84,6 +87,9 @@ void Scheduler::tick(RegisterDump& regs) {
 
     auto* chosen_task = pick_next();
     if(chosen_task != nullptr) {
+        #ifdef DBG_SCHEDULER
+        print_scheduler_tasks();
+        #endif
         ASSERT(m_runanble_tasks.remove(chosen_task), "Scheduer: failed to remove chosen task from runnable list");
     } else {
         chosen_task = m_idle_task;
@@ -128,6 +134,7 @@ void Scheduler::sleep_ms(u32 ms) {
     #ifdef DBG_SCHEDULER
     kprintf("task: %d - sleep_ms: %d\n", m_current_task->id, ms);
     #endif
+    asm volatile("cli");
     u32 sleep_until_sec = PIT::seconds_since_boot() + (ms / 1000);
     u32 leftover_ms = PIT::ticks_this_second() + (ms % 1000);
     if(leftover_ms > 1000) {
@@ -138,5 +145,18 @@ void Scheduler::sleep_ms(u32 ms) {
     m_current_task->meta_data->blocker = blocker;
     m_current_task->meta_data->state = TaskMetaData::State::Blocked;
     m_blocked_tasks.append(m_current_task);
+    asm volatile("sti");
     asm volatile("hlt"); // stop until next interrupt
+}
+
+void Scheduler::print_scheduler_tasks() {
+    kprintf("runnable tasks:\n");
+    for(auto* task_node = m_runanble_tasks.head(); task_node != nullptr; task_node = task_node->next) {
+        kprintf("%d,", task_node->val->id);
+    }
+    kprintf("\nblocked tasks:\n");
+    for(auto* task_node = m_blocked_tasks.head(); task_node != nullptr; task_node = task_node->next) {
+        kprintf("%d,", task_node->val->id);
+    }
+    kprintf("\n");
 }

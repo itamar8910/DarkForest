@@ -215,15 +215,3 @@ static void init_idt() {
 
 }
 
-
-u32 get_cr3() {
-    u32 val;
-    asm("movl %%cr3, %%eax" : "=a"(val));
-    return val;
-}
-
-u32 get_cr2() {
-    u32 val;
-    asm("movl %%cr2, %%eax" : "=a"(val));
-    return val;
-}

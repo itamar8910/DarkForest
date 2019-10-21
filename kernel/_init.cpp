@@ -110,7 +110,8 @@ void task3_func() {
 void task1_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task1: %d\n", i);
-		Scheduler::the().sleep_ms(500);
+		// Scheduler::the().sleep_ms(500);
+		Scheduler::the().sleep_ms(5);
 		// switch_to_task(task2);
 	}
 }
@@ -118,7 +119,8 @@ void task2_func() {
 	// Scheduler::the().add_task(create_kernel_task(task3_func));
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
-		Scheduler::the().sleep_ms(1000);
+		// Scheduler::the().sleep_ms(1000);
+		Scheduler::the().sleep_ms(2);
 		// switch_to_task(task1);
 	}
 }
