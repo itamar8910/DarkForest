@@ -4,6 +4,8 @@
 #include "logging.h"
 #include "std_misc.h"
 
+// TODO: add iterator
+
 template<typename T>
 class List {
 

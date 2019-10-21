@@ -1,6 +1,7 @@
 #include "Scheduler.h"
 #include "logging.h"
 #include "PIT.h"
+#include "Kassert.h"
 
 // #define DBG_SCHEDULER
 
@@ -13,13 +14,13 @@ Scheduler& Scheduler::the() {
 void Scheduler::initialize(void (*idle_func)()) {
     s_the = new Scheduler();
     initialize_multitasking();
-    auto* idle_tcb = create_kernel_task(idle_func);
-    the().add_task(idle_tcb);
+    s_the->m_idle_task = create_kernel_task(idle_func);
 }
 
 void Scheduler::add_task(ThreadControlBlock* tcb) {
     kprintf("adding kernel task: 0x%x, id: %d\n", tcb, tcb->id);
-    m_tasks.append(tcb);
+    tcb->meta_data->state = TaskMetaData::State::Runnable;
+    m_runanble_tasks.append(tcb);
 }
 
 constexpr u32 TIME_SLICE_MS = 5;
@@ -31,20 +32,23 @@ void Scheduler::tick(RegisterDump& regs) {
     kprintf("Scheduler::tick()\n");
     #endif
     
-    if(m_curent_task_idx == -1) {
-        m_curent_task_idx = 0;
-        m_tasks.at(0)->meta_data->state = TaskMetaData::State::Running;
-        switch_to_task(m_tasks.at(0));
+    if(m_current_task == nullptr) {
+        kprintf("Shceduller:: first tick()\n");
+        // m_curent_task_idx = 0;
+        // m_tasks.at(0)->meta_data->state = TaskMetaData::State::Running;
+        // switch_to_task(m_tasks.at(0));
+        ASSERT(m_idle_task != nullptr, "Scheulder::tick() idle task is null");
+        m_current_task = m_idle_task;
+        switch_to_task(m_idle_task);
         return;
     }
 
     // if current task is not blocked
     // check if exceeded time slice
-    ThreadControlBlock* current_task = m_tasks.at(m_curent_task_idx);
     #ifdef DBG_SCHEDULER
-    kprintf("current task id: %d\n", current_task->id);
+    kprintf("current task id: %d\n", m_current_task->id);
     #endif
-    if(current_task
+    if(m_current_task
         ->meta_data->state == TaskMetaData::State::Running) {
         if(m_tick_since_switch < TIME_SLICE_MS) {
             // continue with current task
@@ -52,25 +56,38 @@ void Scheduler::tick(RegisterDump& regs) {
             return;
         } else{
             // preempt task
-            current_task->meta_data->state = TaskMetaData::State::Runnable;
+            m_current_task->meta_data->state = TaskMetaData::State::Runnable;
+            m_runanble_tasks.append(m_current_task);
+            m_current_task = nullptr;
         }
     }
+    // NOTE: in the current implementation,
+    // we only try to unblock tasks when the current task is preemtped / blocked
+    // this may be problematic if a higher priority task is blocked
+    // - we will only check if it can be unblocekd once the current task time slice is done (or if current task has been blocked)
+
+
+    // if we got here, current task has finished its time slice / is blocked
+
     try_unblock_tasks();
 
-    m_curent_task_idx = pick_next();
-    ThreadControlBlock* next_task = m_tasks.at(m_curent_task_idx);
-    next_task->meta_data->state = TaskMetaData::State::Running;
-    // switch_to_task(m_tasks.at(m_curent_task_idx));
-    switch_to_task(next_task);
+    auto* chosen_task = pick_next();
+    if(chosen_task != nullptr) {
+        ASSERT(m_runanble_tasks.remove(chosen_task), "Scheduer: failed to remove chosen task from runnable list");
+    } else {
+        chosen_task = m_idle_task;
+    }
+    m_current_task = chosen_task;
+    m_current_task->meta_data->state = TaskMetaData::State::Running;
     m_tick_since_switch = 0;
+    switch_to_task(m_current_task);
 }
 
 void Scheduler::try_unblock_tasks() {
-    for(size_t i = 0; i < m_tasks.size(); i++) {
-        ThreadControlBlock* task = m_tasks.at(i);
+    for(auto* task_node = m_blocked_tasks.head(); task_node != nullptr; task_node = task_node->next) {
+        auto* task = task_node->val;
 
-        if(task->meta_data->state != TaskMetaData::State::Blocked)
-            continue;
+        ASSERT(task->meta_data->state == TaskMetaData::State::Blocked, "Scheduler: task is in blocked list but not blocked");
         TaskBlocker* blocker = task->meta_data->blocker;
         ASSERT(blocker != nullptr, "Task is blocked but has no TaskBlocker");
         if(blocker->can_unblock()) {
@@ -80,30 +97,25 @@ void Scheduler::try_unblock_tasks() {
             task->meta_data->state = TaskMetaData::State::Runnable;
             delete task->meta_data->blocker;
             task->meta_data->blocker = nullptr;
+            m_blocked_tasks.remove(task);
+            m_runanble_tasks.append(task);
         }
     }
 }
 
-size_t Scheduler::pick_next() {
-    // TODO: switch to a list
-    size_t c = 0;
-    for(size_t i = (m_curent_task_idx+1)%m_tasks.size(); c < m_tasks.size(); i=(i+1)%m_tasks.size(), c++) {
-        ThreadControlBlock* task = m_tasks.at(i);
-        ASSERT(task->meta_data->state != TaskMetaData::State::Running, 
-            "Scheduler::pick_next: there cannot be a running task here");
-        if(task->meta_data->state != TaskMetaData::State::Runnable)
-            continue;
-        return i;
+ThreadControlBlock* Scheduler::pick_next() {
+    if(m_runanble_tasks.size() == 0) {
+        return nullptr;
     }
-    // TODO: have idle only run in this case
-    ASSERT_NOT_REACHED("Scheduler::pick_next could not find a runnable task");
-    return 0;
+    ASSERT(m_runanble_tasks.head() != nullptr, "Scheduler: runnable_tasks head is null but size != 0");
+    auto* task = m_runanble_tasks.head()->val;
+    ASSERT(task->meta_data->state == TaskMetaData::State::Runnable, "Scheduler: task is in runnable list but not runnable");
+    return task;
 }
 
 void Scheduler::sleep_ms(u32 ms) {
-    ThreadControlBlock& current = *m_tasks[m_curent_task_idx];
     #ifdef DBG_SCHEDULER
-    kprintf("task: %d - sleep_ms: %d\n", current.id, ms);
+    kprintf("task: %d - sleep_ms: %d\n", m_current_task->id, ms);
     #endif
     u32 sleep_until_sec = PIT::seconds_since_boot() + (ms / 1000);
     u32 leftover_ms = PIT::ticks_this_second() + (ms % 1000);
@@ -112,7 +124,8 @@ void Scheduler::sleep_ms(u32 ms) {
         leftover_ms %= 1000;
     }
     SleepBlocker* blocker = new SleepBlocker(sleep_until_sec, leftover_ms);
-    current.meta_data->blocker = blocker;
-    current.meta_data->state = TaskMetaData::State::Blocked;
+    m_current_task->meta_data->blocker = blocker;
+    m_current_task->meta_data->state = TaskMetaData::State::Blocked;
+    m_blocked_tasks.append(m_current_task);
     asm volatile("hlt"); // stop until next interrupt
 }

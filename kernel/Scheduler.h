@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vector.h"
+#include "list.h"
 #include "task.h"
 #include "cpu.h"
 
@@ -15,15 +15,23 @@ public:
     void sleep_ms(u32 ms);
 
 private:
-    Scheduler() : m_tasks(), m_curent_task_idx(-1), m_tick_since_switch(0) {}
+    Scheduler() 
+        : m_runanble_tasks(),
+          m_blocked_tasks(),
+          m_idle_task(nullptr),
+          m_current_task(nullptr),
+          m_tick_since_switch(0) {}
 
 
     void try_unblock_tasks();
-    size_t pick_next();
+    ThreadControlBlock* pick_next();
 
 
-    Vector<ThreadControlBlock*> m_tasks;
-    int m_curent_task_idx;
+    List<ThreadControlBlock*> m_runanble_tasks;
+    List<ThreadControlBlock*> m_blocked_tasks;
+    ThreadControlBlock* m_idle_task;
+    ThreadControlBlock* m_current_task;
+
     u32 m_tick_since_switch;
 
 };

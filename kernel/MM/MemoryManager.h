@@ -23,7 +23,6 @@
     0xc0000000 - 0xc0ffffff : kernel image (code + data)
     0xc1000000 - 0xc5000000 : kernel heap
 	0xd0000000 - 0xe0000000 - kernel stacks (a kernel stack per task)
-	// 0xe0000000 - 0xe0001000 - page directories for tasks
 */
 
 constexpr u32 IDENTITY_MAP_END = 4*MB;
