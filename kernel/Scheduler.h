@@ -25,6 +25,7 @@ private:
 
     void try_unblock_tasks();
     ThreadControlBlock* pick_next();
+    void print_scheduler_tasks();
 
 
     List<ThreadControlBlock*> m_runanble_tasks;

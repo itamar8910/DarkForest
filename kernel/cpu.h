@@ -59,9 +59,26 @@ void init_descriptor_tables();
 
 [[noreturn]] void cpu_hang();
 
-u32 get_cr3();
+inline u32 get_cr3() {
+   u32 val;
+   asm("movl %%cr3, %%eax" : "=a"(val));
+   return val;
+}
 
-u32 get_cr2();
+inline u32 get_cr2() {
+   u32 val;
+   asm("movl %%cr2, %%eax" : "=a"(val));
+   return val;
+}
+
+inline u32 cpu_flags() {
+    u32 flags;
+    asm volatile(
+        "pushf\n"
+        "pop %0\n"
+        : "=rm"(flags)::"memory");
+    return flags;
+}
 
 void register_interrupt_handler(int num, void (*func)());
 

@@ -10,7 +10,13 @@ bool SleepBlocker::can_unblock() {
     if(sec < m_sleep_until_sec) {
         return false;
     }
-    // e.g it's acceptable that previous tick sec = 0, sleep_until = 0, and now sec = 1, sleep_until = 0
+    // we can skeep at most a single second
+    
+    // we can skip a single second if
+    // SleepBlocker::can_unblock()
+    // was called once at (e.g) 1.999sec,
+    // and then at 2.001sec
+    
     ASSERT(sec - m_sleep_until_sec <= 1, "SleepBlocker: skipped a second?!");
     return sec > m_sleep_until_sec || ms >= m_leftover_ms;
 }
