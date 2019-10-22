@@ -56,6 +56,7 @@ void MemoryManager::init(multiboot_info_t* mbt) {
             ASSERT(is_frame_available(PhysicalAddress(frame_base)), "frame should be available");
         }
 	}
+    disable_page(Frame(0)); // so we would page fault on null pointer deref
 }
 
 Frame MemoryManager::get_free_frame(Err& err, bool set_used) {
@@ -179,6 +180,16 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bo
     auto pte = page_table.get_pte(addr);
     return pte;
 
+}
+
+void MemoryManager::disable_page(Frame frame) {
+    auto pte = ensure_pte(frame);
+    pte.set_addr(frame);
+    pte.set_present(false);
+    pte.set_writable(false);
+    pte.set_user_allowed(false);
+    un_temp_map();
+    flush_tlb(frame);
 }
 
 void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_allowed) {

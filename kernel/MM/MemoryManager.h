@@ -56,6 +56,7 @@ public:
 	VirtualAddress temp_map(PhysicalAddress addr);
 	void un_temp_map();
 	void allocate(VirtualAddress virt_addr, bool writable, bool user_allowed);
+	void disable_page(Frame frame);
 	void deallocate(VirtualAddress virt_addr, bool free_page=true);
 	void flush_tlb(VirtualAddress addr);
 	void flush_entire_tlb();
