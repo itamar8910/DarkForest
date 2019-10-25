@@ -52,3 +52,13 @@ void* strncpy(char* dest, const char* src, size_t n) {
 	}
 	return dest;
 }
+
+int memcmp(const void *s1, const void *s2, size_t n) {
+	char* p1 = (char*) s1;
+	char* p2 = (char*) s2;
+	for(;n>0;n--) {
+		if(*(p1++) != *(p2++))
+			return *p1 - *p2;
+	}
+	return 0;
+}

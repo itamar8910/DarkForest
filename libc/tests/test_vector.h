@@ -1,7 +1,7 @@
 
 #include "logging.h"
 #include "Kassert.h"
-#include "vector.h"
+#include "types/vector.h"
 
 static void vector_tests1() {
     Vector<int> v;

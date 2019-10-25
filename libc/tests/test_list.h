@@ -1,4 +1,4 @@
-#include "list.h"
+#include "types/list.h"
 #include "Kassert.h"
 
 
@@ -16,15 +16,13 @@ struct B{
 };
 
 static void test_iteration() {
-    kprintf("test iterartion\n");
     List<B*> l;
     l.append(new B(1));
     l.append(new B(2));
     l.append(new B(3));
     for(auto* item = l.head(); item != nullptr; item = item->next) {
-        kprintf("%d,", item->val->x);
     }
-    kprintf("\n");
+    ASSERT(l.size()==3, "11");
 }
 
 static void list_tests() {

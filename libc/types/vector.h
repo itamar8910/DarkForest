@@ -5,6 +5,7 @@
 #include "new.h"
 #include "string.h"
 #include "Kassert.h"
+#include "stdlib.h"
 
 #define DEFAULT_VECTOR_CAPACITY 8
 // #define VECTOR_DBG
@@ -21,6 +22,14 @@ public:
         kprintf("Vector::ctor\n");
         kprintf("Vector::ctor - data allocated addr: 0x%x\n", m_data);
         #endif
+    }
+    Vector(const T* data, size_t size) 
+        :
+            m_data(new T[size]),
+            m_capacity (size),
+            m_size(size) 
+    {
+        memcpy(m_data, data, size);
     }
     size_t size() const { return m_size;};
     size_t capacity() const { return m_capacity;};
