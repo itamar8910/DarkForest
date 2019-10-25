@@ -97,43 +97,27 @@ void try_virtual_alloc() {
 
 }
 
-// ThreadControlBlock* task1;
-// ThreadControlBlock* task2;
 
-void task3_func() {
-	for(int i = 0; ; i++) {
-		kprintf("task3: %d\n", i);
-		// switch_to_task(task2);
-	}
-}
 
 void task1_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task1: %d\n", i);
-		// Scheduler::the().sleep_ms(500);
-		Scheduler::the().sleep_ms(5);
-		// switch_to_task(task2);
+		Scheduler::the().sleep_ms(150);
 	}
 }
 void task2_func() {
-	// Scheduler::the().add_task(create_kernel_task(task3_func));
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
-		u32 n_blocks = 0;
-		u32 free_heapspace = KMalloc::the().current_free_space(n_blocks);
-		kprintf("available heap space: %d bytes, #blocks: %d\n", free_heapspace, n_blocks);
-		// Scheduler::the().sleep_ms(1000);
-		Scheduler::the().sleep_ms(2);
-		// switch_to_task(task1);
+		Scheduler::the().sleep_ms(200);
+	}
+}
+void task3_func() {
+	for(int i = 0; i < 5; i++) {
+		kprintf("task3: %d\n", i);
+		Scheduler::the().sleep_ms(300);
 	}
 }
 
-// void try_multitasking() {
-// 	task1 = create_kernel_task(task1_func);
-// 	task2 = create_kernel_task(task2_func);
-// 	kprintf("switching to task1\n");
-// 	switch_to_task(task1);
-// }
 
 void try_count_seconds() {
 	int x = 9999;
@@ -177,6 +161,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	MemoryManager::the().lock_kernel_PDEs();
 	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
 	Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
+	Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");

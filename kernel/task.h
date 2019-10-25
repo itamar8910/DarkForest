@@ -9,6 +9,7 @@ struct TaskMetaData {
         Running,
         Runnable,
         Blocked,
+        Dead,
     };
     String name;
     State state;

@@ -13,6 +13,12 @@ public:
     void tick(RegisterDump& regs);
     void add_task(ThreadControlBlock* tcb);
     void sleep_ms(u32 ms);
+    /**
+     *  when created a task, stack is arranged
+     *   in a way that will call this function
+     *  when the task returns from its main function
+    */
+    static void terminate();
 
 private:
     Scheduler() 
@@ -26,6 +32,7 @@ private:
     void try_unblock_tasks();
     ThreadControlBlock* pick_next();
     void print_scheduler_tasks();
+    void pick_next_and_switch();
 
 
     List<ThreadControlBlock*> m_runanble_tasks;

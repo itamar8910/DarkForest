@@ -25,9 +25,16 @@ asm_switch_to_task:
     push esi
     push edi
     push ebp
- 
+    
+    ; if current_TCB is nullptr (for example, current task is dead)
+    ; then don't save esp for the current task state
+    mov eax, 0
+    mov ecx, [current_TCB]
+    cmp ecx, eax
+    je .no_save_esp
     mov edi,[current_TCB]    ;edi = address of the previous task's "thread control block"
     mov [edi+ThreadControlBlock.ESP],esp         ;Save ESP for previous task's kernel stack in the thread's TCB
+.no_save_esp:
  
     ;Load next task's state
  

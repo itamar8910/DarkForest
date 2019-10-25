@@ -34,24 +34,13 @@ void Scheduler::tick(RegisterDump& regs) {
 
     #ifdef DBG_SCHEDULER_2
     kprintf("Scheduler::tick()\n");
+    kprintf("current task id: %d\n", m_current_task->id);
     #endif
     
     if(m_current_task == nullptr) {
-        kprintf("Shceduller:: first tick()\n");
-        // m_curent_task_idx = 0;
-        // m_tasks.at(0)->meta_data->state = TaskMetaData::State::Running;
-        // switch_to_task(m_tasks.at(0));
         ASSERT(m_idle_task != nullptr, "Scheulder::tick() idle task is null");
         m_current_task = m_idle_task;
-        switch_to_task(m_idle_task);
-        return;
     }
-
-    // if current task is not blocked
-    // check if exceeded time slice
-    #ifdef DBG_SCHEDULER_2
-    kprintf("current task id: %d\n", m_current_task->id);
-    #endif
     if(m_current_task == m_idle_task) {
         // we always want to preempt the idle task
         m_current_task->meta_data->state = TaskMetaData::State::Runnable;
@@ -59,6 +48,8 @@ void Scheduler::tick(RegisterDump& regs) {
     }
     else if( 
          m_current_task ->meta_data->state == TaskMetaData::State::Running) {
+        // if current task is not blocked
+        // check if exceeded time slice
         if(m_tick_since_switch < TIME_SLICE_MS) {
             // continue with current task
             m_tick_since_switch++;
@@ -82,13 +73,18 @@ void Scheduler::tick(RegisterDump& regs) {
     // if we got here, current task has finished its time slice / is blocked
 
     try_unblock_tasks();
+    pick_next_and_switch();
 
+}
+
+void Scheduler::pick_next_and_switch() {
     auto* chosen_task = pick_next();
     if(chosen_task != nullptr) {
         #ifdef DBG_SCHEDULER
         print_scheduler_tasks();
         #endif
-        ASSERT(m_runanble_tasks.remove(chosen_task), "Scheduer: failed to remove chosen task from runnable list");
+        bool removed = m_runanble_tasks.remove(chosen_task);
+        ASSERT(removed, "Scheduer: failed to remove chosen task from runnable list");
     } else {
         chosen_task = m_idle_task;
     }
@@ -143,8 +139,8 @@ void Scheduler::sleep_ms(u32 ms) {
     m_current_task->meta_data->blocker = blocker;
     m_current_task->meta_data->state = TaskMetaData::State::Blocked;
     m_blocked_tasks.append(m_current_task);
-    asm volatile("sti");
-    asm volatile("hlt"); // stop until next interrupt
+
+    Scheduler::the().pick_next_and_switch();
 }
 
 void Scheduler::print_scheduler_tasks() {
@@ -157,4 +153,17 @@ void Scheduler::print_scheduler_tasks() {
         kprintf("%d,", task_node->val->id);
     }
     kprintf("\n");
+}
+
+void Scheduler::terminate() {
+    asm volatile("cli");
+    kprintf("Task [%s] terminated\n", current_TCB->meta_data->name.c_str());
+    ASSERT(current_TCB->id == Scheduler::the().m_current_task->id);
+    // this will have the effect of terminating the task because 
+    // it will not be added to the runnable list
+    delete current_TCB;
+    current_TCB = nullptr;
+    Scheduler::the().m_current_task = nullptr;
+
+    Scheduler::the().pick_next_and_switch();
 }

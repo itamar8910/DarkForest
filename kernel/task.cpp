@@ -1,10 +1,11 @@
 #include "task.h"
 #include "cpu.h"
 #include "MemoryManager.h"
+#include "Scheduler.h"
 
 extern "C" void asm_switch_to_task(ThreadControlBlock* next);
 
-#define DBG_TASKSWITCH
+// #define DBG_TASKSWITCH
 
 ThreadControlBlock* current_TCB;
 
@@ -32,6 +33,7 @@ void stack_push(u32** esp, u32 val) {
     **esp = val;
 }
 
+
 #define CLONE_PAGE_DIRECTORY
 
 ThreadControlBlock* create_kernel_task(void (*func)(), String name) {
@@ -42,6 +44,7 @@ ThreadControlBlock* create_kernel_task(void (*func)(), String name) {
     MemoryManager::the().allocate((u32)next_task_stack_virtual_addr, true, false);
     u32* new_stack = (u32*)((u32)next_task_stack_virtual_addr + PAGE_SIZE - 4);
     // initialize value of stack (will be popped off at the end of switch_to_task)
+    stack_push(&new_stack, u32(Scheduler::terminate)); // jumps here after func returns
     stack_push(&new_stack, (u32)func); // will be popped of as EIP
     stack_push(&new_stack, 0); // ebp
     stack_push(&new_stack, 0); // edi
