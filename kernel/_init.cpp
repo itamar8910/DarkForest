@@ -16,6 +16,7 @@
 #include "PIC.h"
 #include "PIT.h"
 #include "Scheduler.h"
+#include "PS2Keyboard.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -148,6 +149,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	MemoryManager::initialize(mbt);
 	KMalloc::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
+
+	PS2Keyboard::initialize();
 
 #ifdef TESTS
 	run_tests();
