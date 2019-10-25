@@ -17,7 +17,7 @@ Scheduler& Scheduler::the() {
 void Scheduler::initialize(void (*idle_func)()) {
     s_the = new Scheduler();
     initialize_multitasking();
-    s_the->m_idle_task = create_kernel_task(idle_func);
+    s_the->m_idle_task = create_kernel_task(idle_func, "idle");
 }
 
 void Scheduler::add_task(ThreadControlBlock* tcb) {
@@ -31,8 +31,6 @@ constexpr u32 TIME_SLICE_MS = 5;
 void Scheduler::tick(RegisterDump& regs) {
     (void)regs;
     ASSERT_INTERRUPTS_DISABLED();
-
-
 
     #ifdef DBG_SCHEDULER_2
     kprintf("Scheduler::tick()\n");

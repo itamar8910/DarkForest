@@ -4,6 +4,8 @@
 
 extern "C" void asm_switch_to_task(ThreadControlBlock* next);
 
+#define DBG_TASKSWITCH
+
 ThreadControlBlock* current_TCB;
 
 void* next_task_stack_virtual_addr = (void*)0xd0000000;
@@ -12,13 +14,16 @@ u32 current_thread_id = 1;
 
 void initialize_multitasking() {
     // just a dummy initial TCB
-    current_TCB = new ThreadControlBlock();
+    current_TCB = new ThreadControlBlock("dummy");
     current_TCB->id = 1;
     current_TCB->CR3 = (void*) get_cr3();
     current_TCB->ESP = 0;
 }
 
 void switch_to_task(ThreadControlBlock* next) {
+    #ifdef DBG_TASKSWITCH
+    kprintf("Switching to Task: %d (%s)\n", next->id, next->meta_data->name.c_str());
+    #endif
     asm_switch_to_task(next);
 }
 
@@ -29,8 +34,8 @@ void stack_push(u32** esp, u32 val) {
 
 #define CLONE_PAGE_DIRECTORY
 
-ThreadControlBlock* create_kernel_task(void (*func)()) {
-    ThreadControlBlock* tcb = new ThreadControlBlock();
+ThreadControlBlock* create_kernel_task(void (*func)(), String name) {
+    ThreadControlBlock* tcb = new ThreadControlBlock(name);
     tcb->id = ++current_thread_id;
     // allocate stack space for new task
     kprintf("new CR3: 0x%x\n", (u32)tcb->CR3);

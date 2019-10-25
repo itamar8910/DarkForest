@@ -175,8 +175,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	Scheduler::the().add_task(create_kernel_task(task1_func));
-	Scheduler::the().add_task(create_kernel_task(task2_func));
+	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
+	Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");

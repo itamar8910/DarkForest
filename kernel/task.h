@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "TaskBlocker.h"
+#include "types/String.h"
 
 struct TaskMetaData {
     enum class State {
@@ -9,12 +10,15 @@ struct TaskMetaData {
         Runnable,
         Blocked,
     };
+    String name;
     State state;
     u8 priority;
     TaskBlocker* blocker;
-    TaskMetaData(): state(State::Runnable),
-                    priority(128),
-                    blocker(nullptr) {}
+    TaskMetaData(String _name)
+        : name(_name),
+          state(State::Runnable),
+          priority(128),
+          blocker(nullptr) {}
 };
 
 struct [[gnu::packed]] ThreadControlBlock {
@@ -24,10 +28,10 @@ struct [[gnu::packed]] ThreadControlBlock {
     // we have a ptr here to keep the structure simple,
     // because we handle it in ASM
     TaskMetaData* meta_data;
-    ThreadControlBlock(): id(0), 
+    ThreadControlBlock(String name): id(0), 
                           ESP(nullptr),
                           CR3(nullptr),
-                          meta_data(new TaskMetaData())
+                          meta_data(new TaskMetaData(name))
                           {}
     ~ThreadControlBlock() {delete meta_data;}
 };
@@ -43,5 +47,5 @@ void initialize_multitasking();
 
 void switch_to_task(ThreadControlBlock* next);
 
-ThreadControlBlock* create_kernel_task(void (*func)());
+ThreadControlBlock* create_kernel_task(void (*func)(), String name="[Unnamed]");
 
