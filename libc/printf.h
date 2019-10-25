@@ -139,6 +139,10 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
                 case 's':
                     ret += print_string(putc_f, va_arg(args, char*));
                     break;
+                case 'c':
+                    putc_f((char)va_arg(args, int));
+                    ret += 1;
+                    break;
                 case '%':
                     putc_f('%');
                     ret++;
