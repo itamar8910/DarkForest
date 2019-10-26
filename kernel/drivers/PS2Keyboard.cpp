@@ -20,6 +20,44 @@
 
 #define SCAN_CODE_MULTIBYTE 0xE0
 
+#define BIT7 128
+enum NonAsciiKeys {
+    ESC = BIT7 ,
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    BackSpace,
+    TAB,
+    ENTER,
+    L_CTRL,
+    L_SHIFT,
+    R_SHIFT,
+    L_ALT,
+    CapsLock,
+    NumLock,
+    ScrollLock,
+};
+
+const u8 key_map_set1[128] = {
+    0, ESC, 
+    '1', '2', '3', '4' ,'5' ,'6', '7', '8', '9', '0', // 11 
+    '-', '=', BackSpace, TAB, //15
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', // 0x1b
+    ENTER, L_CTRL, 
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k' , 'l', ';', // 0x27
+    '\'', '`', L_SHIFT, '\\', // 0x2b
+    'z', 'x' ,'c', 'v', 'b', 'n', 'm', ',', '.', '/', // 0x35
+    R_SHIFT, 0, L_ALT, ' ', CapsLock, // 0x3a
+    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, // 0x44
+    NumLock, ScrollLock
+};
 
 ISR_HANDLER(ps2_keyboard)
 void isr_ps2_keyboard_handler(RegisterDump& regs) {
@@ -102,11 +140,27 @@ void PS2Keyboard::received_scan_byte(u8 val) {
             bool released = get_bit(val, 7);
             val &= ~(1<<7); // clear 'pressed/realeased bit'
             KeyCode key_code = KeyCode::from_single(val);
-            KeyState key_state = KeyState(key_code, released, false);
-            kprintf("key: %c\n", key_state.to_ascii());
+            KeyState key_state = KeyState(key_code, released, current_modifiers);
+            char ascii = key_state.to_ascii();
+            if(!released) {
+                if(ascii) {
+                    kprintf("key: %c\n", ascii);
+                } else{
+                    kprint("<NO_ASCII>\n");
+                }
+            }
             keycodes_buffer[keycodes_buffer_idx++] = key_state;
             keycodes_buffer_idx %= KEYCODES_BUFFER_LEN;
             current_keycode_byte_idx = 0;
+            // set modifiers
+            if(key_code.data == NonAsciiKeys::L_SHIFT 
+                || key_code.data == NonAsciiKeys::R_SHIFT) {
+                current_modifiers.shift = !released;
+            }
+            if(key_code.data == NonAsciiKeys::CapsLock 
+                && released) {
+                current_modifiers.caps_lock = ! current_modifiers.caps_lock;
+            }
             break;
             }
         case 2:
@@ -116,51 +170,56 @@ void PS2Keyboard::received_scan_byte(u8 val) {
     };
 }
 
-#define BIT7 128
-enum NonAsciiKeys {
-    ESC = BIT7 ,
-    F1,
-    F2,
-    F3,
-    F4,
-    F5,
-    F6,
-    F7,
-    F8,
-    F9,
-    F10,
-    BackSpace,
-    TAB,
-    ENTER,
-    L_CTRL,
-    L_SHIFT,
-    R_SHIFT,
-    L_ALT,
-    CapsLock,
-    NumLock,
-    ScrollLock,
-};
-
-const u8 key_map_set1[128] = {
-    0, ESC, 
-    '1', '2', '3', '4' ,'5' ,'6', '7', '8', '9', '0', // 11 
-    '-', '=', BackSpace, TAB, //15
-    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', // 0x1b
-    ENTER, L_CTRL, 
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k' , 'l', ';', // 0x27
-    '\'', '`', L_SHIFT, '\\', // 0x2b
-    'z', 'x' ,'c', 'v', 'b', 'n', 'm', ',', '.', '/', // 0x35
-    R_SHIFT, 0, L_ALT, ' ', CapsLock, // 0x3a
-    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, // 0x44
-    NumLock, ScrollLock
-};
 
 KeyCode KeyCode::from_single(u8 val) {
     return key_map_set1[val];
 }
 
+const char nums_upper[10] = {')', '!', '@', '#', '$', '%', '^', '&', '*', '('};
+
+static char to_upper(char val) {
+    ASSERT(!get_bit(val, 7));
+    if(val >= '0' && val <= '9') {
+        return nums_upper[(u8)(val-'0')];
+    }
+    if(val >= 'a' && val <= 'z') {
+        return val - 0x20;
+    }
+    switch(val) {
+        case '-':
+            return '_';
+        case '=':
+            return '+';
+        case '[':
+            return '{';
+        case ']':
+            return '}';
+        case ';':
+            return ':';
+        case '\'':
+            return '"';
+        case '\\':
+            return '|';
+        case ',':
+            return '<';
+        case '.':
+            return '>';
+        case '/':
+            return '?';
+        case '`':
+            return '~';
+    }
+    ASSERT_NOT_REACHED("KeyBoard: to_upper - upper vale not found for char value");
+    return 0;
+}
+
 char KeyState::to_ascii() {
-    ASSERT(!get_bit(keycode.data, 7), "KeyState::to_ascii invalid data");
-    // TODO: use maps based on shift/CapsLock
-    return (char) (keycode.data);
+    // valid ascii has bit 7 clear
+    if(get_bit(keycode.data, 7)) {
+        return 0;
+    }
+    if(modifiers.caps_lock | modifiers.shift) {
+        return to_upper(keycode.data);
+    }
+    return static_cast<char>(keycode.data);
 }
