@@ -64,7 +64,7 @@ void isr_ps2_keyboard_handler(RegisterDump& regs) {
     kprintf("PS2Keyboard ISR\n");
     u8 res = IO::inb(PS2_DATA_PORT);
     kprintf("keyboard byte: 0x%x\n", res);
-    PS2Keyboard::the().received_scan_byte(res);
+    PS2Keyboard::the().on_scan_byte(res);
     PIC::eoi(PS2_IRQ1);
 }
 
@@ -122,44 +122,30 @@ PS2Keyboard& PS2Keyboard::the() {
 
 }
 
-PS2Keyboard::PS2Keyboard() 
-    : current_keycode_bytes{0},
-      current_keycode_byte_idx{0},
-      keycodes_buffer_idx{0} {}
+PS2Keyboard::PS2Keyboard() {}
 
 
-void PS2Keyboard::received_scan_byte(u8 val) {
-    current_keycode_bytes[current_keycode_byte_idx++] = val;
-    switch(current_keycode_byte_idx) {
+void PS2Keyboard::on_scan_byte(u8 val) {
+    add_keycode_byte(val);
+    switch(m_current_keycode_byte_idx) {
         case 1:
             {
             if(val == SCAN_CODE_MULTIBYTE) {
                 return;
             }
+            // create key_code
             bool released = get_bit(val, 7);
             val &= ~(1<<7); // clear 'pressed/realeased bit'
             KeyCode key_code = KeyCode::from_single(val);
-            KeyState key_state = KeyState(key_code, released, current_modifiers);
-            char ascii = key_state.to_ascii();
-            if(!released) {
-                if(ascii) {
-                    kprintf("key: %c\n", ascii);
-                    VgaTTY::the().putchar(ascii);
-                } else{
-                    kprint("<NO_ASCII>\n");
-                }
-            }
-            keycodes_buffer[keycodes_buffer_idx++] = key_state;
-            keycodes_buffer_idx %= KEYCODES_BUFFER_LEN;
-            current_keycode_byte_idx = 0;
-            // set modifiers
+            handle_whole_keycode(key_code, released);
+            // update modifiers
             if(key_code.data == NonAsciiKeys::L_SHIFT 
                 || key_code.data == NonAsciiKeys::R_SHIFT) {
-                current_modifiers.shift = !released;
+                m_current_modifiers.shift = !released;
             }
             if(key_code.data == NonAsciiKeys::CapsLock 
                 && released) {
-                current_modifiers.caps_lock = ! current_modifiers.caps_lock;
+                m_current_modifiers.caps_lock = ! m_current_modifiers.caps_lock;
             }
             break;
             }
@@ -168,6 +154,27 @@ void PS2Keyboard::received_scan_byte(u8 val) {
         default:
             ASSERT_NOT_REACHED("PS2Keyboard: invalid scan code length");
     };
+}
+
+void PS2Keyboard::add_keycode_byte(u8 val) {
+    ASSERT(m_current_keycode_byte_idx < MAX_NUM_KEYCODE_BYTES, "Keyboard: max num bytes in current keycode exceeded");
+    m_current_keycode_bytes[m_current_keycode_byte_idx++] = val;
+}
+
+void PS2Keyboard::handle_whole_keycode(KeyCode key_code, bool released) {
+    KeyEvent key_state = KeyEvent(key_code, released, m_current_modifiers);
+    char ascii = key_state.to_ascii();
+    if(!released) {
+        if(ascii) {
+            kprintf("key: %c\n", ascii);
+            VgaTTY::the().putchar(ascii);
+        } else{
+            kprint("<NO_ASCII>\n");
+        }
+    }
+    insert_key_state(key_state);
+    m_current_keycode_byte_idx = 0;
+
 }
 
 
@@ -212,7 +219,7 @@ static char to_upper(char val) {
     return val;
 }
 
-char KeyState::to_ascii() {
+char KeyEvent::to_ascii() {
     // valid ascii has bit 7 clear
     if(get_bit(keycode.data, 7)) {
         return 0;
@@ -221,4 +228,22 @@ char KeyState::to_ascii() {
         return to_upper(keycode.data);
     }
     return static_cast<char>(keycode.data);
+}
+
+void PS2Keyboard::insert_key_state(KeyEvent key_state) {
+    m_events_pending += 1;
+    m_events_buffer[m_events_buffer_idx++] = key_state;
+    m_events_buffer_idx %= KEYCODES_BUFFER_LEN;
+}
+
+KeyEvent PS2Keyboard::consume() {
+    ASSERT(m_events_pending>0, "PS2Keyboard::consume() called but there are no keycodes pending");
+    m_events_pending -= 1;
+    m_events_buffer_idx = (m_events_buffer_idx-1) % KEYCODES_BUFFER_LEN;
+    auto event = m_events_buffer[m_events_buffer_idx];
+    return event;
+}
+
+bool PS2Keyboard::can_consume() {
+    return m_events_pending != 0;
 }

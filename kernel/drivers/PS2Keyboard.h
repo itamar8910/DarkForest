@@ -23,12 +23,12 @@ struct ModifiersState {
     }
 };
 
-struct KeyState {
+struct KeyEvent {
     KeyCode keycode;
     bool released; // false for pressed, true for released
     ModifiersState modifiers;
-    KeyState(): keycode(0), released(false), modifiers() {}
-    KeyState(KeyCode keycode, bool released, ModifiersState modifiers)
+    KeyEvent(): keycode(0), released(false), modifiers() {}
+    KeyEvent(KeyCode keycode, bool released, ModifiersState modifiers)
         : keycode(keycode), released(released), modifiers(modifiers)
         {}
     char to_ascii();
@@ -39,20 +39,32 @@ class PS2Keyboard {
 public:
     static void initialize();
     static PS2Keyboard& the();
-    void received_scan_byte(u8 val);
+    void on_scan_byte(u8 val);
+
+    KeyEvent consume();
+    bool can_consume();
+
 private:
     PS2Keyboard();
     static inline u8 get_status();
     static void poll_for_write();
     static void poll_for_read();
+    void insert_key_state(KeyEvent key_state);
+
+    void add_keycode_byte(u8 val);
+    void handle_whole_keycode(KeyCode key_code, bool released);
+
+    // circuler buffer that stores KeyEvents
+    KeyEvent m_events_buffer[KEYCODES_BUFFER_LEN];
+    u8 m_events_buffer_idx {0};
+    u8 m_events_pending {0};
+
 
     // stores bit-wise state of modifiers (e.g shift, capslock)
-    ModifiersState current_modifiers;
+    ModifiersState m_current_modifiers;
 
-    u8 current_keycode_bytes[MAX_NUM_KEYCODE_BYTES];
-    u8 current_keycode_byte_idx;
+    u8 m_current_keycode_bytes[MAX_NUM_KEYCODE_BYTES];
+    u8 m_current_keycode_byte_idx {0};
 
-    KeyState keycodes_buffer[KEYCODES_BUFFER_LEN]; // circuler buffer that stores KeyCodes
-    u8 keycodes_buffer_idx;
 
 };
