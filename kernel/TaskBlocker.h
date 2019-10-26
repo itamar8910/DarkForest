@@ -19,7 +19,7 @@ public:
                 m_sleep_until_sec(sleep_until_sec),
                 m_leftover_ms(leftover_ms) {}
     
-    virtual bool can_unblock();
+    virtual bool can_unblock() override;
 
     virtual ~SleepBlocker() {}
 

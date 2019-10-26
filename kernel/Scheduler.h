@@ -12,7 +12,7 @@ public:
     
     void tick(RegisterDump& regs);
     void add_task(ThreadControlBlock* tcb);
-    void sleep_ms(u32 ms);
+    void block_current(TaskBlocker* blocker);
     /**
      *  when created a task, stack is arranged
      *   in a way that will call this function

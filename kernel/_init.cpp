@@ -17,6 +17,7 @@
 #include "PIT.h"
 #include "Scheduler.h"
 #include "PS2Keyboard.h"
+#include "sleep.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -103,19 +104,19 @@ void try_virtual_alloc() {
 void task1_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task1: %d\n", i);
-		Scheduler::the().sleep_ms(150);
+		sleep_ms(150);
 	}
 }
 void task2_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
-		Scheduler::the().sleep_ms(200);
+		sleep_ms(200);
 	}
 }
 void task3_func() {
 	for(int i = 0; i < 5; i++) {
 		kprintf("task3: %d\n", i);
-		Scheduler::the().sleep_ms(300);
+		sleep_ms(300);
 	}
 }
 
