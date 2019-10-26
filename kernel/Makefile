@@ -46,7 +46,7 @@ CRTN_OBJ=init/crtn.ao
 
 OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(CRTN_OBJ)
 
-TARGET := myos.bin
+TARGET := DarkForest.bin
 
 all: $(TARGET)
 

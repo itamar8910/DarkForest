@@ -1,7 +1,7 @@
 #!/bin/bash
 
 qemu=qemu-system-i386
-image=kernel/myos.bin
+image=kernel/DarkForest.bin
 
 $qemu -kernel $image \
     -debugcon stdio\
