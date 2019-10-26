@@ -18,6 +18,7 @@
 #include "Scheduler.h"
 #include "PS2Keyboard.h"
 #include "sleep.h"
+#include "KeyboardReader.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -132,6 +133,15 @@ void try_count_seconds() {
 	}
 }
 
+void vga_tty_consumer() {
+	while(1) {
+		auto key_event = keyboard_read();
+		if(!key_event.released) {
+			VgaTTY::the().putchar(key_event.to_ascii());
+		}
+	}
+}
+
 void idle() {
 	for(;;) {
 		// kprintf("idle\n");
@@ -167,6 +177,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
 	Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
 	Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
+	Scheduler::the().add_task(create_kernel_task(vga_tty_consumer, "VgaTTY Consumer"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");

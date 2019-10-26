@@ -5,7 +5,6 @@
 #include "IO.h"
 #include "Kassert.h"
 #include "bits.h"
-#include "VgaTTY.h" // TODO: only for testing, should be the other way around (VGATTy gets events from driver)
 
 #define PS2_IRQ1 1
 #define PS2_IRQ2 12
@@ -20,6 +19,8 @@
 #define PS2_CMD_ECHO 0xEE
 
 #define SCAN_CODE_MULTIBYTE 0xE0
+
+// #define DBG_PS2Keyboard
 
 #define BIT7 128
 enum NonAsciiKeys {
@@ -61,9 +62,10 @@ const u8 key_map_set1[128] = {
 ISR_HANDLER(ps2_keyboard)
 void isr_ps2_keyboard_handler(RegisterDump& regs) {
     (void)regs;
-    kprintf("PS2Keyboard ISR\n");
     u8 res = IO::inb(PS2_DATA_PORT);
+    #ifdef DBG_PS2Keyboard
     kprintf("keyboard byte: 0x%x\n", res);
+    #endif
     PS2Keyboard::the().on_scan_byte(res);
     PIC::eoi(PS2_IRQ1);
 }
@@ -163,15 +165,16 @@ void PS2Keyboard::add_keycode_byte(u8 val) {
 
 void PS2Keyboard::handle_whole_keycode(KeyCode key_code, bool released) {
     KeyEvent key_state = KeyEvent(key_code, released, m_current_modifiers);
+    #ifdef DBG_PS2Keyboard
     char ascii = key_state.to_ascii();
     if(!released) {
         if(ascii) {
             kprintf("key: %c\n", ascii);
-            VgaTTY::the().putchar(ascii);
         } else{
             kprint("<NO_ASCII>\n");
         }
     }
+    #endif
     insert_key_state(key_state);
     m_current_keycode_byte_idx = 0;
 
