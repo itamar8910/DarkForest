@@ -5,6 +5,7 @@
 #include "IO.h"
 #include "Kassert.h"
 #include "bits.h"
+#include "VgaTTY.h" // TODO: only for testing, should be the other way around (VGATTy gets events from driver)
 
 #define PS2_IRQ1 1
 #define PS2_IRQ2 12
@@ -34,8 +35,6 @@ enum NonAsciiKeys {
     F9,
     F10,
     BackSpace,
-    TAB,
-    ENTER,
     L_CTRL,
     L_SHIFT,
     R_SHIFT,
@@ -48,9 +47,9 @@ enum NonAsciiKeys {
 const u8 key_map_set1[128] = {
     0, ESC, 
     '1', '2', '3', '4' ,'5' ,'6', '7', '8', '9', '0', // 11 
-    '-', '=', BackSpace, TAB, //15
+    '-', '=', BackSpace, '\t', //15
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', // 0x1b
-    ENTER, L_CTRL, 
+    '\n', L_CTRL, 
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k' , 'l', ';', // 0x27
     '\'', '`', L_SHIFT, '\\', // 0x2b
     'z', 'x' ,'c', 'v', 'b', 'n', 'm', ',', '.', '/', // 0x35
@@ -145,6 +144,7 @@ void PS2Keyboard::received_scan_byte(u8 val) {
             if(!released) {
                 if(ascii) {
                     kprintf("key: %c\n", ascii);
+                    VgaTTY::the().putchar(ascii);
                 } else{
                     kprint("<NO_ASCII>\n");
                 }
@@ -209,8 +209,7 @@ static char to_upper(char val) {
         case '`':
             return '~';
     }
-    ASSERT_NOT_REACHED("KeyBoard: to_upper - upper vale not found for char value");
-    return 0;
+    return val;
 }
 
 char KeyState::to_ascii() {

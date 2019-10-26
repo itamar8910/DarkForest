@@ -63,3 +63,11 @@ void VgaTTY::write(const char* str)
 {
     write(str, strlen(str));
 }
+
+static VgaTTY* s_the = nullptr;
+VgaTTY& VgaTTY::the() {
+    if(!s_the) {
+        s_the = new VgaTTY();
+    }
+    return *s_the;
+}

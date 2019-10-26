@@ -34,7 +34,7 @@
 #endif
 
 void do_vga_tty_stuff() {
-	auto tty = VgaTTY();
+	auto tty = VgaTTY::the();
  
 	tty.write("up1\n");
 	tty.write("up2\n");
@@ -157,7 +157,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	return;
 #endif
 
-	do_vga_tty_stuff();
+	// VgaTTY::the()
+	// do_vga_tty_stuff();
 
 
 	Scheduler::initialize(idle);
