@@ -1,0 +1,5 @@
+gcc*
+binutils*
+build-*
+cross/*
+!cross/.placeholder

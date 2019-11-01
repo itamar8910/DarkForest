@@ -15,6 +15,20 @@ A work in progress x86 operating system
 - Some sort of FileSystem
 - Userspace!
 
+## build
+```bash
+cd toolchain
+./build.sh
+cd ..
+export PATH="$HOME/DarkForest/toolchain/cross/bin:$PATH"
+make
+```
+
+## run
+```bash
+./run
+```
+
 
 I take a lot of inspiration from Andreas Kling's amazing [SerenityOS](https://github.com/SerenityOS/serenity) - check it out!
 
