@@ -92,15 +92,23 @@ void PS2Keyboard::poll_for_read() {
             return;
         }
     }
-    ASSERT_NOT_REACHED("PS2Keyboard: poll for write exceeded");
+    ASSERT_NOT_REACHED("PS2Keyboard: poll for read exceeded");
 }
 
 static PS2Keyboard* s_the = nullptr;
+
+void PS2Keyboard::clear_input() {
+
+    if((get_status() & (STATUS_OUTPUT))) {
+        IO::inb(PS2_DATA_PORT);
+    }
+}
 
 void PS2Keyboard::initialize() {
 
     u8 val = get_status();
     kprintf("PS2 status: %d\n", val);
+    clear_input();
     poll_for_write();
     IO::outb(PS2_DATA_PORT, PS2_CMD_ECHO);
     poll_for_read();

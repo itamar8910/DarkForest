@@ -48,10 +48,12 @@ private:
     static inline u8 get_status();
     static void poll_for_write();
     static void poll_for_read();
+    static void clear_input();
     void insert_key_state(KeyEvent key_state);
 
     void add_keycode_byte(u8 val);
     void handle_whole_keycode(KeyCode key_code, bool released);
+    
 
     // circuler buffer that stores KeyEvents
     KeyEvent m_events_buffer[KEYCODES_BUFFER_LEN];

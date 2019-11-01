@@ -9,9 +9,9 @@ A work in progress x86 operating system
 - Virtual Memory management
 - Heap memory management
 - Interrupts
+- Keyboard driver
 
 ## Coming up:
-- Keyboard driver
 - Some sort of FileSystem
 - Userspace!
 
