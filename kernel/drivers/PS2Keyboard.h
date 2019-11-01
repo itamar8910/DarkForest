@@ -8,7 +8,6 @@
 
 
 struct KeyCode {
-    // upper 3 bits = row, lower 5 bits = col
     u8 data;
     KeyCode(u8 data): data(data) {}
     static KeyCode from_single(u8 val);

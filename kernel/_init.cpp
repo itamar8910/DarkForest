@@ -101,6 +101,13 @@ void try_virtual_alloc() {
 }
 
 
+void print_heap() {
+
+	u32 num_blocks = 0;
+	u32 bytes = KMalloc::the().current_free_space(num_blocks);
+	kprintf("heap free bytes: %d, #blocks: %d\n", num_blocks, bytes);
+
+}
 
 void task1_func() {
 	for(int i = 0; ; i++) {
@@ -111,6 +118,7 @@ void task1_func() {
 void task2_func() {
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
+		print_heap();
 		sleep_ms(200);
 	}
 }
