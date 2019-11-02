@@ -17,7 +17,6 @@ protected:
         : m_base(base),
           m_size(size) {}
 
-private:
     void* m_base;
     u32 m_size;
 };

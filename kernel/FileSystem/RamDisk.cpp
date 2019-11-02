@@ -7,6 +7,6 @@ void RamDisk::init(void* base, u32 size) {
     s_the = new TarFS(base, size);
 }
 
-RamDiskFS& fs() {
+RamDiskFS& RamDisk::fs() {
     return *s_the;
 }

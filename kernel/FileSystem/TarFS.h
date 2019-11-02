@@ -4,6 +4,10 @@
 
 #include "FileSystem/RamDiskFS.h"
 
+
+/**
+ * Note: using the Tar V8 foramt
+ */
 class TarFS : public RamDiskFS {
 
 public:
