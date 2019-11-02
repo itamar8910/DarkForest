@@ -167,6 +167,16 @@ void init_ramdisk(multiboot_info_t* mbt) {
 	RamDisk::init(ramdisk_base, ramdisk_size);
 }
 
+#define HELLO_FILE "hello.txt"
+
+void vga_tty_hello() {
+	u32 size = 0;
+	u8* content = RamDisk::fs().get_content(HELLO_FILE, size);
+	ASSERT(content != nullptr && size > 0, "error reading hello file");
+	VgaTTY::the().write((char*) content);
+}
+
+
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
@@ -181,15 +191,14 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	KMalloc::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
-	PS2Keyboard::initialize();
 
 #ifdef TESTS
 	run_tests();
 	return;
 #endif
 
-	// VgaTTY::the()
-	// do_vga_tty_stuff();
+	vga_tty_hello();
+	PS2Keyboard::initialize();
 
 
 	Scheduler::initialize(idle);
