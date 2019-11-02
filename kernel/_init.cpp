@@ -144,7 +144,7 @@ void try_count_seconds() {
 void vga_tty_consumer() {
 	while(1) {
 		auto key_event = keyboard_read();
-		if(!key_event.released) {
+		if(!key_event.released && key_event.to_ascii() != 0) {
 			VgaTTY::the().putchar(key_event.to_ascii());
 		}
 	}
@@ -182,9 +182,9 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
-	Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
-	Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
+	// Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
+	// Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
+	// Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
 	Scheduler::the().add_task(create_kernel_task(vga_tty_consumer, "VgaTTY Consumer"));
 
 	kprintf("enableing interrupts\n");
