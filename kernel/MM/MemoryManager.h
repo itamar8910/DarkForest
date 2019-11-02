@@ -14,7 +14,7 @@
     Virtual Memory map:
     (0MB-4MB - identity mapped)
 	2MB - 3MB: page directories for tasks
-    3MB - 4MB: kmalloc_eternal
+    3MB - 4MB: kmalloc_eternal // TODO: we can probably get rid of this, we setup the kernel heap very early
 	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
 
 	4MB - 0xc0000000 - User space

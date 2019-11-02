@@ -19,6 +19,7 @@
 #include "PS2Keyboard.h"
 #include "sleep.h"
 #include "KeyboardReader.h"
+#include "FileSystem/RamDisk.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -157,10 +158,21 @@ void idle() {
 	}
 }
 
+void init_ramdisk(multiboot_info_t* mbt) {
+	ASSERT(mbt->mods_count == 1, "Expected only a single multiboot module (ramdisk)");
+	multiboot_module_t* ramdisk_module = (multiboot_module_t*) mbt->mods_addr;
+	kprintf("mod_start: 0x%x, mod_end: 0x%x\n", ramdisk_module->mod_start, ramdisk_module->mod_end);
+	void* ramdisk_base = (void*) ramdisk_module->mod_start;
+	u32 ramdisk_size = ramdisk_module->mod_end - ramdisk_module->mod_start + 1;
+	RamDisk::init(ramdisk_base, ramdisk_size);
+}
+
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
+	kprintf("Multiboot modules: mods_count: %d\n, mods_addr: 0x%x\n", mbt->mods_count, mbt->mods_addr);
+	init_ramdisk(mbt);
 	PIC::initialize();
 	init_descriptor_tables();
 	PIT::initialize();

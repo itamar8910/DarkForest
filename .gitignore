@@ -6,5 +6,6 @@ settings.json
 **/*.ao
 # ignore the kernel's image
 **/*.bin
+**/*.tar
 
 

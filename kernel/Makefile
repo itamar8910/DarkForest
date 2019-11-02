@@ -32,9 +32,14 @@ MM_OBJS := \
 	$(MM_DIR)/PageDirectory.o \
 	$(MM_DIR)/PageTable.o \
 
+FS_DIR := FileSystem
+FS_OBJS := \
+	$(FS_DIR)/TarFS.o \
+	$(FS_DIR)/RamDisk.o \
+
 INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR) -I$(MM_DIR)
 
-OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS)
+OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS)
 
 HEADERS := $(shell find . -name '*.h')
 
