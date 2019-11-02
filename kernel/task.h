@@ -24,7 +24,8 @@ struct TaskMetaData {
 
 struct [[gnu::packed]] ThreadControlBlock {
     u32 id;
-    void* ESP;
+    void* ESP; // current stack top
+    void* ESP0; // kernel (ring0) stack top
     void* CR3;
     // we have a ptr here to keep the structure simple,
     // because we handle it in ASM

@@ -27,14 +27,10 @@
 
  
 /* Check if the compiler thinks you are targeting the wrong operating system. */
-#if defined(__linux__)
-#error "You are not using a cross-compiler, you will most certainly run into trouble"
+#if defined(__linux__) || !defined(__i386__)
+#error "You must compile with a cross compiler for i386"
 #endif
  
-/* This tutorial will only work for the 32-bit ix86 targets. */
-#if !defined(__i386__)
-#error "This tutorial needs to be compiled with a ix86-elf compiler"
-#endif
 
 void do_vga_tty_stuff() {
 	auto tty = VgaTTY::the();
@@ -203,9 +199,9 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	// Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
-	// Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
-	// Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
+	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
+	Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
+	Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
 	Scheduler::the().add_task(create_kernel_task(vga_tty_consumer, "VgaTTY Consumer"));
 
 	kprintf("enableing interrupts\n");

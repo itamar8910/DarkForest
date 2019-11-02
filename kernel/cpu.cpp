@@ -7,9 +7,11 @@
 #include "logging.h"
 #include "types.h"
 
+TSS the_tss;
 
 extern "C" void gdt_flush(uint32_t); // arg is ptr to descriptor ptr struct
 extern "C" void idt_flush(uint32_t);// arg is ptr to descriptor ptr struct
+extern "C" void tss_flush(uint32_t);// arg is idx of tss in GDT, lowest 2 bits are RPL
 
 asm(
    ".globl gdt_flush\n"
@@ -35,12 +37,20 @@ asm(
    "ret\n"
 );
 
+asm(
+   ".globl tss_flush\n"
+   "tss_flush:\n"
+   "mov 4(%esp), %eax\n"
+   "ltr %ax\n"
+   "ret\n"
+);
+
 // Internal function prototypes.
 static void init_gdt();
 static void init_idt();
 // static void idt_write(uint8_t,uint32_t,uint16_t,uint8_t);
 
-#define NUM_GDT_ENTRIES 5
+#define NUM_GDT_ENTRIES 6
 #define NUM_IDT_ENTRIES 256
 
 GdtEntry gdt_entries[NUM_GDT_ENTRIES];
@@ -68,7 +78,16 @@ static void init_gdt()
    gdt_register_entry_raw(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment (Ring3)
    gdt_register_entry_raw(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment (Ring3)
 
+   // setup TSS entry
+   memset(&the_tss, 0, sizeof(TSS));
+   the_tss.ss0 = 0x10;
+   the_tss.esp0 = 0; // will be set later before a task goes to ring3
+   gdt_register_entry_raw(5, (uint32_t)&the_tss, sizeof(TSS), 0x89, 0x40); // User mode data segment (Ring3)
+
    gdt_flush((uint32_t)&gdt_ptr);
+   // 0x28 because TSS entry is the 6th entry in the GDT (each entry is 8 bytes)
+   // lower 2 bits = 3 = RPL
+   tss_flush(0x28 | 3);
 }
 
 static void gdt_register_entry_raw(int32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran)

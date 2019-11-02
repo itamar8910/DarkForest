@@ -65,9 +65,9 @@ ThreadControlBlock* create_kernel_task(void (*func)(), String name) {
     #else
     tcb->CR3 = (void*) (u32)get_cr3();
     #endif
-    // deallocate of the new task
     next_task_stack_virtual_addr = (void*)((u32)next_task_stack_virtual_addr + PAGE_SIZE);
     tcb->ESP = new_stack;
+    tcb->ESP0 = new_stack;
 
     return tcb;
 }

@@ -3,11 +3,13 @@
 ; based on: https://wiki.osdev.org/Brendan's_Multi-tasking_Tutorial
 
 extern current_TCB
+extern the_tss
 global asm_switch_to_task
 
 STRUC ThreadControlBlock
 .id:  RESB (4)
 .ESP:   RESB (4)
+.ESP0:   RESB (4)
 .CR3: RESB (4)
 .meta_data: RESB(4)
 ENDSTRUC
@@ -43,9 +45,8 @@ asm_switch_to_task:
  
     mov esp,[esi+ThreadControlBlock.ESP]         ;Load ESP for next task's kernel stack from the thread's ThreadControlBlock
     mov eax,[esi+ThreadControlBlock.CR3]         ;eax = address of page directory for next task
-    ; TODO: usage of ESP0?
-    ; mov ebx,[esi+ThreadControlBlock.ESP0]        ;NOTE: sould be ESP0? ebx = address for the top of the next task's kernel stack
-    ; mov [TSS.ESP0],ebx            ;Adjust the ESP0 field in the TSS (used by CPU for for CPL=3 -> CPL=0 privilege level changes)
+    mov ebx,[esi+ThreadControlBlock.ESP0]        ;NOTE: sould be ESP0? ebx = address for the top of the next task's kernel stack
+    mov [the_tss + 4],ebx            ;Adjust the ESP0 field in the TSS (used by CPU for for CPL=3 -> CPL=0 privilege level changes)
     mov ecx,cr3                   ;ecx = previous task's virtual address space
  
     cmp eax,ecx                   ;Does the virtual address space need to being changed?

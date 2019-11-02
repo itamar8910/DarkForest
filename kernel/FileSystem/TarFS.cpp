@@ -21,6 +21,7 @@ struct [[gnu::packed]] TarHeader {
 };
 
 
+// decodes number from ascii-string octal representation
 static u32 decode_tarnum(char* num) {
     u32 res = 0;
     size_t len = strlen(num);
@@ -32,7 +33,7 @@ static u32 decode_tarnum(char* num) {
     return res;
 }
 
-// rounds 'num' up so that it would be a multilpe of 'round'
+// rounds 'num' up so that it would be a multiple of 'round'
 u32 round_up(u32 num, u32 round) {
     return num + (round-num)%round;
 }
