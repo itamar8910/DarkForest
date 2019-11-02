@@ -106,7 +106,20 @@ void print_heap() {
 
 }
 
+void test_usemode() {
+	u32 addr = 0xa1000000; // in userspace
+	// allocate a user page
+	MemoryManager::the().allocate(addr, true, true);
+	// copy code to a user page
+	memcpy((void*)addr, (void*)test_usermode_func, 256);
+	// we should get a General Protection Fault
+	// because test_usermode_func attempts
+	// to executes 'cli', which is a privileged instruction
+	jump_to_usermode((void (*)())addr);
+}
+
 void task1_func() {
+	test_usemode();
 	for(int i = 0; ; i++) {
 		kprintf("task1: %d\n", i);
 		sleep_ms(150);
@@ -207,6 +220,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");
 	kprintf("enabled interrupts\n");
+
 
 
 	// hang until scheduler ticks & switches to the idle task
