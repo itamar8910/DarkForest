@@ -16,6 +16,7 @@ KERN_OBJS := \
 	TaskBlocker.o \
 	sleep.o \
 	KeyboardReader.o \
+	syscall.o \
 	
 
 DRIVERS_DIR := drivers

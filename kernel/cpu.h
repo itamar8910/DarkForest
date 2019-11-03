@@ -110,7 +110,7 @@ inline u32 cpu_flags() {
     return flags;
 }
 
-void register_interrupt_handler(int num, void (*func)());
+void register_interrupt_handler(int num, void (*func)(), bool user_allowed=false);
 
 
 #define ISR_HANDLER(name) \

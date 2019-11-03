@@ -153,6 +153,7 @@ void Scheduler::terminate() {
     // it will not be added to the runnable list
     delete current_TCB;
     current_TCB = nullptr;
+    // TODO: delete userspace resources
     Scheduler::the().m_current_task = nullptr;
 
     Scheduler::the().pick_next_and_switch();

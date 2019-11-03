@@ -66,7 +66,9 @@ asm(
 asm(
    ".globl test_usermode_func\n"
    "test_usermode_func:\n"
-   "cli\n"
+   "mov $2, %eax\n"
+   "int $0x80\n"
+   "cli\n" // this will cause a GPE
    "ret\n"
 );
 
@@ -128,15 +130,16 @@ static void gdt_register_entry_raw(int32_t num, uint32_t base, uint32_t limit, u
    gdt_entries[num].access      = access;
 }
 
-static void idt_register_entry_raw(uint8_t num, uint32_t base, uint16_t sel=0x08, uint8_t flags=0x8e)
+static void idt_register_entry_raw(uint8_t num, uint32_t base, bool user_allowed, uint16_t sel=0x08, uint8_t flags=0x8e)
 {
    idt_entries[num].base_lo = base & 0xFFFF;
    idt_entries[num].base_hi = (base >> 16) & 0xFFFF;
 
    idt_entries[num].sel     = sel;
    idt_entries[num].always0 = 0;
-   // We must uncomment the OR below when we get to using user-mode.
-   // It sets the interrupt gate's privilege level to 3.
+   if(user_allowed){
+      flags |= 0x60;  // set the DPL to 3
+   }
    idt_entries[num].flags   = flags ;
 } 
 
@@ -166,7 +169,7 @@ UNHANDLED_EXCEPTION(9, "Coprocessor segment overrun")
 UNHANDLED_EXCEPTION(10, "Invalid TSS")
 UNHANDLED_EXCEPTION(11, "Segment not present")
 UNHANDLED_EXCEPTION(12, "Stack exception")
-UNHANDLED_EXCEPTION(13, "General protection fault") // TODO: dont crash if happened in uermode
+// UNHANDLED_EXCEPTION(13, "General protection fault") // TODO: dont crash if happened in uermode
 UNHANDLED_EXCEPTION(15, "Unknown error")
 UNHANDLED_EXCEPTION(16, "Coprocessor error")
 
@@ -200,11 +203,21 @@ ISR_EXCEPTION_WITH_ERRCODE(14);
 void isr_14_handler(RegisterDumpWithErrCode& regs) {
    (void)regs;
    kprint("*** Page Fault\n");
-   kprintf("Address that generated Page Fault: 0x%x\n", get_cr2());
+   kprintf("Address that generated Fault: 0x%x\n", get_cr2());
    print_register_dump(regs);
    // kprintf("Register dump: eax: ")
    // TODO: handle page fault
    cpu_hang(); // until we implement
+}
+
+// General protection fault
+ISR_EXCEPTION_WITH_ERRCODE(13);
+void isr_13_handler(RegisterDumpWithErrCode& regs) {
+   (void)regs;
+   // TODO: don't crash in usermode
+   kprint("*** General Protection Fault\n");
+   print_register_dump(regs);
+   cpu_hang();
 }
 
 // Double fault
@@ -222,8 +235,8 @@ void isr_8_handler(RegisterDump& regs) {
    // cpu_hang(); // until we implement
 }
 
-void register_interrupt_handler(int num, void (*func)()) {
-   idt_register_entry_raw(num, (uint32_t)func);
+void register_interrupt_handler(int num, void (*func)(), bool user_allowed) {
+   idt_register_entry_raw(num, (uint32_t)func, user_allowed);
 }
 
 static void init_idt() {
@@ -254,6 +267,7 @@ static void init_idt() {
    register_interrupt_handler(16, isr_16_entry);
 
    // register_interrupt_handler(0x50, isr_15_entry);
+
 
    idt_flush((uint32_t)&idt_ptr);
 
