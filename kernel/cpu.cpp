@@ -66,7 +66,10 @@ asm(
 asm(
    ".globl test_usermode_func\n"
    "test_usermode_func:\n"
-   "mov $2, %eax\n"
+   "mov $2000, %ecx\n"
+   "mov $1, %eax\n"
+   "int $0x80\n"
+   "mov $3, %eax\n"
    "int $0x80\n"
    "cli\n" // this will cause a GPE
    "ret\n"
