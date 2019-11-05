@@ -45,7 +45,7 @@ asm_switch_to_task:
  
     mov esp,[esi+ThreadControlBlock.ESP]         ;Load ESP for next task's kernel stack from the thread's ThreadControlBlock
     mov eax,[esi+ThreadControlBlock.CR3]         ;eax = address of page directory for next task
-    mov ebx,[esi+ThreadControlBlock.ESP0]        ;NOTE: sould be ESP0? ebx = address for the top of the next task's kernel stack
+    mov ebx,[esi+ThreadControlBlock.ESP0]        ; ebx = address for the top of the next task's kernel stack
     mov [the_tss + 4],ebx            ;Adjust the ESP0 field in the TSS (used by CPU for for CPL=3 -> CPL=0 privilege level changes)
     mov ecx,cr3                   ;ecx = previous task's virtual address space
  

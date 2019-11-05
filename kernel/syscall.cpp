@@ -3,40 +3,39 @@
 #include "logging.h"
 #include "Kassert.h"
 #include "sleep.h"
+#include "Scheduler.h"
 
-void syscall_sleep_ms(u32 ms) {
-    kprintf("syscall sleep_ms: %d\n", ms);
-    sleep_ms(ms);
-}
+#define DBG_SYSCALL
 
-void syscall_printk(char* msg) {
-    kprint(msg);
-}
 
-void syscall_print_dbg() {
-    kprint("syscall_print_dbg\n");
-}
+u32 syscalls_gate(u32 syscall_idx, u32, u32, u32);
 
 ISR_HANDLER(syscall);
 void isr_syscall_handler(RegisterDump& regs) {
-    kprintf("ISR syscall handler. eax: %d\n", regs.eax);
-    switch(regs.eax) {
-        case 1: 
-            kprintf("eax: 0\n");
-            syscall_sleep_ms(regs.ecx);
-            break;
-        case 2: 
-            syscall_printk((char*) regs.ecx);
-            break;
-        case 3: 
-            syscall_print_dbg();
-            break;
+#ifdef DBG_SYSCALL
+    kprintf("task: %s - syscall : %d\n", Scheduler::the().current_task().meta_data->name.c_str(), regs.eax);
+#endif
+    regs.eax = syscalls_gate(regs.eax, regs.ebx, regs.ecx, regs.edx);
+}
+
+u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
+    switch(syscall_idx) {
+        case Syscall::Sleep:
+            sleep_ms(arg1);
+            return 0;
+        case Syscall::Kprintf:
+            kprintf((char*) arg1, arg2, arg3);
+            return 0;
+        case Syscall::DbgPrint:
+            kprint("DbgPrint\n");
+            return 0;
+        case Syscall::getID:
+            return Scheduler::the().current_task().id;
         default:
-            kprintf("invalid syscall: %d\n", regs.eax);
+            kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED("invalid syscall");
     }
-    // TODO: do we need to set TSS.ESP0 before returning to usermode?
-    // cpu_hang();
+    return 0;
 }
 
 void init_syscalls() {

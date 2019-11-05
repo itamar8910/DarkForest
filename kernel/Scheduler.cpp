@@ -158,3 +158,8 @@ void Scheduler::terminate() {
 
     Scheduler::the().pick_next_and_switch();
 }
+
+
+ThreadControlBlock& Scheduler::current_task() {
+    return *m_current_task;
+}

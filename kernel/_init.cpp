@@ -126,7 +126,9 @@ void task1_func() {
 		sleep_ms(150);
 	}
 }
+
 void task2_func() {
+	test_usemode();
 	for(int i = 0; ; i++) {
 		kprintf("task2: %d\n", i);
 		print_heap();
@@ -134,6 +136,7 @@ void task2_func() {
 	}
 }
 void task3_func() {
+	test_usemode();
 	for(int i = 0; i < 5; i++) {
 		kprintf("task3: %d\n", i);
 		sleep_ms(300);

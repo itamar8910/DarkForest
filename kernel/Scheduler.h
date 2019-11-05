@@ -19,6 +19,7 @@ public:
      *  when the task returns from its main function
     */
     static void terminate();
+    ThreadControlBlock& current_task();
 
 private:
     Scheduler() 

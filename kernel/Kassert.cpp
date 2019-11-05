@@ -13,7 +13,7 @@ void NOT_IMPLEMENTED(const char* msg) {
     cpu_hang();
 }
 
-void ASSERT_NOT_REACHED(const char* msg) {
+[[noreturn]] void ASSERT_NOT_REACHED(const char* msg) {
     kprintf("\n*** ASSERT NOT REACHED: %s\n", msg);
     cpu_hang();
 }
