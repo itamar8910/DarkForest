@@ -21,6 +21,7 @@
 #include "KeyboardReader.h"
 #include "FileSystem/RamDisk.h"
 #include "syscall.h"
+#include "Loader/loader.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -108,19 +109,10 @@ void print_heap() {
 }
 
 void test_usemode() {
-	u32 addr = 0xa1000000; // in userspace
-	u32 user_stack_bottom = 0xb0000000;
-	u32 user_stack_top = user_stack_bottom - PAGE_SIZE;
-	u32 user_esp = user_stack_bottom - 16;
-	// allocate a user page
-	MemoryManager::the().allocate(addr, true, true);
-	MemoryManager::the().allocate(user_stack_top, true, true);
-	// copy code to a user page
-	memcpy((void*)addr, (void*)test_usermode_func, 256);
-	// we should get a General Protection Fault
-	// because test_usermode_func attempts
-	// to executes 'cli', which is a privileged instruction
-	jump_to_usermode((void (*)())addr, user_esp);
+	u32 elf_size = 0;
+	u8* elf_data = RamDisk::fs().get_content("userspace/main", elf_size);
+	ASSERT(elf_data != nullptr, "couldn't load userspace/main");
+	load_and_jump_userspace(elf_data, elf_size);
 }
 
 void task1_func() {

@@ -18,6 +18,11 @@ void isr_syscall_handler(RegisterDump& regs) {
     regs.eax = syscalls_gate(regs.eax, regs.ebx, regs.ecx, regs.edx);
 }
 
+void syscall_exit(int code) {
+    kprintf("process exited with code: %d\n", code);
+    Scheduler::the().terminate();
+}
+
 u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
     switch(syscall_idx) {
         case Syscall::Sleep:
@@ -31,6 +36,9 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return 0;
         case Syscall::getID:
             return Scheduler::the().current_task().id;
+        case Syscall::Exit:
+            syscall_exit((int)arg1);    
+            return 0;
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED("invalid syscall");

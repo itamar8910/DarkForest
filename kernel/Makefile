@@ -38,9 +38,14 @@ FS_OBJS := \
 	$(FS_DIR)/TarFS.o \
 	$(FS_DIR)/RamDisk.o \
 
+LOADER_DIR := Loader
+LOADER_OBJS := \
+	$(LOADER_DIR)/loader.o \
+	$(LOADER_DIR)/ElfParser.o \
+
 INCLUDE := -I. -I$(LIBC_INCLUDE) -I$(DRIVERS_DIR) -I$(MM_DIR)
 
-OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS)
+OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS)
 
 HEADERS := $(shell find . -name '*.h')
 

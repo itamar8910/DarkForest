@@ -45,47 +45,6 @@ asm(
    "ret\n"
 );
 
-asm(
-   ".globl jump_to_usermode\n"
-   "jump_to_usermode:\n"
-   "mov 4(%esp), %ebx\n" // arg1 = func to run in usermode
-   "mov 8(%esp), %ecx\n" // arg2 = usermode esp
-   "mov $0x23, %ax\n" // usermode data offset in gdt = 0x20, last 2 bits for RPL=3
-   "mov %ax, %ds\n"
-   "mov %ax, %es\n"
-   "mov %ax, %fs\n"
-   "mov %ax, %gs\n"
-   "mov %ecx, %eax\n"
-   "pushl $0x23\n" // stack segment
-   "pushl %eax\n" // iret esp
-   "pushf\n"
-   "pushl $0x1b\n" // usermode code offset in gdt = 0x18, last 2 bits for RPL=3
-   "pushl %ebx\n"
-   "iret\n"
-);
-
-
-asm(
-   ".globl test_usermode_func\n"
-   "test_usermode_func:\n"
-   "1:\n"
-   "mov $10, %ebx\n"
-   "mov $1, %eax\n"
-   "int $0x80\n"
-   "mov $3, %eax\n"
-   "int $0x80\n"
-   "mov $4, %eax\n"
-   "int $0x80\n" // get id
-   "mov %eax, %ecx\n"
-   "lea idstr, %ebx\n"
-   "mov $2, %eax\n"
-   "int $0x80\n" // kprintf
-   "jmp 1b\n"
-   "cli\n" // this will cause a GPE
-   "ret\n"
-   "idstr: .ascii \"~~taskID: %d\\n\\0\" \n"
-);
-
 // Internal function prototypes.
 static void init_gdt();
 static void init_idt();

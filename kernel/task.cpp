@@ -2,6 +2,7 @@
 #include "cpu.h"
 #include "MemoryManager.h"
 #include "Scheduler.h"
+#include "utils.h"
 
 extern "C" void asm_switch_to_task(ThreadControlBlock* next);
 
@@ -27,12 +28,6 @@ void switch_to_task(ThreadControlBlock* next) {
     #endif
     asm_switch_to_task(next);
 }
-
-void stack_push(u32** esp, u32 val) {
-    *esp -= 1;
-    **esp = val;
-}
-
 
 #define CLONE_PAGE_DIRECTORY
 

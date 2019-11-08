@@ -8,6 +8,7 @@ namespace Syscall {
         Kprintf=2,
         DbgPrint=3,
         getID=4,
+        Exit=5,
     };
 };
 
