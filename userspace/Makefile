@@ -1,8 +1,19 @@
 
-OBJS := main.o \
+OBJS := \
+	start.ao \
+	main.o \
 
-all: $(OBJS)
 
-%.o: %.cpp
+all: main
+
+main: main.o start.ao
+	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJS) -lgcc
+
+main.o: main.cpp start.S
 	$(CC) -c $< -o $@ $(CFLAGS)
-	$(CC) -T linker.ld -o $* $(LDFLAGS) $@ -lgcc
+
+%.ao: %.S
+	$(ASM) -felf32 $< -o $@
+
+clean:
+	rm -f *.o *.ao

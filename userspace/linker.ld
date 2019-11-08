@@ -2,6 +2,8 @@
 /* userspace processes are loaded to 10MB */
 base = 0xa00000;
 
+ENTRY(_start);
+
 SECTIONS
 {
 
@@ -9,6 +11,7 @@ SECTIONS
  
 	.text ALIGN(4K) : AT (ADDR (.text) - base)
 	{
+		*(.text.prologue)
 		*(.text)
 	}
  
