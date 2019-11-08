@@ -1,5 +1,6 @@
 KERNEL_DIR := kernel
 LIBC_DIR := libc
+USERSPACE_DIR := userspace
 
 export ASM := nasm
 export CC := i686-elf-g++
@@ -10,9 +11,9 @@ export LDFLAGS := -ffreestanding -O2 -nostdlib
 
 export CPP_FLAGS := 
 
-.PHONY: all libc kernel
+.PHONY: all libc kernel userspace
 
-all: libc kernel
+all: libc kernel userspace
 
 tests: clean set_tests_make_cmd all
 
@@ -24,6 +25,9 @@ libc:
 
 kernel:
 	make -C $(KERNEL_DIR)/
+
+userspace:
+	make -C $(USERSPACE_DIR)/
 
 clean:
 	make -C $(KERNEL_DIR)/ clean
