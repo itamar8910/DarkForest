@@ -70,7 +70,7 @@ static_assert(sizeof(MultibootMemMapEntry)==24);
 
 enum PageFlags {
 	User = 2, // can user access ?
-	Write = 3, // is writable?
+	Write = 1, // is writable?
 	Present = 0, // is present?
 };
 
