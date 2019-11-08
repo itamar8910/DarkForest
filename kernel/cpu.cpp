@@ -49,12 +49,13 @@ asm(
    ".globl jump_to_usermode\n"
    "jump_to_usermode:\n"
    "mov 4(%esp), %ebx\n" // arg1 = func to run in usermode
+   "mov 8(%esp), %ecx\n" // arg2 = usermode esp
    "mov $0x23, %ax\n" // usermode data offset in gdt = 0x20, last 2 bits for RPL=3
    "mov %ax, %ds\n"
    "mov %ax, %es\n"
    "mov %ax, %fs\n"
    "mov %ax, %gs\n"
-   "mov %esp, %eax\n"
+   "mov %ecx, %eax\n"
    "pushl $0x23\n" // stack segment
    "pushl %eax\n" // iret esp
    "pushf\n"

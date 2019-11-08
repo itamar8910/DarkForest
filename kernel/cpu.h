@@ -177,5 +177,5 @@ void register_interrupt_handler(int num, void (*func)(), bool user_allowed=false
    }
 
 
-extern "C" void jump_to_usermode(void (*func)());// arg is idx of tss in GDT, lowest 2 bits are RPL
-extern "C" void test_usermode_func();// arg is idx of tss in GDT, lowest 2 bits are RPL
+extern "C" void jump_to_usermode(void (*func)(), u32 user_esp);
+extern "C" void test_usermode_func();

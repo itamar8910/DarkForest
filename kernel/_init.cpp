@@ -109,14 +109,18 @@ void print_heap() {
 
 void test_usemode() {
 	u32 addr = 0xa1000000; // in userspace
+	u32 user_stack_bottom = 0xb0000000;
+	u32 user_stack_top = user_stack_bottom - PAGE_SIZE;
+	u32 user_esp = user_stack_bottom - 16;
 	// allocate a user page
 	MemoryManager::the().allocate(addr, true, true);
+	MemoryManager::the().allocate(user_stack_top, true, true);
 	// copy code to a user page
 	memcpy((void*)addr, (void*)test_usermode_func, 256);
 	// we should get a General Protection Fault
 	// because test_usermode_func attempts
 	// to executes 'cli', which is a privileged instruction
-	jump_to_usermode((void (*)())addr);
+	jump_to_usermode((void (*)())addr, user_esp);
 }
 
 void task1_func() {
