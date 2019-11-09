@@ -3,7 +3,7 @@
 #include "cpu.h"
 #include "logging.h"
 #include "IO.h"
-#include "Kassert.h"
+#include "asserts.h"
 #include "bits.h"
 
 #define PS2_IRQ1 1

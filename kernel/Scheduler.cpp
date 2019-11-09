@@ -1,7 +1,7 @@
 #include "Scheduler.h"
 #include "logging.h"
 #include "PIT.h"
-#include "Kassert.h"
+#include "asserts.h"
 
 // #define DBG_SCHEDULER
 // #define DBG_SCHEDULER_2

@@ -2,12 +2,12 @@
 
 #include "types.h"
 #include "bits.h"
-#include "Kassert.h"
+#include "asserts.h"
+#include "constants.h"
 
 #define MULTIBOOT_MEMORY_AVAILABLE 1
 
 constexpr u32 MAX_MEMORY_SIZE = UINT32_MAX;
-constexpr u32 PAGE_SIZE = 4 * KB;
 constexpr u32 N_FRAMES = MAX_MEMORY_SIZE / PAGE_SIZE;
 constexpr u32 N_FRAME_BITMAP_ENTRIES = N_FRAMES / 32;
 

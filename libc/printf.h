@@ -2,7 +2,7 @@
 
 #include "stdarg.h"
 #include "DebugPort.h"
-#include "Kassert.h"
+#include "asserts.h"
 #include "stdlib.h"
 
 const char digits_dec[] = "0123456789";

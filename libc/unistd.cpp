@@ -1,7 +1,7 @@
 #include "unistd.h"
 #include "syscalls.h"
 
-void exit(int status) {
+[[noreturn]] void exit(int status) {
     asm volatile(
         "movl %0, %%ebx\n"
         "movl %1, %%eax\n"
@@ -9,6 +9,7 @@ void exit(int status) {
         :
         : "rm"(status), "i"(Syscall::Exit)
     );
+    for(;;);
 }
 
 void sleep_ms(u32 ms) {

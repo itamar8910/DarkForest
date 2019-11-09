@@ -20,7 +20,7 @@ main: main.o start.ao
 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJS_TO_LINK) -lgcc
 
 main.o: main.cpp start.S
-	$(CC) $(INCLUDE) -c $< -o $@ $(CFLAGS)
+	$(CC) $(INCLUDE) -DUSERSPACE -c $< -o $@ $(CFLAGS)
 
 %.ao: %.S
 	$(ASM) -felf32 $< -o $@

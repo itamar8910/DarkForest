@@ -8,7 +8,6 @@ KERN_OBJS := \
 	VgaTTY.o \
 	cpu.o \
 	logging.o \
-	Kassert.o \
 	kmalloc.o \
 	task.o \
 	task.ao \
@@ -77,7 +76,7 @@ init: $(CRTI_OBJ) $(CRTN_OBJ)
 	$(ASM) -felf32 $< -o $@
 
 %.o: %.cpp $(HEADERS)
-	$(CC) $(INCLUDE) $(CPP_FLAGS) -c $< -o $@ $(CFLAGS)
+	$(CC) $(INCLUDE) $(CPP_FLAGS) -DKERNEL -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm -f *.o $(DRIVERS_DIR)/*.o $(MM_DIR)/*.o *.ao init/*.ao $(TARGET)

@@ -1,6 +1,6 @@
 
 #include "logging.h"
-#include "Kassert.h"
+#include "asserts.h"
 #include "bits.h"
 
 static void bits_tests() {

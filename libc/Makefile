@@ -5,6 +5,9 @@ LIBC_OBJS := \
 	printf.o \
 	stdlib.o \
 	bits.o \
+	HeapAllocator.o \
+	asserts.o \
+	runtime_misc.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
