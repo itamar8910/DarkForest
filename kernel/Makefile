@@ -7,7 +7,6 @@ KERN_OBJS := \
 	boot.ao \
 	VgaTTY.o \
 	cpu.o \
-	logging.o \
 	kmalloc.o \
 	task.o \
 	task.ao \

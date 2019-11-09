@@ -1,11 +1,17 @@
 
 #include "logging.h"
-#include "DebugPort.h"
 #include "stdarg.h"
-
 #include "printf.h"
-// #include "cross-stdarg.h"
 
+#ifdef KERNEL
+#include "drivers/DebugPort.h"
+#endif
+#ifdef USERSPACE
+#include "stdio.h"
+#endif
+
+
+#ifdef KERNEL
 void kprint(const char* str) {
     DebugPort::write(str);
 }
@@ -18,3 +24,4 @@ void kprintf(const char* fmt, ...) {
     va_end(args);
 
 }
+#endif

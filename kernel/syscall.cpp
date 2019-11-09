@@ -5,10 +5,18 @@
 #include "sleep.h"
 #include "Scheduler.h"
 
-#define DBG_SYSCALL
+// #define DBG_SYSCALL
+// #define DBG_SYSCALL2
 
 
 u32 syscalls_gate(u32 syscall_idx, u32, u32, u32);
+
+void print_stack(u32 esp, size_t num) {
+    kprintf("esp: 0x%x\n", esp);
+    for(size_t i = 0; i < num; i++) {
+        kprintf("0x%x: 0x%x\n",esp+(i*4) ,*(u32*)(esp+(i*4)));
+    }
+}
 
 ISR_HANDLER(syscall);
 void isr_syscall_handler(RegisterDump& regs) {
@@ -16,6 +24,14 @@ void isr_syscall_handler(RegisterDump& regs) {
     kprintf("task: %s - syscall : %d\n", Scheduler::the().current_task().meta_data->name.c_str(), regs.eax);
 #endif
     regs.eax = syscalls_gate(regs.eax, regs.ebx, regs.ecx, regs.edx);
+#ifdef DBG_SYSCALL2
+    kprintf("task: %s - done syscall\n", Scheduler::the().current_task().meta_data->name.c_str());
+    kprintf("eip: 0x%x\n", regs.eip);
+    kprintf("kernel stack:\n");
+    print_stack(regs.esp, 16);
+    kprintf("user stack:\n");
+    print_stack(regs.useresp, 16);
+#endif
 }
 
 void syscall_exit(int code) {
@@ -38,6 +54,9 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current_task().id;
         case Syscall::Exit:
             syscall_exit((int)arg1);    
+            return 0;
+        case Syscall::Kputc:
+            kprintf("%c", (char)arg1);
             return 0;
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);

@@ -7,5 +7,6 @@ namespace Syscall {
         DbgPrint=3,
         getID=4,
         Exit=5,
+        Kputc=6,
     };
 };

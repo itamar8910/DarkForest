@@ -8,6 +8,7 @@ LIBC_OBJS := \
 	HeapAllocator.o \
 	asserts.o \
 	runtime_misc.o \
+	logging.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "stdarg.h"
-#include "DebugPort.h"
 #include "asserts.h"
 #include "stdlib.h"
+#include "types.h"
 
 const char digits_dec[] = "0123456789";
 const char digits_hex[] = "0123456789abcdef";
@@ -78,7 +78,7 @@ inline bool is_digit(char c) {
  * for example, if called for the format specifier '%3d' in the format string 'the number is: %3d',
  * then fmt should point to 'd'
  */ 
-int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
+static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
     ASSERT(is_numeric_format_type_specifier(*fmt), "get_fill_data: fmt should point to the format type specifier");
 
     char fill_number[MAX_FILL_NUMBER_LEN];
@@ -114,6 +114,7 @@ int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
     min_chars = atoi(fill_number);
     return 0;
 }
+
 
 template <typename PutcFunc>
 int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {

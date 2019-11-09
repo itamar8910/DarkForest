@@ -158,7 +158,8 @@ void print_register_dump(RegsDump& regs) {
       "edx: 0x%x\n"
       "ecx: 0x%x\n"
       "eax: 0x%x\n"
-      "eip: 0x%x\n",
+      "eip: 0x%x\n"
+      "user esp: 0x%x\n",
       regs.edi,
       regs.esi,
       regs.ebp,
@@ -167,7 +168,8 @@ void print_register_dump(RegsDump& regs) {
       regs.edx,
       regs.ecx,
       regs.eax,
-      regs.eip
+      regs.eip,
+      regs.useresp
       );
 }
 
