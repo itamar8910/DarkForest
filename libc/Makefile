@@ -5,6 +5,7 @@ LIBC_OBJS := \
 	printf.o \
 	stdlib.o \
 	bits.o \
+	unistd.o \
 
 TYPES_DIR := types
 
@@ -20,12 +21,11 @@ OBJS := $(LIBC_OBJS) $(TYPES_OBJS)
 
 all: $(TARGET)
 
-
 $(TARGET): $(OBJS)
 	$(LD) --relocatable $^ -o $@
 
 %.o: %.cpp $(HEADERS)
-	$(CC) $(INCLUDE) -c $< -o $@ $(CFLAGS)
+	$(CC) $(INCLUDE) -D$(LIBCMODE) -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm -f *.o

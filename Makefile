@@ -11,17 +11,14 @@ export LDFLAGS := -ffreestanding -O2 -nostdlib
 
 export CPP_FLAGS := 
 
-.PHONY: all libc kernel userspace
+.PHONY: all kernel userspace
 
-all: libc kernel userspace
+all: kernel userspace
 
 tests: clean set_tests_make_cmd all
 
 set_tests_make_cmd:
 	$(eval CPP_FLAGS := -DTESTS)
-
-libc:
-	make -C $(LIBC_DIR)/
 
 kernel:
 	make -C $(KERNEL_DIR)/

@@ -61,7 +61,11 @@ OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(C
 
 TARGET := DarkForest.bin
 
-all: $(TARGET)
+all: libc $(TARGET)
+
+libc:
+	make -C $(LIBC_INCLUDE) clean
+	make -C $(LIBC_INCLUDE) LIBCMODE=KERNEL
 
 $(TARGET): init $(OBJ_TO_LINK)
 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJ_TO_LINK) -lgcc

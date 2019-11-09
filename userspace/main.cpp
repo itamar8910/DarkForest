@@ -1,4 +1,4 @@
-
+#include "unistd.h"
 
 int func() {
     asm volatile(
@@ -7,9 +7,11 @@ int func() {
         "int $0x80\n"
         // "jmp 1b\n"
     );
-    return 0;
+    return 4;
 }
 
 int main() {
-    return func();
+    int x = func();
+    exit(x);
+    return 0;
 }
