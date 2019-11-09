@@ -10,3 +10,14 @@ void exit(int status) {
         : "rm"(status), "i"(Syscall::Exit)
     );
 }
+
+void sleep_ms(u32 ms) {
+    asm volatile(
+        "movl %0, %%ebx\n"
+        "movl %1, %%eax\n"
+        "int $0x80\n"
+        :
+        : "rm"(ms), "i"(Syscall::SleepMs)
+    );
+
+}

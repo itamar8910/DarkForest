@@ -2,7 +2,7 @@
 
 namespace Syscall {
     enum SyscallIdx {
-        Sleep=1,
+        SleepMs=1,
         Kprintf=2,
         DbgPrint=3,
         getID=4,

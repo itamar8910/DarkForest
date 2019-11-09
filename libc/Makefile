@@ -5,7 +5,14 @@ LIBC_OBJS := \
 	printf.o \
 	stdlib.o \
 	bits.o \
+
+LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
+	stdio.o \
+
+ifeq ($(LIBCMODE), USERSPACE)
+LIBC_OBJS += $(LIBC_USERSPACE_ONLY_OBJS)
+endif
 
 TYPES_DIR := types
 

@@ -25,7 +25,7 @@ void syscall_exit(int code) {
 
 u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
     switch(syscall_idx) {
-        case Syscall::Sleep:
+        case Syscall::SleepMs:
             sleep_ms(arg1);
             return 0;
         case Syscall::Kprintf:
