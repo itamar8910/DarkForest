@@ -1,55 +1,23 @@
 #pragma once
 
 #include "types.h"
+#include "HeapAllocator.h"
 
-enum KMallocMode {
+enum class KMallocMode {
     KMALLOC_ETERNAL,
     KMALLOC_NORMAL
 };
 
-#define MAGIC_FREE 0xc001beef
-#define MAGIC_USED 0xdeadbeef
 
-/**
- * Basic free list
- * each allocated memory block is preceded by a MemBlock structure
- * 
-*/
-
-
-struct MemBlock {
-    u32 magic; // used to avoid corrupted blocks
-    MemBlock* next;
-    void* addr;
-    u32 size;
-
-    static MemBlock* initialize(void* strct_addr,
-                                          MemBlock* next,
-                                          void* addr,
-                                          u32 size);
-    bool is_magic_free() {return magic == MAGIC_FREE;}
-    bool is_magic_used() {return magic == MAGIC_USED;}
-};
-
-class KMalloc {
-    
+class KernelHeapAllocator : public HeapAllocator {
 public:
     static void initialize();
-    static KMalloc& the();
-
-    void* allocate(u32 size);
-    void free(void* addr);
-
-    u32 current_free_space(u32& num_blocks);
-    u32 current_free_space() {u32 x = 0; return current_free_space(x);}
-
+    static KernelHeapAllocator& the();
+protected:
+    void allocate_page(void* addr) override;
 private:
-    KMalloc(void* addr, u32 size);
-    void exapnd_heap(u32 num_pages);
-    void add_mem_block(MemBlock*);
-
-    MemBlock* m_first_free;
-    void* m_current_heap_end;
+    KernelHeapAllocator(void* addr, u32 size)
+        : HeapAllocator(addr, size) {}
 };
 
 void* kmalloc(size_t size);

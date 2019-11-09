@@ -2,7 +2,7 @@
 
 #include "types.h"
 #include "multiboot.h"
-#include "Kassert.h"
+#include "asserts.h"
 #include "string.h"
 #include "VgaTTY.h"
 #include "DebugPort.h"
@@ -57,16 +57,16 @@ char* alloc(int size) {
 }
 
 void try_malloc() {
-	kprintf("1: Heap space: %d\n", KMalloc::the().current_free_space());
+	kprintf("1: Heap space: %d\n", KernelHeapAllocator::the().current_free_space());
 	char* b1;
 	char* b2;
 	b1 = alloc(0x20);
 	b2 = alloc(0x20);
-	kprintf("2: Heap space: %d\n", KMalloc::the().current_free_space());
+	kprintf("2: Heap space: %d\n", KernelHeapAllocator::the().current_free_space());
 	delete[] b1;
 	delete[] b2;
 	// b1 = alloc(0x20);
-	kprintf("3: Heap space: %d\n", KMalloc::the().current_free_space());
+	kprintf("3: Heap space: %d\n", KernelHeapAllocator::the().current_free_space());
 	b1 = alloc(0x2000);
 	delete[] b1;
 	alloc(0x200);
@@ -103,7 +103,7 @@ void try_virtual_alloc() {
 void print_heap() {
 
 	u32 num_blocks = 0;
-	u32 bytes = KMalloc::the().current_free_space(num_blocks);
+	u32 bytes = KernelHeapAllocator::the().current_free_space(num_blocks);
 	kprintf("heap free bytes: %d, #blocks: %d\n", num_blocks, bytes);
 
 }
@@ -197,7 +197,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	PIT::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_ETERNAL);
 	MemoryManager::initialize(mbt);
-	KMalloc::initialize();
+	KernelHeapAllocator::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
 
