@@ -1,4 +1,5 @@
 #pragma once
+#include "types.h"
 
 namespace Syscall {
     enum SyscallIdx {
@@ -9,4 +10,7 @@ namespace Syscall {
         Exit=5,
         Kputc=6,
     };
+
+    int invoke(SyscallIdx syscall, u32 arg);
 };
+

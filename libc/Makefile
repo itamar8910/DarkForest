@@ -9,6 +9,7 @@ LIBC_OBJS := \
 	asserts.o \
 	runtime_misc.o \
 	logging.o \
+	syscalls.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \

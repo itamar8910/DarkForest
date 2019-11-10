@@ -210,10 +210,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	PS2Keyboard::initialize();
 
 	init_syscalls();
-	// kprint("b4 int 0x80");
-	// asm volatile ("int $0x80");
-	// kprint("af int 0x80\n");
-	// cpu_hang();
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
 	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
