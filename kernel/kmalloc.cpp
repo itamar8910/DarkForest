@@ -30,7 +30,7 @@ void kmalloc_set_mode(KMallocMode mode) {
 }
 
 void KernelHeapAllocator::allocate_page(void* addr) {
-    MemoryManager::the().allocate((u32)addr, true, false);
+    MemoryManager::the().allocate((u32)addr, PageWritable::YES, UserAllowed::NO);
 }
 
 static KernelHeapAllocator* s_the = nullptr;
@@ -40,7 +40,7 @@ void KernelHeapAllocator::initialize() {
     // allocate first page of kernel heap
 
     s_the = (KernelHeapAllocator*) kmalloc_eternal(sizeof(KernelHeapAllocator));
-    MemoryManager::the().allocate((u32)KERNEL_HEAP_START, true, false);
+    MemoryManager::the().allocate((u32)KERNEL_HEAP_START, PageWritable::YES, UserAllowed::NO);
     new(s_the) KernelHeapAllocator(KERNEL_HEAP_START, PAGE_SIZE);
 }
 

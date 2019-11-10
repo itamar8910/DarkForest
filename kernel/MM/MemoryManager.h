@@ -42,6 +42,15 @@ constexpr u32 TEMPMAP_ADDR = (u32)((4*MB) - PAGE_SIZE);
 bool address_in_user_space(VirtualAddress);
 bool address_in_kernel_space(VirtualAddress);
 
+enum class PageWritable {
+	NO=0,
+	YES=1,
+};
+enum class UserAllowed {
+	NO=0,
+    YES=1,
+};
+
 class MemoryManager {
 private:
 	MemoryManager(); // singelton
@@ -55,7 +64,7 @@ public:
 
 	VirtualAddress temp_map(PhysicalAddress addr);
 	void un_temp_map();
-	void allocate(VirtualAddress virt_addr, bool writable, bool user_allowed);
+	void allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed);
 	void disable_page(Frame frame);
 	void deallocate(VirtualAddress virt_addr, bool free_page=true);
 	void flush_tlb(VirtualAddress addr);

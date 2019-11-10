@@ -89,7 +89,7 @@ void try_frame_alloc() {
 
 void try_virtual_alloc() {
 	u32 addr = 0x80000000;
-	MemoryManager::the().allocate(addr, true, true);
+	MemoryManager::the().allocate(addr, PageWritable::YES, UserAllowed::YES);
 	char* str = (char*)addr;
 	strncpy(str, "I am allocated", 100);
 	str[4*1024 ] = 1; // this will generate a page fault

@@ -30,8 +30,10 @@ void load_and_jump_userspace(void* elf_data, u32 size) {
          bool writable = get_bit(program_header->flags, Elf::ProgramHeaderFlags::Writable);
          u32 page_index = 0;
          for(u32 size = 0; size < segment_mem_size; size += PAGE_SIZE, ++page_index) {
-            MemoryManager::the().allocate((u32)segment_virtual_address + page_index*PAGE_SIZE, writable, true);
-
+            MemoryManager::the().allocate((u32)segment_virtual_address + page_index*PAGE_SIZE,
+            writable ? PageWritable::YES : PageWritable::NO,
+            UserAllowed::YES
+            );
          }
          // copy data from file
          memcpy(segment_virtual_address, segment_data, program_header->size_in_file);
@@ -42,7 +44,7 @@ void load_and_jump_userspace(void* elf_data, u32 size) {
 	u32 user_stack_bottom = USERSPACE_STACK;
 	u32 user_stack_top = user_stack_bottom - PAGE_SIZE;
 	u32* user_esp = (u32*) (user_stack_bottom - 16);
-	MemoryManager::the().allocate(user_stack_top, true, true);
+	MemoryManager::the().allocate(user_stack_top, PageWritable::YES, UserAllowed::YES);
    // jumpp to entry
    jump_to_usermode((void (*)())(header->entry), (u32) user_esp);
 }

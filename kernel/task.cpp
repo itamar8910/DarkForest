@@ -36,7 +36,9 @@ ThreadControlBlock* create_kernel_task(void (*func)(), String name) {
     tcb->id = ++current_thread_id;
     // allocate stack space for new task
     kprintf("new CR3: 0x%x\n", (u32)tcb->CR3);
-    MemoryManager::the().allocate((u32)next_task_stack_virtual_addr, true, false);
+    MemoryManager::the().allocate((u32)next_task_stack_virtual_addr,
+        PageWritable::YES,
+        UserAllowed::NO);
     u32* new_stack = (u32*)((u32)next_task_stack_virtual_addr + PAGE_SIZE - 4);
     // initialize value of stack (will be popped off at the end of switch_to_task)
     stack_push(&new_stack, u32(Scheduler::terminate)); // jumps here after func returns

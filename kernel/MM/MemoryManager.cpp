@@ -192,7 +192,7 @@ void MemoryManager::disable_page(Frame frame) {
     flush_tlb(frame);
 }
 
-void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_allowed) {
+void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
     kprintf("MM: allocate: 0x%x\n", virt_addr);
     auto pte = ensure_pte(virt_addr);
     ASSERT(!pte.is_present(), "allocate: PTE already present for virtual addr");
@@ -201,8 +201,8 @@ void MemoryManager::allocate(VirtualAddress virt_addr, bool writable, bool user_
     ASSERT(!err, "could not allocate frame");
     pte.set_addr(pt_frame);
     pte.set_present(true);
-    pte.set_writable(writable);
-    pte.set_user_allowed(user_allowed);
+    pte.set_writable(writable==PageWritable::YES);
+    pte.set_user_allowed(user_allowed==UserAllowed::YES);
     un_temp_map(); // 'ensure_pte' temp_mapped the page table of PTE
     flush_tlb(virt_addr);
 }
