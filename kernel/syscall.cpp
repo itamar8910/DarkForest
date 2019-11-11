@@ -4,6 +4,7 @@
 #include "asserts.h"
 #include "sleep.h"
 #include "Scheduler.h"
+#include "MM/MemoryManager.h"
 
 // #define DBG_SYSCALL
 // #define DBG_SYSCALL2
@@ -57,6 +58,9 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return 0;
         case Syscall::Kputc:
             kprintf("%c", (char)arg1);
+            return 0;
+        case Syscall::AllocatePage:
+            MemoryManager::the().allocate(arg1, PageWritable::YES, UserAllowed::YES);
             return 0;
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);

@@ -9,6 +9,7 @@ namespace Syscall {
         getID=4,
         Exit=5,
         Kputc=6,
+        AllocatePage=7,
     };
 
     int invoke(SyscallIdx syscall, u32 arg);

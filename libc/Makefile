@@ -10,6 +10,7 @@ LIBC_OBJS := \
 	runtime_misc.o \
 	logging.o \
 	syscalls.o \
+	mman.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \

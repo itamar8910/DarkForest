@@ -1,6 +1,8 @@
 #include "unistd.h"
 #include "stdio.h"
 #include "asserts.h"
+#include "mman.h"
+#include "string.h"
 
 int func() {
     for(;;) {
@@ -14,6 +16,13 @@ int func() {
 }
 
 int main() {
-    int x = func();
-    return x;
+
+    void* addr = (void*) 0x50000000;
+    allocate_page(addr); 
+    char* str = (char*) addr;
+    strcpy(str, "This is in a user allocated page!\n");
+    puts(str);
+    return 0;
+    // int x = func();
+    // return x;
 }

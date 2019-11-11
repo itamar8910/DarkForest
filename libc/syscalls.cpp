@@ -13,5 +13,6 @@ int Syscall::invoke(SyscallIdx syscall, u32 arg) {
         : "rm"(arg), "rm"((u32)syscall)
         : "ebx", "eax"
     );
+    // TODO: get actual return value of syscall
     return 0;
 } 
