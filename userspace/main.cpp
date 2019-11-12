@@ -3,6 +3,7 @@
 #include "asserts.h"
 #include "mman.h"
 #include "string.h"
+#include "malloc.h"
 
 int func() {
     for(;;) {
@@ -17,9 +18,9 @@ int func() {
 
 int main() {
 
-    void* addr = (void*) 0x50000000;
-    allocate_page(addr); 
-    char* str = (char*) addr;
+    // void* addr = (void*) 0x50000000;
+    // allocate_page(addr); 
+    char* str = new char[100]; 
     strcpy(str, "This is in a user allocated page!\n");
     puts(str);
     return 0;

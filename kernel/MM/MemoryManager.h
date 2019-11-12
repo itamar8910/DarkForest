@@ -18,6 +18,12 @@
 	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
 
 	4MB - 0xc0000000 - User space
+	0xa00000(10MB) - userspace code start
+
+	0x70000000 - userspace heap start (grows up)
+
+	0xb0000000 - userspace stack bottom (grows down)
+
 
     0xc0000000 - 0xffffffff : kernel address space
     0xc0000000 - 0xc0ffffff : kernel image (code + data)

@@ -11,6 +11,7 @@ LIBC_OBJS := \
 	logging.o \
 	syscalls.o \
 	mman.o \
+	malloc.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
