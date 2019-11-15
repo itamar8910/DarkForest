@@ -3,7 +3,6 @@
 
 #include "string.h"
 #include "cpu.h"
-#include "DebugPort.h"
 #include "logging.h"
 #include "types.h"
 
@@ -123,7 +122,7 @@ static void idt_register_entry_raw(uint8_t num, uint32_t base, bool user_allowed
 }
 
 static void unimpl_trap() {
-   DebugPort::write("unimplemented trap");
+   kprint("unimplemented trap");
    cpu_hang();
 }
 

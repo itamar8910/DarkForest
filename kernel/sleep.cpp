@@ -1,7 +1,7 @@
 
 #include "sleep.h"
 #include "Scheduler.h"
-#include "PIT.h"
+#include "drivers/PIT.h"
 
 void sleep_ms(u32 ms) {
     #ifdef DBG_SCHEDULER

@@ -1,6 +1,6 @@
 #include "Scheduler.h"
 #include "logging.h"
-#include "PIT.h"
+#include "drivers/PIT.h"
 #include "asserts.h"
 
 // #define DBG_SCHEDULER

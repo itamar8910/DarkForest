@@ -6,7 +6,7 @@
 
 #include "string.h"
 
-#include "VgaText.h"
+#include "drivers/VgaText.h"
 
 class VgaTTY {
 

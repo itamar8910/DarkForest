@@ -1,6 +1,6 @@
 #include "loader.h"
 #include "types.h"
-#include "MemoryManager.h"
+#include "MM/MemoryManager.h"
 #include "string.h"
 #include "Loader/ElfParser.h"
 #include "bits.h"
