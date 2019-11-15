@@ -13,7 +13,6 @@ KERN_OBJS := \
 	Scheduler.o \
 	TaskBlocker.o \
 	sleep.o \
-	KeyboardReader.o \
 	syscall.o \
 	process.o \
 	
@@ -42,9 +41,13 @@ LOADER_OBJS := \
 	$(LOADER_DIR)/loader.o \
 	$(LOADER_DIR)/ElfParser.o \
 
+HAL_DIR := HAL
+HAL_OBJS := \
+	$(HAL_DIR)/KeyboardDevice.o \
+
 INCLUDE := -I. -I$(LIBC_INCLUDE) -Imode/
 
-OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS)
+OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS) $(HAL_OBJS)
 
 HEADERS := $(shell find . -name '*.h')
 

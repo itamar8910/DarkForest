@@ -18,7 +18,7 @@
 #include "Scheduler.h"
 #include "drivers/PS2Keyboard.h"
 #include "sleep.h"
-#include "KeyboardReader.h"
+#include "HAL/KeyboardDevice.h"
 #include "FileSystem/RamDisk.h"
 #include "syscall.h"
 #include "Loader/loader.h"
@@ -152,8 +152,10 @@ void try_count_seconds() {
 }
 
 void vga_tty_consumer() {
+	KeyboardDevice kbd("/dev/keyboard");
 	while(1) {
-		auto key_event = keyboard_read();
+		KeyEvent key_event;
+		int rc = kbd.read(1, &key_event);
 		if(!key_event.released && key_event.to_ascii() != 0) {
 			VgaTTY::the().putchar(key_event.to_ascii());
 		}
