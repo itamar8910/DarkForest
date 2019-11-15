@@ -17,13 +17,12 @@ Scheduler& Scheduler::the() {
 void Scheduler::initialize(void (*idle_func)()) {
     s_the = new Scheduler();
     initialize_multitasking();
-    s_the->m_idle_task = create_kernel_task(idle_func, "idle");
+    s_the->m_idle_process = Process::create(idle_func, "idle");
 }
 
-void Scheduler::add_task(ThreadControlBlock* tcb) {
-    kprintf("adding kernel task: 0x%x, id: %d\n", tcb, tcb->id);
-    tcb->meta_data->state = TaskMetaData::State::Runnable;
-    m_runanble_tasks.append(tcb);
+void Scheduler::add_process(Process* process) {
+    process->task().meta_data->state = TaskMetaData::State::Runnable;
+    m_runanble_list.append(process);
 }
 
 constexpr u32 TIME_SLICE_MS = 5;
@@ -37,17 +36,17 @@ void Scheduler::tick(RegisterDump& regs) {
     kprintf("current task id: %d\n", m_current_task->id);
     #endif
     
-    if(m_current_task == nullptr) {
-        ASSERT(m_idle_task != nullptr, "Scheulder::tick() idle task is null");
-        m_current_task = m_idle_task;
+    if(m_current_process == nullptr) {
+        ASSERT(m_idle_process != nullptr, "Scheulder::tick() idle task is null");
+        m_current_process = m_idle_process;
     }
-    if(m_current_task == m_idle_task) {
+    if(m_current_process == m_idle_process) {
         // we always want to preempt the idle task
-        m_current_task->meta_data->state = TaskMetaData::State::Runnable;
-        m_current_task = nullptr;
+        m_current_process->task().meta_data->state = TaskMetaData::State::Runnable;
+        m_current_process = nullptr;
     }
     else if( 
-         m_current_task ->meta_data->state == TaskMetaData::State::Running) {
+         m_current_process->task().meta_data->state == TaskMetaData::State::Running) {
         // if current task is not blocked
         // check if exceeded time slice
         if(m_tick_since_switch < TIME_SLICE_MS) {
@@ -56,12 +55,12 @@ void Scheduler::tick(RegisterDump& regs) {
             return;
         } else{
             // preempt task
-            m_current_task->meta_data->state = TaskMetaData::State::Runnable;
+            m_current_process->task().meta_data->state = TaskMetaData::State::Runnable;
             #ifdef ASSERTS_SCHEDULER
-            ASSERT(!m_runanble_tasks.find(m_current_task), "currently runing task should not be in runnable list");
+            ASSERT(!m_runanble_list.find(m_current_process), "currently runing task should not be in runnable list");
             #endif
-            m_runanble_tasks.append(m_current_task);
-            m_current_task = nullptr;
+            m_runanble_list.append(m_current_process);
+            m_current_process = nullptr;
         }
     }
     // NOTE: in the current implementation,
@@ -78,88 +77,89 @@ void Scheduler::tick(RegisterDump& regs) {
 }
 
 void Scheduler::pick_next_and_switch() {
-    auto* chosen_task = pick_next();
-    if(chosen_task != nullptr) {
+    auto* chosen_process = pick_next();
+    if(chosen_process != nullptr) {
         #ifdef DBG_SCHEDULER
         print_scheduler_tasks();
         #endif
-        bool removed = m_runanble_tasks.remove(chosen_task);
+        bool removed = m_runanble_list.remove(chosen_process);
         ASSERT(removed, "Scheduer: failed to remove chosen task from runnable list");
     } else {
-        chosen_task = m_idle_task;
+        chosen_process = m_idle_process;
     }
-    m_current_task = chosen_task;
-    m_current_task->meta_data->state = TaskMetaData::State::Running;
+    m_current_process = chosen_process;
+    m_current_process->task().meta_data->state = TaskMetaData::State::Running;
     m_tick_since_switch = 0;
-    switch_to_task(m_current_task);
+    switch_to_task(&m_current_process->task());
 }
 
 void Scheduler::try_unblock_tasks() {
-    for(auto* task_node = m_blocked_tasks.head(); task_node != nullptr; task_node = task_node->next) {
-        auto* task = task_node->val;
+    for(auto* process_node = m_blocked_list.head(); process_node != nullptr; process_node = process_node->next) {
+        auto* process = process_node->val;
 
-        ASSERT(task->meta_data->state == TaskMetaData::State::Blocked, "Scheduler: task is in blocked list but not blocked");
-        TaskBlocker* blocker = task->meta_data->blocker;
+        ASSERT(process->task().meta_data->state == TaskMetaData::State::Blocked, "Scheduler: task is in blocked list but not blocked");
+        TaskBlocker* blocker = process->task().meta_data->blocker;
         ASSERT(blocker != nullptr, "Task is blocked but has no TaskBlocker");
         if(blocker->can_unblock()) {
             #ifdef DBG_SCHEDULER
             kprintf("Scheduler: unblocking: %d\n", task->id);
             #endif
-            task->meta_data->state = TaskMetaData::State::Runnable;
-            delete task->meta_data->blocker;
-            task->meta_data->blocker = nullptr;
-            m_blocked_tasks.remove(task);
-            m_runanble_tasks.append(task);
+             process->task().meta_data->state = TaskMetaData::State::Runnable;
+            delete process->task().meta_data->blocker;
+            process->task().meta_data->blocker = nullptr;
+            m_blocked_list.remove(process);
+            m_runanble_list.append(process);
         }
     }
 }
 
-ThreadControlBlock* Scheduler::pick_next() {
-    if(m_runanble_tasks.size() == 0) {
+Process* Scheduler::pick_next() {
+    if(m_runanble_list.size() == 0) {
         return nullptr;
     }
-    ASSERT(m_runanble_tasks.head() != nullptr, "Scheduler: runnable_tasks head is null but size != 0");
-    auto* task = m_runanble_tasks.head()->val;
-    ASSERT(task->meta_data->state == TaskMetaData::State::Runnable, "Scheduler: task is in runnable list but not runnable");
-    return task;
+    ASSERT(m_runanble_list.head() != nullptr, "Scheduler: runnable_tasks head is null but size != 0");
+    auto* process = m_runanble_list.head()->val;
+    ASSERT(process->task().meta_data->state == TaskMetaData::State::Runnable, "Scheduler: task is in runnable list but not runnable");
+    return process;
 }
 
 void Scheduler::block_current(TaskBlocker* blocker) {
     asm volatile("cli"); // disable interrupts
-    m_current_task->meta_data->blocker = blocker;
-    m_current_task->meta_data->state = TaskMetaData::State::Blocked;
-    m_blocked_tasks.append(m_current_task);
+    m_current_process->task().meta_data->blocker = blocker;
+    m_current_process->task().meta_data->state = TaskMetaData::State::Blocked;
+    m_blocked_list.append(m_current_process);
 
     Scheduler::the().pick_next_and_switch();
 }
 
 void Scheduler::print_scheduler_tasks() {
     kprintf("runnable tasks:\n");
-    for(auto* task_node = m_runanble_tasks.head(); task_node != nullptr; task_node = task_node->next) {
-        kprintf("%d,", task_node->val->id);
+    for(auto* process_node = m_runanble_list.head(); process_node != nullptr; process_node = process_node->next) {
+        kprintf("%d,", process_node->val->name());
     }
-    kprintf("\nblocked tasks:\n");
-    for(auto* task_node = m_blocked_tasks.head(); task_node != nullptr; task_node = task_node->next) {
-        kprintf("%d,", task_node->val->id);
+    kprintf("\nblocked processs:\n");
+    for(auto* process_node = m_blocked_list.head(); process_node != nullptr; process_node = process_node->next) {
+        kprintf("%d,", process_node->val->name());
     }
     kprintf("\n");
 }
 
 void Scheduler::terminate() {
     asm volatile("cli");
-    kprintf("Task [%s] terminated\n", current_TCB->meta_data->name.c_str());
-    ASSERT(current_TCB->id == Scheduler::the().m_current_task->id);
+    kprintf("Process [%s] terminated\n", Scheduler::the().m_current_process->name().c_str());
+    ASSERT(current_TCB->id == Scheduler::the().m_current_process->task().id);
     // this will have the effect of terminating the task because 
     // it will not be added to the runnable list
-    delete current_TCB;
+    // delete current_TCB;
+    delete Scheduler::the().m_current_process;
     current_TCB = nullptr;
     // TODO: free userspace resources
-    Scheduler::the().m_current_task = nullptr;
+    Scheduler::the().m_current_process = nullptr;
 
     Scheduler::the().pick_next_and_switch();
 }
 
 
-ThreadControlBlock& Scheduler::current_task() {
-    return *m_current_task;
+Process& Scheduler::current() {
+    return *m_current_process;
 }

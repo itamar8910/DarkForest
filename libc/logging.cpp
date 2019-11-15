@@ -4,7 +4,7 @@
 #include "printf.h"
 
 #ifdef KERNEL
-#include "drivers/DebugPort.h"
+#include "kernel/drivers/DebugPort.h"
 #endif
 #ifdef USERSPACE
 #include "stdio.h"

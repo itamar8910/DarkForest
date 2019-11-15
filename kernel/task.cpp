@@ -16,7 +16,7 @@ u32 current_thread_id = 1;
 
 void initialize_multitasking() {
     // just a dummy initial TCB
-    current_TCB = new ThreadControlBlock("dummy");
+    current_TCB = new ThreadControlBlock();
     current_TCB->id = 1;
     current_TCB->CR3 = (void*) get_cr3();
     current_TCB->ESP = 0;
@@ -31,8 +31,8 @@ void switch_to_task(ThreadControlBlock* next) {
 
 #define CLONE_PAGE_DIRECTORY
 
-ThreadControlBlock* create_kernel_task(void (*func)(), String name) {
-    ThreadControlBlock* tcb = new ThreadControlBlock(name);
+ThreadControlBlock* create_kernel_task(void (*func)()) {
+    ThreadControlBlock* tcb = new ThreadControlBlock();
     tcb->id = ++current_thread_id;
     // allocate stack space for new task
     kprintf("new CR3: 0x%x\n", (u32)tcb->CR3);

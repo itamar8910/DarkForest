@@ -212,10 +212,10 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	init_syscalls();
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	Scheduler::the().add_task(create_kernel_task(task1_func, "task1"));
-	Scheduler::the().add_task(create_kernel_task(task2_func, "task2"));
-	Scheduler::the().add_task(create_kernel_task(task3_func, "task3"));
-	Scheduler::the().add_task(create_kernel_task(vga_tty_consumer, "VgaTTY Consumer"));
+	Scheduler::the().add_process(Process::create(task1_func, "process1"));
+	Scheduler::the().add_process(Process::create(task2_func, "process2"));
+	Scheduler::the().add_process(Process::create(task3_func, "process3"));
+	Scheduler::the().add_process(Process::create(vga_tty_consumer, "VgaTTY"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");

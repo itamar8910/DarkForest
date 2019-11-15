@@ -11,13 +11,11 @@ struct TaskMetaData {
         Blocked,
         Dead,
     };
-    String name;
     State state;
     u8 priority;
     TaskBlocker* blocker;
-    TaskMetaData(String _name)
-        : name(_name),
-          state(State::Runnable),
+    TaskMetaData()
+        : state(State::Runnable),
           priority(128),
           blocker(nullptr) {}
 };
@@ -30,10 +28,10 @@ struct [[gnu::packed]] ThreadControlBlock {
     // we have a ptr here to keep the structure simple,
     // because we handle it in ASM
     TaskMetaData* meta_data;
-    ThreadControlBlock(String name): id(0), 
+    ThreadControlBlock(): id(0), 
                           ESP(nullptr),
                           CR3(nullptr),
-                          meta_data(new TaskMetaData(name))
+                          meta_data(new TaskMetaData())
                           {}
     ~ThreadControlBlock() {delete meta_data;}
 };
@@ -49,5 +47,5 @@ void initialize_multitasking();
 
 void switch_to_task(ThreadControlBlock* next);
 
-ThreadControlBlock* create_kernel_task(void (*func)(), String name="[Unnamed]");
+ThreadControlBlock* create_kernel_task(void (*func)());
 

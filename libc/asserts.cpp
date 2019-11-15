@@ -1,8 +1,13 @@
 #include "asserts.h"
 
+
+#ifndef MODE
+#include "mode.h"
+#endif
+
 #ifdef KERNEL
 #include "logging.h"
-#include "cpu.h"
+#include "kernel/cpu.h"
 #endif
 #ifdef USERSPACE
 #include "stdio.h"

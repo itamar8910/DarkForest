@@ -27,7 +27,7 @@ TYPES_OBJS := \
 	$(TYPES_DIR)/String.o	
 
 HEADERS := $(OBJS:.o=.h)
-INCLUDE = -I../kernel/ -I.
+INCLUDE = -I. -I../
 
 TARGET := libc.o
 
@@ -39,7 +39,7 @@ $(TARGET): $(OBJS)
 	$(LD) --relocatable $^ -o $@
 
 %.o: %.cpp $(HEADERS)
-	$(CC) $(INCLUDE) -D$(LIBCMODE) -c $< -o $@ $(CFLAGS)
+	$(CC) $(INCLUDE) -D$(LIBCMODE) -DMODE -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm -f *.o

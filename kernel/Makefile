@@ -15,6 +15,7 @@ KERN_OBJS := \
 	sleep.o \
 	KeyboardReader.o \
 	syscall.o \
+	process.o \
 	
 
 DRIVERS_DIR := drivers
@@ -41,7 +42,7 @@ LOADER_OBJS := \
 	$(LOADER_DIR)/loader.o \
 	$(LOADER_DIR)/ElfParser.o \
 
-INCLUDE := -I. -I$(LIBC_INCLUDE)
+INCLUDE := -I. -I$(LIBC_INCLUDE) -Imode/
 
 OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS)
 

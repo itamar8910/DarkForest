@@ -52,7 +52,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             kprint("DbgPrint\n");
             return 0;
         case Syscall::getID:
-            return Scheduler::the().current_task().id;
+            return Scheduler::the().current().pid();
         case Syscall::Exit:
             syscall_exit((int)arg1);    
             return 0;
