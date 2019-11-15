@@ -25,11 +25,11 @@ String::String(String&& other) {
     other.m_len = 0;
 }
 
-bool String::operator==(const String& other) {
+bool String::operator==(const String& other) const {
     return len() == other.len() 
             && !memcmp(m_chars, other.m_chars, len());
 }
-bool String::operator!=(const String& other) {
+bool String::operator!=(const String& other) const {
     return len() != other.len() 
             || memcmp(m_chars, other.m_chars, len());
 }

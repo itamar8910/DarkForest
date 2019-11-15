@@ -22,6 +22,8 @@
 #include "FileSystem/RamDisk.h"
 #include "syscall.h"
 #include "Loader/loader.h"
+#include "FileSystem/VFS.h"
+#include "FileSystem/DevFS.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -152,10 +154,14 @@ void try_count_seconds() {
 }
 
 void vga_tty_consumer() {
-	KeyboardDevice kbd("/dev/keyboard");
+	// KeyboardDevice kbd("/dev/keyboard");
+	// TODO: enable dynamic_cast
+	KeyboardDevice* kbd = (KeyboardDevice*) VFS::the().open("/dev/keyboard");
+	ASSERT(kbd != nullptr, "failed to open keyboard device");
 	while(1) {
 		KeyEvent key_event;
-		int rc = kbd.read(1, &key_event);
+		int rc = kbd->read(1, &key_event);
+		ASSERT(rc==1, "failed to read from keyboard");
 		if(!key_event.released && key_event.to_ascii() != 0) {
 			VgaTTY::the().putchar(key_event.to_ascii());
 		}
@@ -187,6 +193,9 @@ void vga_tty_hello() {
 	VgaTTY::the().write((char*) content);
 }
 
+void init_VFS() {
+	VFS::the().mount(&DevFS::the());
+}
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
@@ -210,6 +219,9 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	vga_tty_hello();
 	PS2Keyboard::initialize();
+
+	DevFS::initiailize();
+	init_VFS();
 
 	init_syscalls();
 	Scheduler::initialize(idle);

@@ -9,6 +9,8 @@ public:
     virtual int read(size_t count, void* buf) = 0;
     virtual int write(char* data, size_t count) = 0;
 
+    const String& path() {return m_path;}
+
 private:
     String m_path;
 };

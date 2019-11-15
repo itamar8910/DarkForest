@@ -35,6 +35,8 @@ FS_DIR := FileSystem
 FS_OBJS := \
 	$(FS_DIR)/TarFS.o \
 	$(FS_DIR)/RamDisk.o \
+	$(FS_DIR)/VFS.o \
+	$(FS_DIR)/DevFS.o \
 
 LOADER_DIR := Loader
 LOADER_OBJS := \
@@ -82,4 +84,4 @@ init: $(CRTI_OBJ) $(CRTN_OBJ)
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -DKERNEL -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o $(DRIVERS_DIR)/*.o $(MM_DIR)/*.o *.ao init/*.ao $(TARGET)
+	rm -f *.o $(DRIVERS_DIR)/*.o $(MM_DIR)/*.o *.ao init/*.ao $(FS_DIR)/*.o $(LOADER_DIR)/*.o $(HAL_DIR)/*.o $(TARGET)

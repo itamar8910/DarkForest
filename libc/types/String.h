@@ -16,8 +16,8 @@ public:
     String(String&& other);
 
     void operator=(const String& other);
-    bool operator!=(const String& other);
-    bool operator==(const String& other);
+    bool operator!=(const String& other) const;
+    bool operator==(const String& other) const;
 
     size_t len() const;
 
