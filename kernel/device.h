@@ -8,5 +8,6 @@ protected:
 
 public:
     virtual int ioctl(u32 request, void* buf) = 0;
+    virtual ~Device() {};
 
 };

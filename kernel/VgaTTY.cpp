@@ -1,12 +1,18 @@
 
 #include "VgaTTY.h"
+#include "FileSystem/VFS.h"
+#include "logging.h"
 
 VgaTTY::VgaTTY() : 
         m_row(0),
         m_column(0),
         m_color(VgaText::compose_color(VgaText::VgaColor::VGA_COLOR_LIGHT_GREY,
-            VgaText::VgaColor::VGA_COLOR_BLACK))
+            VgaText::VgaColor::VGA_COLOR_BLACK)),
+        m_vgatext_device(*static_cast<VgaTextDevice*>(
+            VFS::the().open("/dev/vgatext")
+        ))
     {
+        ASSERT(&m_vgatext_device != 0, "failed to create VgaTextDevice");
         VgaText::clear(m_color);
     }
 
@@ -47,7 +53,15 @@ void VgaTTY::putchar(char c)
         return;
     }
     // else, regular char
-    VgaText::putchar(c, m_color, m_column, m_row);
+    VgaTextDevice::IOCTL_DATA ioctl_data {
+            static_cast<u8>(m_row),
+            static_cast<u8>(m_column),
+            VgaText::compose_entry(c, m_color)
+        };
+    m_vgatext_device.ioctl(
+        static_cast<int>(VgaTextDevice::IOCTL_CODE::PUT_CHAR), 
+        &ioctl_data
+    );
     if (++m_column == VgaText::VGA_WIDTH) {
         newline();
     }

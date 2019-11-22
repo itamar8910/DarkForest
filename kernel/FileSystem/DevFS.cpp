@@ -1,6 +1,7 @@
 #include "DevFS.h"
 
 #include "HAL/KeyboardDevice.h"
+#include "HAL/VgaTextDevice.h"
 
 static DevFS* s_the;
 
@@ -13,6 +14,7 @@ DevFS& DevFS::the() {
 
 void DevFS::initiailize() {
     DevFS::the().add_device(new KeyboardDevice("/dev/keyboard"));
+    DevFS::the().add_device(new VgaTextDevice("/dev/vgatext"));
 }
 
 void DevFS::add_device(Device* device) {

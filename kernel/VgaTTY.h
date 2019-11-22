@@ -6,8 +6,8 @@
 
 #include "string.h"
 
-#include "drivers/VgaText.h"
 
+#include "HAL/VgaTextDevice.h"
 class VgaTTY {
 
 public:
@@ -25,4 +25,6 @@ private:
     size_t m_row;
     size_t m_column;
     uint8_t m_color;
+    VgaTextDevice& m_vgatext_device;
+
 };

@@ -46,6 +46,7 @@ LOADER_OBJS := \
 HAL_DIR := HAL
 HAL_OBJS := \
 	$(HAL_DIR)/KeyboardDevice.o \
+	$(HAL_DIR)/VgaTextDevice.o \
 
 INCLUDE := -I. -I$(LIBC_INCLUDE) -Imode/
 

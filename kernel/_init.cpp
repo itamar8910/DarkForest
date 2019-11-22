@@ -18,12 +18,12 @@
 #include "Scheduler.h"
 #include "drivers/PS2Keyboard.h"
 #include "sleep.h"
-#include "HAL/KeyboardDevice.h"
 #include "FileSystem/RamDisk.h"
 #include "syscall.h"
 #include "Loader/loader.h"
 #include "FileSystem/VFS.h"
 #include "FileSystem/DevFS.h"
+#include "HAL/KeyboardDevice.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -154,8 +154,6 @@ void try_count_seconds() {
 }
 
 void vga_tty_consumer() {
-	// KeyboardDevice kbd("/dev/keyboard");
-	// TODO: enable dynamic_cast
 	KeyboardDevice* kbd = (KeyboardDevice*) VFS::the().open("/dev/keyboard");
 	ASSERT(kbd != nullptr, "failed to open keyboard device");
 	while(1) {
@@ -166,6 +164,7 @@ void vga_tty_consumer() {
 			VgaTTY::the().putchar(key_event.to_ascii());
 		}
 	}
+	delete kbd;
 }
 
 void idle() {
@@ -217,11 +216,12 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	return;
 #endif
 
-	vga_tty_hello();
 	PS2Keyboard::initialize();
 
 	DevFS::initiailize();
 	init_VFS();
+
+	vga_tty_hello();
 
 	init_syscalls();
 	Scheduler::initialize(idle);
