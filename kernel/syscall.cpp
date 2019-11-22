@@ -62,6 +62,10 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::AllocatePage:
             MemoryManager::the().allocate(arg1, PageWritable::YES, UserAllowed::YES);
             return 0;
+        case Syscall::Open:
+            return Scheduler::the().current().syscall_open(String((char*) arg1));
+        case Syscall::IOCTL:
+            return Scheduler::the().current().syscall_ioctl(arg1, arg2, (void*) arg3);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED("invalid syscall");

@@ -110,48 +110,14 @@ void print_heap() {
 
 }
 
-void test_usemode() {
+void test_usermode() {
 	u32 elf_size = 0;
 	u8* elf_data = RamDisk::fs().get_content("userspace/main", elf_size);
 	ASSERT(elf_data != nullptr, "couldn't load userspace/main");
 	load_and_jump_userspace(elf_data, elf_size);
 }
 
-void task1_func() {
-	test_usemode();
-	for(int i = 0; ; i++) {
-		kprintf("task1: %d\n", i);
-		sleep_ms(150);
-	}
-}
 
-void task2_func() {
-	test_usemode();
-	for(int i = 0; ; i++) {
-		kprintf("task2: %d\n", i);
-		print_heap();
-		sleep_ms(200);
-	}
-}
-void task3_func() {
-	test_usemode();
-	for(int i = 0; i < 5; i++) {
-		kprintf("task3: %d\n", i);
-		sleep_ms(300);
-	}
-}
-
-
-void try_count_seconds() {
-	int x = 9999;
-	while(1) {
-		int y = PIT::seconds_since_boot();
-		if(x != y) {
-			x = y;
-			kprintf("Seconds: %d\n", x);
-		}
-	}
-}
 
 void vga_tty_consumer() {
 	KeyboardDevice* kbd = (KeyboardDevice*) VFS::the().open("/dev/keyboard");
@@ -226,9 +192,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	init_syscalls();
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	Scheduler::the().add_process(Process::create(task1_func, "process1"));
-	Scheduler::the().add_process(Process::create(task2_func, "process2"));
-	Scheduler::the().add_process(Process::create(task3_func, "process3"));
+	Scheduler::the().add_process(Process::create(test_usermode, "process1"));
 	Scheduler::the().add_process(Process::create(vga_tty_consumer, "VgaTTY"));
 
 	kprintf("enableing interrupts\n");

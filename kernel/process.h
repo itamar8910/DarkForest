@@ -1,5 +1,8 @@
 #pragma once
 #include "task.h"
+#include "file.h"
+
+#define NUM_FILE_DESCRIPTORS 256
 
 class Process {
 public:
@@ -16,8 +19,12 @@ public:
 
     ~Process();
 
+    int syscall_open(const String& path);
+    int syscall_ioctl(size_t fd, u32 code, void* data);
+
 private:
     u32 m_pid;
     ThreadControlBlock* m_task;
     String m_name;
+    File* m_file_descriptors[NUM_FILE_DESCRIPTORS] {0};
 };
