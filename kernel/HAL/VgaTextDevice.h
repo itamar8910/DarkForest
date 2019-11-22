@@ -7,22 +7,6 @@
 class VgaTextDevice : public Device {
 public:
 
-    enum class IOCTL_CODE : u32{
-        PUT_CHAR = 1,
-        MOVE_CURSOR = 2,
-        GET_CHAR = 3,
-        CLEAR = 4,
-    };
-
-    struct IOCTL_DATA {
-        u8 row {0};
-        u8 col {0};
-        u16 value {0};
-    };
-
-    enum class IOCTL_ERRS {
-        E_OUT_OF_BOUNDS = 1,
-    };
 
     VgaTextDevice(String path)
         : Device(path)

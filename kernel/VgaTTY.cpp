@@ -2,12 +2,14 @@
 #include "VgaTTY.h"
 #include "FileSystem/VFS.h"
 #include "logging.h"
+#include "VgaTextCommon.h"
+#include "ioctl_common.h"
 
 VgaTTY::VgaTTY() : 
         m_row(0),
         m_column(0),
-        m_color(VgaText::compose_color(VgaText::VgaColor::VGA_COLOR_LIGHT_GREY,
-            VgaText::VgaColor::VGA_COLOR_BLACK)),
+        m_color(VgaTextCommon::compose_color(VgaTextCommon::VgaColor::VGA_COLOR_LIGHT_GREY,
+            VgaTextCommon::VgaColor::VGA_COLOR_BLACK)),
         m_vgatext_device(*static_cast<VgaTextDevice*>(
             VFS::the().open("/dev/vgatext")
         ))
@@ -32,7 +34,7 @@ void VgaTTY::scrolldown() {
             uint16_t nextline_entry = VgaText::get_entry(x, y+1);
             unsigned char uc;
             uint8_t color;
-            VgaText::decompose_entry(nextline_entry, uc, color);
+            VgaTextCommon::decompose_entry(nextline_entry, uc, color);
             VgaText::putchar((char)uc, color, x, y);
         }
     }
@@ -53,13 +55,13 @@ void VgaTTY::putchar(char c)
         return;
     }
     // else, regular char
-    VgaTextDevice::IOCTL_DATA ioctl_data {
+    IOCTL::VgaText::Data ioctl_data {
             static_cast<u8>(m_row),
             static_cast<u8>(m_column),
-            VgaText::compose_entry(c, m_color)
+            VgaTextCommon::compose_entry(c, m_color)
         };
     m_vgatext_device.ioctl(
-        static_cast<int>(VgaTextDevice::IOCTL_CODE::PUT_CHAR), 
+        static_cast<int>(IOCTL::VgaText::Code::PUT_CHAR), 
         &ioctl_data
     );
     if (++m_column == VgaText::VGA_WIDTH) {

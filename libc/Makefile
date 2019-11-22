@@ -12,6 +12,7 @@ LIBC_OBJS := \
 	syscalls.o \
 	mman.o \
 	malloc.o \
+	VgaTextCommon.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
