@@ -10,10 +10,12 @@ A work in progress x86 operating system
 - Heap memory management
 - Interrupts
 - Keyboard driver
+- Tar RamDisk filesystem
+- Partial elf parser
+- Userspace
 
 ## Coming up:
-- Some sort of FileSystem
-- Userspace!
+- userspace shell
 
 ## build
 ```bash
