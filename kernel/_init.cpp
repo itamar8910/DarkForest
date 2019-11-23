@@ -117,6 +117,19 @@ void test_usermode() {
 	load_and_jump_userspace(elf_data, elf_size);
 }
 
+void hello_world_userspace() {
+	u32 elf_size = 0;
+	u8* elf_data = RamDisk::fs().get_content("userspace/HelloWorld.app", elf_size);
+	ASSERT(elf_data != nullptr, "couldn't load HelloWorld");
+	load_and_jump_userspace(elf_data, elf_size);
+}
+void vga_tty_userspace() {
+	u32 elf_size = 0;
+	u8* elf_data = RamDisk::fs().get_content("userspace/VgaTTY.app", elf_size);
+	ASSERT(elf_data != nullptr, "couldn't load VgaTTY");
+	load_and_jump_userspace(elf_data, elf_size);
+}
+
 
 
 void vga_tty_consumer() {
@@ -192,7 +205,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	init_syscalls();
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	Scheduler::the().add_process(Process::create(test_usermode, "process1"));
+	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
+	Scheduler::the().add_process(Process::create(vga_tty_userspace, "VgaTTYUser"));
 	Scheduler::the().add_process(Process::create(vga_tty_consumer, "VgaTTY"));
 
 	kprintf("enableing interrupts\n");
