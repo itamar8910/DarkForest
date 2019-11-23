@@ -8,11 +8,15 @@
 VgaTTY::VgaTTY() : 
         m_row(0),
         m_column(0),
-        m_color(VgaTextCommon::compose_color(VgaTextCommon::VgaColor::VGA_COLOR_LIGHT_GREY,
-            VgaTextCommon::VgaColor::VGA_COLOR_BLACK)),
-        m_vgatext_device(*static_cast<VgaTextDevice*>(
-            VFS::the().open("/dev/vgatext")
-        ))
+        m_color(VgaTextCommon::compose_color(
+                VgaTextCommon::VgaColor::VGA_COLOR_LIGHT_GREY,
+                VgaTextCommon::VgaColor::VGA_COLOR_BLACK)
+                ),
+        m_vgatext_device(
+                *static_cast<VgaTextDevice*>(
+                    VFS::the().open("/dev/vgatext")
+                )
+            )
     {
         ASSERT(&m_vgatext_device != 0, "failed to create VgaTextDevice");
         VgaText::clear(m_color);
