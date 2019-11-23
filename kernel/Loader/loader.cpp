@@ -12,11 +12,7 @@
 void load_and_jump_userspace(void* elf_data, u32 size) {
    Elf::Header* header = (Elf::Header*) elf_data;
    Elf::ParseInfo elf_parse_info = Elf::from(elf_data, size);
-   // TODO: we REALY need iterators
-   for(size_t program_header_idx = 0
-      ; program_header_idx < elf_parse_info.program_header_offsets.size()
-      ; program_header_idx++) {
-         u32 offset = elf_parse_info.program_header_offsets[program_header_idx];
+   for(auto& offset : elf_parse_info.program_header_offsets) {
          Elf::ProgramHeader* program_header = (Elf::ProgramHeader*) ((u32)elf_data+offset);
          if(program_header->type != Elf::ProgramHeaderType::LOAD) {
             continue;

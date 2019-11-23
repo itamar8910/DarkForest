@@ -57,7 +57,7 @@ void Scheduler::tick(RegisterDump& regs) {
             // preempt task
             m_current_process->task().meta_data->state = TaskMetaData::State::Runnable;
             #ifdef ASSERTS_SCHEDULER
-            ASSERT(!m_runanble_list.find(m_current_process), "currently runing task should not be in runnable list");
+            ASSERT(m_runanble_list.find(m_current_process)==m_runanble_list.end(), "currently runing task should not be in runnable list");
             #endif
             m_runanble_list.append(m_current_process);
             m_current_process = nullptr;

@@ -36,7 +36,7 @@ int VgaTextDevice::ioctl(u32 request, void* buf) {
             u16 entry = VgaText::get_entry(data->col, data->row);
             unsigned char c;
             u8 color;
-            VgaTextCommon::decompose_entry(data->value, c, color);
+            VgaTextCommon::decompose_entry(entry, c, color);
             data->value = static_cast<u16>(c);
             }
             break;

@@ -13,6 +13,24 @@
 template <typename T>
 class Vector {
 public:
+
+
+    class Iterator {
+    public:
+        Iterator(Vector& vector, size_t idx) 
+            : m_vector(vector),
+              m_idx(idx)
+            {}
+        Iterator& operator++() {++m_idx; return *this;}
+        Iterator& operator--() {--m_idx; return *this;}
+        bool operator==(const Iterator& other) {return m_idx == other.m_idx;}
+        bool operator!=(const Iterator& other) {return !this->operator==(other);}
+        T& operator*() {return m_vector.at(m_idx);}
+    private:
+        Vector& m_vector;
+        size_t m_idx;
+    };
+
     Vector() : 
                     m_data(new T[DEFAULT_VECTOR_CAPACITY]),
                     m_capacity (DEFAULT_VECTOR_CAPACITY),
@@ -66,6 +84,9 @@ public:
         }
         return *this;
     }
+
+    Iterator begin() {return Iterator(*this, 0);}
+    Iterator end() {return Iterator(*this, m_size);}
 
     ~Vector() {
         #ifdef VECTOR_DBG

@@ -40,9 +40,22 @@ static void vector_tests2() {
     ASSERT(v2[0] == 3, "12");
 }
 
+static void vector_tests3() {
+    Vector<int> v;
+    v.append(1);
+    v.append(4);
+    v.append(2);
+    u32 sum = 0;
+    for(auto& x : v) {
+        sum += x;
+    }
+    ASSERT(sum == 7, "13");
+}
+
 static void vector_tests() {
     kprintf("[vector_tests]\n");
     vector_tests1();
     vector_tests2();
+    vector_tests3();
 
 }

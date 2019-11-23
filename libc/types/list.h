@@ -9,8 +9,6 @@
 
 #define MAX_REASONABLE_LIST_SIZE 10000
 
-// TODO: add iterator
-
 template<typename T>
 class List {
 
@@ -18,6 +16,31 @@ private:
 struct Node;
 
 public:
+
+
+    class Iterator {
+    public:
+        Iterator(Node* n): current(n) {}
+        bool operator==(const Iterator& other) const {
+            return this->current == other.current;
+        }
+        bool operator!=(const Iterator& other) const {
+            return !this->operator==(other);
+        }
+        T& operator*() {return current->val;}
+        Iterator& operator++() {
+            current = current->next;
+            return *this;
+        }
+        Iterator& operator--() {
+            current = current->prev;
+            return *this;
+        }
+        Node* node() {return current;}
+    private:
+        Node* current; 
+    };
+
     List() 
         : m_head(nullptr),
           m_tail(nullptr),
@@ -37,7 +60,7 @@ public:
     } 
 
     void append(T&& t){
-        Node* node = new Node(move(t));
+        Node* node = new Node(t);
         m_size++;
         if(m_tail == nullptr) {
             m_head = node;
@@ -51,20 +74,21 @@ public:
 
     u32 size() const {return m_size;}
 
-    Node* find(const T& t) {
+    Iterator find(const T& t) {
         for(auto* node = m_head; node != nullptr; node = node->next) {
             if(node->val == t) {
-                return node;
+                return Iterator(node);
             }
         }
-        return nullptr;
+        return end();
     }
 
     bool remove(const T& _t) {
-        Node* t = find(_t);
-        if(t == nullptr) {
+        Iterator itr = find(_t);
+        if(itr == end()) {
             return false;
         }
+        Node* t = itr.node();
         if(t->prev != nullptr) {
             t->prev->next = t->next;
         }
@@ -80,6 +104,13 @@ public:
         delete t;
         m_size--;
         return true;
+    }
+
+    Iterator begin() {
+        return Iterator(m_head);
+    }
+    Iterator end() {
+        return Iterator(nullptr);
     }
 
     ~List() {

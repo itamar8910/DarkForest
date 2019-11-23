@@ -20,9 +20,18 @@ static void test_iteration() {
     l.append(new B(1));
     l.append(new B(2));
     l.append(new B(3));
+    size_t c1 = 0, c2 = 0;
     for(auto* item = l.head(); item != nullptr; item = item->next) {
+        (void)item;
+        ++c1;
+    }
+    for(auto& item : l) {
+        (void)item;
+        ++c2;
     }
     ASSERT(l.size()==3, "11");
+    ASSERT(c1==3, "12a");
+    ASSERT(c2==3, "12b");
 }
 
 static void list_tests() {
