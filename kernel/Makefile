@@ -40,6 +40,7 @@ FS_OBJS := \
 	$(FS_DIR)/RamDiskFS.o \
 	$(FS_DIR)/CharFile.o \
 	$(FS_DIR)/path.o \
+	$(FS_DIR)/FileUtils.o \
 
 LOADER_DIR := Loader
 LOADER_OBJS := \
@@ -51,7 +52,7 @@ HAL_OBJS := \
 	$(HAL_DIR)/KeyboardDevice.o \
 	$(HAL_DIR)/VgaTextDevice.o \
 
-INCLUDE := -I. -I$(LIBC_INCLUDE) -Imode/
+INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 
 OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS) $(HAL_OBJS)
 

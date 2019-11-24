@@ -1,6 +1,7 @@
 #include "string.h"
 #include "asserts.h"
 #include "FileSystem/TarFS.h"
+#include "CharFile.h"
 
 
 #define TAR_PADDING 512
@@ -38,22 +39,19 @@ u32 round_up(u32 num, u32 round) {
     return num + (round-num)%round;
 }
 
-u8* TarFS::get_content(const char* path, u32& ret_size) {
-    TarHeader* current = (TarHeader*) m_base;
+File* TarFS::open(const String& path) {
+    TarHeader* current = (TarHeader*) base();
     while(strcmp(current->name, "")) {
-        u32 size = decode_tarnum(current->size);
+        size_t size = decode_tarnum(current->size);
         u32 content_addr = (
                 ((u32) current) 
                 + TAR_PADDING
             );
 
-        if(!strcmp(current->name, path)) {
-            ret_size = size;
-            return (u8*) content_addr;
+        if(!strcmp(current->name, path.c_str())) {
+            return new CharFile(path, (u8*) content_addr, size);
         }
         current = (TarHeader*) round_up(content_addr + size, TAR_PADDING);
     }
-    ret_size = 0;
-    return 0;
-
-};
+    return nullptr;
+}

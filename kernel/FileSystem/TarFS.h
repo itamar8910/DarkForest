@@ -1,8 +1,8 @@
 #pragma once
 
 #include "types.h"
-
 #include "FileSystem/RamDiskFS.h"
+#include "multiboot.h"
 
 
 /**
@@ -11,8 +11,8 @@
 class TarFS : public RamDiskFS {
 
 public:
-    TarFS(void* base, u32 size) : RamDiskFS(base, size) {}
+    TarFS(multiboot_info_t& mbt) : RamDiskFS(mbt) {}
 
-    u8* get_content(const char* path, u32& size) override;
+    File* open(const String& path) override;
 
 };

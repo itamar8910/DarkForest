@@ -1,22 +1,22 @@
 #pragma once
 #include "types.h"
+#include "FileSystem.h"
+#include "multiboot.h"
 
-class RamDiskFS {
+class RamDiskFS : public FileSystem{
 public:
-    /*
-     * Read content of file
-     * 
-     * path - path of file
-     * size - the size of the content would be returned 
-     *        via this parameter
-     * Returns pointer to data, or nullptr if path not found
-     */
-    virtual u8* get_content(const char* path, u32& size) = 0;
-protected:
-    RamDiskFS(void* base, u32 size)
-        : m_base(base),
-          m_size(size) {}
+    virtual File* open(const String& path) = 0;
 
-    void* m_base;
-    u32 m_size;
+    void* base(){return m_base;}
+    u32 size(){return m_size;}
+
+    // ramdiskFS does not need to free the memory (its from bootloader)
+    virtual ~RamDiskFS(){};
+
+protected:
+    RamDiskFS(multiboot_info_t& mbt);
+
+private:
+    void* m_base {nullptr};
+    u32 m_size {0};
 };

@@ -24,6 +24,8 @@
 #include "FileSystem/VFS.h"
 #include "FileSystem/DevFS.h"
 #include "HAL/KeyboardDevice.h"
+#include "FileSystem/CharFile.h"
+#include "FileSystem/FileUtils.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -110,23 +112,21 @@ void print_heap() {
 
 }
 
-void test_usermode() {
-	u32 elf_size = 0;
-	u8* elf_data = RamDisk::fs().get_content("userspace/main", elf_size);
-	ASSERT(elf_data != nullptr, "couldn't load userspace/main");
-	load_and_jump_userspace(elf_data, elf_size);
-}
-
 void hello_world_userspace() {
-	u32 elf_size = 0;
-	u8* elf_data = RamDisk::fs().get_content("userspace/HelloWorld.app", elf_size);
+	size_t elf_size = 0;
+	File* f = VFS::the().open("/initrd/userspace/HelloWorld.app");
+	ASSERT(f != nullptr, "couldn't open HelloWorld");
+	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
 	ASSERT(elf_data != nullptr, "couldn't load HelloWorld");
 	load_and_jump_userspace(elf_data, elf_size);
+	delete elf_data;
 }
 void vga_tty_userspace() {
-	u32 elf_size = 0;
-	u8* elf_data = RamDisk::fs().get_content("userspace/VgaTTY.app", elf_size);
-	ASSERT(elf_data != nullptr, "couldn't load VgaTTY");
+	size_t elf_size = 0;
+	File* f = VFS::the().open("/initrd/userspace/VgaTTY.app");
+	ASSERT(f != nullptr, "couldn't open VgaTTY app");
+	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
+	ASSERT(elf_data != nullptr, "couldn't load VgaTTY app");
 	load_and_jump_userspace(elf_data, elf_size);
 }
 
@@ -153,26 +153,18 @@ void idle() {
 	}
 }
 
-void init_ramdisk(multiboot_info_t* mbt) {
-	ASSERT(mbt->mods_count == 1, "Expected only a single multiboot module (ramdisk)");
-	multiboot_module_t* ramdisk_module = (multiboot_module_t*) mbt->mods_addr;
-	kprintf("mod_start: 0x%x, mod_end: 0x%x\n", ramdisk_module->mod_start, ramdisk_module->mod_end);
-	void* ramdisk_base = (void*) ramdisk_module->mod_start;
-	u32 ramdisk_size = ramdisk_module->mod_end - ramdisk_module->mod_start + 1;
-	RamDisk::init(ramdisk_base, ramdisk_size);
-}
-
-#define HELLO_FILE "hello.txt"
-
-void vga_tty_hello() {
-	u32 size = 0;
-	u8* content = RamDisk::fs().get_content(HELLO_FILE, size);
-	ASSERT(content != nullptr && size > 0, "error reading hello file");
-	VgaTTY::the().write((char*) content);
-}
+// #define HELLO_FILE "hello.txt"
+// 
+// void vga_tty_hello() {
+// 	u32 size = 0;
+// 	u8* content = RamDisk::fs().get_content(HELLO_FILE, size);
+// 	ASSERT(content != nullptr && size > 0, "error reading hello file");
+// 	VgaTTY::the().write((char*) content);
+// }
 
 void init_VFS() {
 	VFS::the().mount(&DevFS::the());
+	VFS::the().mount(&RamDisk::fs());
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
@@ -180,7 +172,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
 	kprintf("I smell %x\n", 0xdeadbeef);
 	kprintf("Multiboot modules: mods_count: %d\n, mods_addr: 0x%x\n", mbt->mods_count, mbt->mods_addr);
-	init_ramdisk(mbt);
 	PIC::initialize();
 	init_descriptor_tables();
 	PIT::initialize();
@@ -197,10 +188,11 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	PS2Keyboard::initialize();
 
+	RamDisk::init(*mbt);
 	DevFS::initiailize();
 	init_VFS();
 
-	vga_tty_hello();
+	// vga_tty_hello();
 
 	init_syscalls();
 	Scheduler::initialize(idle);
