@@ -18,10 +18,15 @@ public:
     void operator=(const String& other);
     bool operator!=(const String& other) const;
     bool operator==(const String& other) const;
+    char operator[](size_t idx) const;
 
     size_t len() const;
+    bool empty() {return m_len == 0;}
 
     const char* c_str() const;
+
+    bool startswith(const String& other) const;
+    String substr(int start=0, int end=-1) const;
 
     ~String();
 

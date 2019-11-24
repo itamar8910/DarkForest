@@ -64,3 +64,14 @@ int strcmp(const char *s1, const char *s2) {
 	);
 	return *p1 - *p2;
 }
+
+int strncmp(const char *s1, const char *s2, size_t n) {
+	char* p1 = (char*) s1;
+	char* p2 = (char*) s2;
+	for( size_t i = 0
+		; (*p1) == (*p2) && (*p1) && i < n-1
+		; p1++, p2++, i++
+	);
+	return *p1 - *p2;
+
+}

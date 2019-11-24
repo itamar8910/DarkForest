@@ -25,6 +25,11 @@ String::String(String&& other) {
     other.m_len = 0;
 }
 
+char String::operator[](size_t idx) const {
+    ASSERT(idx < len(), "String::operator[] idx overflow");
+    return c_str()[idx];
+}
+
 bool String::operator==(const String& other) const {
     return len() == other.len() 
             && !memcmp(m_chars, other.m_chars, len());
@@ -47,4 +52,19 @@ size_t String::len() const {return m_len;}
 String::~String() {
     delete[] m_chars;
     m_len = 0;
+}
+
+bool String::startswith(const String& other) const {
+    if(len() < other.len())
+        return false;
+    return !strncmp(c_str(), other.c_str(), other.len());
+}
+
+String String::substr(int start, int end) const {
+    if(end == -1) {
+        end = len();
+    }
+    char* buff = new char[end-start];
+    memcpy(buff, c_str()+start, end-start);
+    return String(buff);
 }
