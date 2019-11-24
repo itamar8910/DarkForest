@@ -37,6 +37,9 @@ FS_OBJS := \
 	$(FS_DIR)/RamDisk.o \
 	$(FS_DIR)/VFS.o \
 	$(FS_DIR)/DevFS.o \
+	$(FS_DIR)/RamDiskFS.o \
+	$(FS_DIR)/CharFile.o \
+	$(FS_DIR)/path.o \
 
 LOADER_DIR := Loader
 LOADER_OBJS := \

@@ -13,8 +13,8 @@ DevFS& DevFS::the() {
 }
 
 void DevFS::initiailize() {
-    DevFS::the().add_device(new KeyboardDevice("/dev/keyboard"));
-    DevFS::the().add_device(new VgaTextDevice("/dev/vgatext"));
+    DevFS::the().add_device(new KeyboardDevice("keyboard"));
+    DevFS::the().add_device(new VgaTextDevice("vgatext"));
 }
 
 void DevFS::add_device(Device* device) {

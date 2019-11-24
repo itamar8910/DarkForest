@@ -1,4 +1,6 @@
 #include "VFS.h"
+#include "path.h"
+#include "logging.h"
 
 static VFS* s_the = nullptr;
 
@@ -14,13 +16,14 @@ void VFS::mount(FileSystem* fs) {
 }
 
 File* VFS::open(const String& path) {
-    // TODO: change logic to use mount points
-    // paths inside filesystems should only refer to things 
-    // after the mount point, e.g /dev/usb/usb1 -> usb/usb1
-    // also, only search FS with a mounting point that is a prefix of 'path'
-    for(size_t i = 0; i < mounted_filesystems.size(); i++) {
-        auto* fs = mounted_filesystems[i];
-        File* f = fs->open(path);
+    kprintf("VFS::open %s\n", path.c_str());
+    for(auto* fs : mounted_filesystems) {
+        ASSERT(fs != nullptr, "VFS::open fs is null");
+        if(!path.startswith(fs->mountpoint()))
+            continue;
+        String inside_path = Path::remove_mount_prefix(path, *fs);
+        ASSERT(inside_path != String(""), "VFS::open err in removing FS mount prefix");
+        File* f = fs->open(inside_path);
         if(f != nullptr) {
             return f;
         }
