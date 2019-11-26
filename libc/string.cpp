@@ -2,9 +2,12 @@
 #include "string.h"
 #include "logging.h"
 #include "types.h"
-
+#include "asserts.h"
 size_t strlen(const char* str) 
 {
+	#ifdef ASSERTS_LEVEL_1
+	ASSERT(str != nullptr, "strlen with str=nullptr");
+	#endif
 	size_t len = 0;
 	while (str[len])
 		len++;

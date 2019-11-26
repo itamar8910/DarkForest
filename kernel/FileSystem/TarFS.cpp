@@ -2,6 +2,7 @@
 #include "asserts.h"
 #include "FileSystem/TarFS.h"
 #include "CharFile.h"
+#include "logging.h"
 
 
 #define TAR_PADDING 512

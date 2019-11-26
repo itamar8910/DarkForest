@@ -5,6 +5,7 @@
 #include "sleep.h"
 #include "Scheduler.h"
 #include "MM/MemoryManager.h"
+#include "FileSystem/FileUtils.h"
 
 // #define DBG_SYSCALL
 // #define DBG_SYSCALL2
@@ -22,7 +23,9 @@ void print_stack(u32 esp, size_t num) {
 ISR_HANDLER(syscall);
 void isr_syscall_handler(RegisterDump& regs) {
 #ifdef DBG_SYSCALL
-    kprintf("task: %s - syscall : %d\n", Scheduler::the().current_task().meta_data->name.c_str(), regs.eax);
+    if(regs.eax != Syscall::Kputc) {
+        kprintf("task: %s - syscall : %d\n", Scheduler::the().current().name().c_str(), regs.eax);
+    }
 #endif
     regs.eax = syscalls_gate(regs.eax, regs.ebx, regs.ecx, regs.edx);
 #ifdef DBG_SYSCALL2
@@ -66,6 +69,10 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_open(String((char*) arg1));
         case Syscall::IOCTL:
             return Scheduler::the().current().syscall_ioctl(arg1, arg2, (void*) arg3);
+        case Syscall::FILE_SIZE:
+            return Scheduler::the().current().syscall_file_size(arg1);
+        case Syscall::READ:
+            return Scheduler::the().current().syscall_read(arg1, (char*) arg2, arg3);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED("invalid syscall");

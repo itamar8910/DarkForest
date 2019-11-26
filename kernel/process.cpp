@@ -3,6 +3,7 @@
 #include "FileSystem/VFS.h"
 #include "errs.h"
 #include "device.h"
+#include "FileSystem/CharFile.h"
 
 u32 g_next_pid;
 
@@ -39,4 +40,26 @@ int Process::syscall_ioctl(size_t fd, u32 code, void* data) {
     // TODO: dynamic_cast
     Device* d = static_cast<Device*>(file);
     return d->ioctl(code, data);
+}
+
+int Process::syscall_file_size(size_t fd) {
+    if(fd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+    auto* file = m_file_descriptors[fd];
+    if(file == nullptr)
+        return -E_NOTFOUND;
+    // TODO: dynamic_cast
+    CharFile* cf = static_cast<CharFile*>(file);
+    return cf->size();
+
+}
+
+int Process::syscall_read(size_t fd, char* buff, size_t count) {
+    if(fd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+    auto* file = m_file_descriptors[fd];
+    if(file == nullptr)
+        return -E_NOTFOUND;
+    return file->read(count, buff);
+
 }

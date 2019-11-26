@@ -1,13 +1,20 @@
 #include "types/String.h"
 #include "string.h"
+#include "asserts.h"
 
 String::String(): m_chars() {}
 
 String::String(const char* str) {
+    #ifdef ASSERTS_LEVEL_1
+    ASSERT(str != nullptr, "err constructing string from nullptr char* (1)");
+    #endif
     init_from(str, strlen(str));
 }
 
 void String::init_from(const char* str, size_t len) {
+    #ifdef ASSERTS_LEVEL_1
+    ASSERT(str != nullptr, "err constructing string from nullptr char* (2)");
+    #endif
     m_chars = new char[len+1];
     memcpy(m_chars, str, len);
     m_chars[len] = 0;

@@ -5,4 +5,5 @@
 
 namespace FileUtils {
     u8* read_all(CharFile& f, size_t& size);
+    int file_size(const String& path);
 }

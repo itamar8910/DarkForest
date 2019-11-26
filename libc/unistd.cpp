@@ -17,3 +17,11 @@ int open(const char* path) {
 int ioctl(int fd, u32 code, void* data) {
     return Syscall::invoke(Syscall::IOCTL, fd, code, (u32)data);
 }
+
+int file_size(int fd) {
+    return Syscall::invoke(Syscall::FILE_SIZE, fd);
+}
+
+int read(size_t fd, char* buff, size_t count) {
+    return Syscall::invoke(Syscall::READ, fd, (u32)buff, count);
+}
