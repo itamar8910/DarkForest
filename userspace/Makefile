@@ -21,10 +21,11 @@ libc:
 
 apps: $(APPS)
 
-%.app:
+%.app: FORCE
 	make -C $*
 	$(CC) -T linker.ld -o $*.app $(LDFLAGS) $(OBJS_TO_LINK) $*/main.o -lgcc
 
+FORCE:
 
 # main: main.o start.ao
 # 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJS_TO_LINK) -lgcc

@@ -140,7 +140,17 @@ VgaTTY& VgaTTY::the() {
 
 
 int main() {
-    printf("hello from: %s\n", "VgaTTY!");
+    printf("hello from: %s!!\n", "VgaTTY!");
+    int fd = open("/initrd/hello.txt");
+    printf("fd: %d\n", fd);
+    int size = file_size(fd);
+    printf("file size: %d\n", size);
+    char* buff = new char[size+1];
+    read(fd, buff, size);
+    buff[size] = 0;
+    // kprintf("hello.txt: %s\n", buff);
+    VgaTTY::the().write(buff);
+    // TODO: read content into buffer, write it to VgaTTY
     VgaTTY::the().write("hello1!\n");
     VgaTTY::the().write("hello2!\n");
     
