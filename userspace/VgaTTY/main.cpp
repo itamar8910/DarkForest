@@ -76,6 +76,7 @@ void VgaTTY::scrolldown() {
             unsigned char uc;
             uint8_t color;
             VgaTextCommon::decompose_entry(nextline_entry, uc, color);
+        
             VgaTTY::putchar((char)uc, color, x, y);
         }
     }
@@ -91,7 +92,7 @@ u16 VgaTTY::get_entry(u8 x, u8 y) {
             x,
             0,
         };
-    ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::GET_CHAR), &ioctl_data);
+    ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::GET_ENTRY), &ioctl_data);
     return ioctl_data.value;
 }
 void VgaTTY::putchar(char c, u8 color, u8 x, u8 y) {

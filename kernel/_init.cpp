@@ -4,7 +4,6 @@
 #include "multiboot.h"
 #include "asserts.h"
 #include "string.h"
-#include "VgaTTY.h"
 #include "drivers/DebugPort.h"
 #include "cpu.h"
 #include "logging.h"
@@ -38,20 +37,6 @@
 #endif
  
 
-void do_vga_tty_stuff() {
-	auto tty = VgaTTY::the();
- 
-	tty.write("up1\n");
-	tty.write("up2\n");
-	tty.write("up3\n");
-	for(int i = 0; i < 20; i++) {
-		tty.write("another line\n");
-	}
-	tty.write("down1\n");
-	tty.write("down2\n");
-	tty.write("down3fshakfa\n");
-	tty.write("down4\n");
-}
 
 char* alloc(int size) {
 	char* buff = new char[size];
@@ -130,37 +115,12 @@ void vga_tty_userspace() {
 	load_and_jump_userspace(elf_data, elf_size);
 }
 
-
-
-void vga_tty_consumer() {
-	KeyboardDevice* kbd = (KeyboardDevice*) VFS::the().open("/dev/keyboard");
-	ASSERT(kbd != nullptr, "failed to open keyboard device");
-	while(1) {
-		KeyEvent key_event;
-		int rc = kbd->read(1, &key_event);
-		ASSERT(rc==1, "failed to read from keyboard");
-		if(!key_event.released && key_event.to_ascii() != 0) {
-			VgaTTY::the().putchar(key_event.to_ascii());
-		}
-	}
-	delete kbd;
-}
-
 void idle() {
 	for(;;) {
 		// kprintf("idle\n");
 		// cpu_hang();
 	}
 }
-
-// #define HELLO_FILE "hello.txt"
-// 
-// void vga_tty_hello() {
-// 	u32 size = 0;
-// 	u8* content = RamDisk::fs().get_content(HELLO_FILE, size);
-// 	ASSERT(content != nullptr && size > 0, "error reading hello file");
-// 	VgaTTY::the().write((char*) content);
-// }
 
 void init_VFS() {
 	VFS::the().mount(&DevFS::the());
@@ -199,7 +159,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	MemoryManager::the().lock_kernel_PDEs();
 	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
 	Scheduler::the().add_process(Process::create(vga_tty_userspace, "VgaTTYUser"));
-	// Scheduler::the().add_process(Process::create(vga_tty_consumer, "VgaTTY"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");

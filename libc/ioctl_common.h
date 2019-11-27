@@ -10,6 +10,7 @@ namespace IOCTL {
             MOVE_CURSOR = 2,
             GET_CHAR = 3,
             CLEAR = 4,
+            GET_ENTRY=5,
         };
 
         struct Data {

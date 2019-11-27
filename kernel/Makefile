@@ -5,7 +5,6 @@ LIBC_INCLUDE := ../libc
 KERN_OBJS := \
 	_init.o \
 	boot.ao \
-	VgaTTY.o \
 	cpu.o \
 	kmalloc.o \
 	task.o \

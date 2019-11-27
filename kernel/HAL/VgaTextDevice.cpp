@@ -40,6 +40,12 @@ int VgaTextDevice::ioctl(u32 request, void* buf) {
             data->value = static_cast<u16>(c);
             }
             break;
+        case IOCTL::VgaText::Code::GET_ENTRY:
+            {
+            u16 entry = VgaText::get_entry(data->col, data->row);
+            data->value = static_cast<u16>(entry);
+            }
+            break;
         case IOCTL::VgaText::Code::CLEAR:
             VgaText::clear(static_cast<u8>(data->value));
             break;
