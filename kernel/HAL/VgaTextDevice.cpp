@@ -46,6 +46,11 @@ int VgaTextDevice::ioctl(u32 request, void* buf) {
             data->value = static_cast<u16>(entry);
             }
             break;
+        case IOCTL::VgaText::Code::UPDATE_CURSOR:
+            {
+                VgaText::update_cursor(data->col, data->row);
+            }
+            break;
         case IOCTL::VgaText::Code::CLEAR:
             VgaText::clear(static_cast<u8>(data->value));
             break;

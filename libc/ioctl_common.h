@@ -11,6 +11,7 @@ namespace IOCTL {
             GET_CHAR = 3,
             CLEAR = 4,
             GET_ENTRY=5,
+            UPDATE_CURSOR=6,
         };
 
         struct Data {

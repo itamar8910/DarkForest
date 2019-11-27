@@ -95,6 +95,8 @@ u16 VgaTTY::get_entry(u8 x, u8 y) {
     ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::GET_ENTRY), &ioctl_data);
     return ioctl_data.value;
 }
+
+
 void VgaTTY::putchar(char c, u8 color, u8 x, u8 y) {
     IOCTL::VgaText::Data ioctl_data {
             static_cast<u8>(y),
@@ -102,6 +104,12 @@ void VgaTTY::putchar(char c, u8 color, u8 x, u8 y) {
             VgaTextCommon::compose_entry(c, color)
         };
     ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::PUT_CHAR), &ioctl_data);
+    // update to cursor's pos (next char)
+    ioctl_data.col = (ioctl_data.col + 1) % VgaTTY::VGA_WIDTH;
+    if(ioctl_data.col == 0) {
+        ++ioctl_data.row;
+    }
+    ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::UPDATE_CURSOR), &ioctl_data);
 }
 
 void VgaTTY::putchar(char c) 

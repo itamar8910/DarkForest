@@ -16,5 +16,6 @@ namespace VgaText {
     void putchar(char c, uint8_t color, size_t x, size_t y);
 
     uint16_t get_entry(size_t x, size_t y);
+    void update_cursor(int x, int y);
 
 }

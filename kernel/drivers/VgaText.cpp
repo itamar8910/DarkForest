@@ -1,6 +1,7 @@
 
 #include "VgaText.h"
 #include "VgaTextCommon.h"
+#include "IO.h"
 
 
  
@@ -12,6 +13,16 @@ void VgaText::clear(uint8_t color) {
 			terminal_buffer[index] = VgaTextCommon::compose_entry(' ', color);
 		}
 	}
+}
+
+void VgaText::update_cursor(int x, int y)
+{
+	uint16_t pos = y * VgaText::VGA_WIDTH + x;
+ 
+	IO::outb(0x3D4, 0x0F);
+	IO::outb(0x3D5, (uint8_t) (pos & 0xFF));
+	IO::outb(0x3D4, 0x0E);
+	IO::outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
 }
 
 void VgaText::putchar(char c, uint8_t color, size_t x, size_t y) 
