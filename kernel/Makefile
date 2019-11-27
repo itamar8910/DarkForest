@@ -54,6 +54,7 @@ HAL_OBJS := \
 
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 
+
 OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS) $(HAL_OBJS)
 
 HEADERS := $(shell find . -name '*.h')

@@ -1,6 +1,6 @@
 
 LIBC_DIR := ../../libc
-INCLUDE := -I$(LIBC_DIR)
+INCLUDE += -I$(LIBC_DIR)
 
 all: main.o
 

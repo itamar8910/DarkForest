@@ -11,7 +11,7 @@ LIBC_OBJ := $(LIBC_DIR)/libc.o
 
 OBJS_TO_LINK := $(OBJS) $(LIBC_OBJ)
 
-INCLUDE := -I$(LIBC_DIR)
+export INCLUDE := -I$(LIBC_DIR) -I../../
 
 all: libc start.ao apps
 

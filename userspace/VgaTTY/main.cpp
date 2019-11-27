@@ -7,6 +7,7 @@
 
 #include "ioctl_common.h"
 #include "VgaTextCommon.h"
+#include "PS2KeyboardCommon.h"
 
 
 
@@ -148,11 +149,17 @@ int main() {
     char* buff = new char[size+1];
     read(fd, buff, size);
     buff[size] = 0;
-    // kprintf("hello.txt: %s\n", buff);
     VgaTTY::the().write(buff);
-    // TODO: read content into buffer, write it to VgaTTY
-    VgaTTY::the().write("hello1!\n");
-    VgaTTY::the().write("hello2!\n");
+
+    int keyboard_fd = open("/dev/keyboard");
+    ASSERT(keyboard_fd != 0, "err opening keyboard dev");
+    KeyEvent key_event;
+    while(1) {
+        read(keyboard_fd, (char*) &key_event, 1);
+		if(!key_event.released && key_event.to_ascii() != 0) {
+			VgaTTY::the().putchar(key_event.to_ascii());
+		}
+    }
     
     return 0;
 }

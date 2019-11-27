@@ -13,6 +13,7 @@ LIBC_OBJS := \
 	mman.o \
 	malloc.o \
 	VgaTextCommon.o \
+	PS2KeyboardCommon.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \

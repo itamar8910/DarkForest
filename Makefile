@@ -1,6 +1,7 @@
 KERNEL_DIR := kernel
 LIBC_DIR := libc
 USERSPACE_DIR := userspace
+COMMON_DIR := common
 
 export ASM := nasm
 export CC := i686-elf-g++

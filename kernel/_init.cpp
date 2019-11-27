@@ -199,7 +199,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	MemoryManager::the().lock_kernel_PDEs();
 	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
 	Scheduler::the().add_process(Process::create(vga_tty_userspace, "VgaTTYUser"));
-	Scheduler::the().add_process(Process::create(vga_tty_consumer, "VgaTTY"));
+	// Scheduler::the().add_process(Process::create(vga_tty_consumer, "VgaTTY"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");
