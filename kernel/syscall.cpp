@@ -40,7 +40,7 @@ void isr_syscall_handler(RegisterDump& regs) {
 
 void syscall_exit(int code) {
     kprintf("process exited with code: %d\n", code);
-    Scheduler::the().terminate();
+    Scheduler::the().terminate_current();
 }
 
 u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {

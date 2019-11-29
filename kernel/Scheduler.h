@@ -19,7 +19,7 @@ public:
      *   in a way that will call this function
      *  when the task returns from its main function
     */
-    static void terminate();
+    static void terminate_current();
     Process& current();
 
 private:

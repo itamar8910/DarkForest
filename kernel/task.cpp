@@ -41,7 +41,7 @@ ThreadControlBlock* create_kernel_task(void (*func)()) {
         UserAllowed::NO);
     u32* new_stack = (u32*)((u32)next_task_stack_virtual_addr + PAGE_SIZE - 4);
     // initialize value of stack (will be popped off at the end of switch_to_task)
-    stack_push(&new_stack, u32(Scheduler::terminate)); // jumps here after func returns
+    stack_push(&new_stack, u32(Scheduler::terminate_current)); // jumps here after func returns
     stack_push(&new_stack, (u32)func); // will be popped of as EIP
     stack_push(&new_stack, 0); // ebp
     stack_push(&new_stack, 0); // edi

@@ -5,6 +5,7 @@
 #include "cpu.h"
 #include "logging.h"
 #include "types.h"
+#include "Scheduler.h"
 
 TSS the_tss;
 
@@ -179,9 +180,15 @@ void isr_14_handler(RegisterDumpWithErrCode& regs) {
    kprint("*** Page Fault\n");
    kprintf("Address that generated Fault: 0x%x\n", get_cr2());
    print_register_dump(regs);
-   // kprintf("Register dump: eax: ")
-   // TODO: handle page fault
-   cpu_hang(); // until we implement
+   // TODO: generate backtrace
+   if(is_selector_ring3(regs.ds)) {
+      kprintf("(From userspace)\n");
+      Scheduler::the().terminate_current();
+   } else {
+      kprintf("(From kernel)\n");
+      kprintf("K E R N E L P A N I C K\n");
+      cpu_hang();
+   }
 }
 
 // General protection fault

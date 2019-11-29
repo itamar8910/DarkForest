@@ -110,6 +110,10 @@ inline u32 cpu_flags() {
     return flags;
 }
 
+inline bool is_selector_ring3(u32 s) {
+   return s & 0x3;
+}
+
 void register_interrupt_handler(int num, void (*func)(), bool user_allowed=false);
 
 

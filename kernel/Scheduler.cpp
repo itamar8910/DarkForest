@@ -144,7 +144,7 @@ void Scheduler::print_scheduler_tasks() {
     kprintf("\n");
 }
 
-void Scheduler::terminate() {
+void Scheduler::terminate_current() {
     asm volatile("cli");
     kprintf("Process [%s] terminated\n", Scheduler::the().m_current_process->name().c_str());
     ASSERT(current_TCB->id == Scheduler::the().m_current_process->task().id);
