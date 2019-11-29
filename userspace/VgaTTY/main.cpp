@@ -22,6 +22,7 @@ public:
     void write(const char* str);
     void clear(u8 color);
     u16 get_entry(u8 x, u8 y);
+    void update_cursor(u8 x, u8 y);
 
 private:
     VgaTTY();
@@ -104,29 +105,35 @@ void VgaTTY::putchar(char c, u8 color, u8 x, u8 y) {
             VgaTextCommon::compose_entry(c, color)
         };
     ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::PUT_CHAR), &ioctl_data);
-    // update to cursor's pos (next char)
-    ioctl_data.col = (ioctl_data.col + 1) % VgaTTY::VGA_WIDTH;
-    if(ioctl_data.col == 0) {
-        ++ioctl_data.row;
-    }
+}
+
+void VgaTTY::update_cursor(u8 x, u8 y) {
+    IOCTL::VgaText::Data ioctl_data {
+            static_cast<u8>(y),
+            static_cast<u8>(x),
+            0,
+        };
     ioctl(m_vga_text_device_fd, static_cast<size_t>(IOCTL::VgaText::Code::UPDATE_CURSOR), &ioctl_data);
 }
 
 void VgaTTY::putchar(char c) 
 {
+    if(c == '\n') {
+        newline();
+    }
+    else {
+        // else, regular char
+        putchar(c, m_color, m_column, m_row);
+        if (++m_column == VgaTTY::VGA_WIDTH) {
+            newline();
+        }
+    }
     if(m_row == VgaTTY::VGA_HEIGHT) {
         scrolldown();
         m_row = VgaTTY::VGA_HEIGHT - 1;
+        m_column = 0;
     }
-    if(c == '\n') { // if newline: col = 0, increment row
-        newline();
-        return;
-    }
-    // else, regular char
-    putchar(c, m_color, m_column, m_row);
-    if (++m_column == VgaTTY::VGA_WIDTH) {
-        newline();
-    }
+    update_cursor(m_column, m_row);
 }
 
 void VgaTTY::write(const char* data, size_t size) 
