@@ -68,6 +68,9 @@ CRTN_OBJ=init/crtn.ao
 
 OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(CRTN_OBJ)
 
+SYMBOLS_FILE := ../ramdisk/kernel_symbols.txt
+LINEINFO_FILE := ../ramdisk/kernel_lineinfo.txt
+
 TARGET := DarkForest.bin
 
 all: libc $(TARGET)
@@ -78,6 +81,9 @@ libc:
 
 $(TARGET): init $(OBJ_TO_LINK)
 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJ_TO_LINK) -lgcc
+	# generate symbol map file
+	nm $(TARGET) | c++filt > $(SYMBOLS_FILE)
+	readelf -wL $(TARGET) > $(LINEINFO_FILE)
 
 init: $(CRTI_OBJ) $(CRTN_OBJ)
 

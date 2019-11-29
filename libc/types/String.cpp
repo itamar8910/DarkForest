@@ -61,7 +61,14 @@ String::~String() {
     m_len = 0;
 }
 
+void  __attribute__ ((noinline)) test_generate_segfault() {
+    char* p = nullptr;
+    *p = 0;
+}
+
 bool String::startswith(const String& other) const {
+    // test_generate_segfault();
+    // test generate segfault
     if(len() < other.len())
         return false;
     return !strncmp(c_str(), other.c_str(), other.len());

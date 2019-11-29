@@ -71,7 +71,6 @@ static void init_gdt()
 {
    gdt_ptr.limit = (sizeof(GdtEntry) * NUM_GDT_ENTRIES) - 1;
    gdt_ptr.base  = (uint32_t)&gdt_entries;
-
    gdt_register_entry_raw(0, 0, 0, 0, 0);                // Null segment
    gdt_register_entry_raw(1, 0, 0xFFFFFFFF, 0x9A, 0xCF); // Kernel Code segment (Ring0)
    gdt_register_entry_raw(2, 0, 0xFFFFFFFF, 0x92, 0xCF); // Kernel Data segment (Ring0)
@@ -173,6 +172,13 @@ void print_register_dump(RegsDump& regs) {
       );
 }
 
+void generate_backtrace(u32 eip, u32 ebp) {
+   kprintf("backtrace: eip:0x%x, ebp:0x%x\n", eip, ebp);
+   u32* stack = (u32*) ebp;
+   kprintf("0x%x\n", stack[1]);
+
+}
+
 // Page fault
 ISR_EXCEPTION_WITH_ERRCODE(14);
 void isr_14_handler(RegisterDumpWithErrCode& regs) {
@@ -186,7 +192,8 @@ void isr_14_handler(RegisterDumpWithErrCode& regs) {
       Scheduler::the().terminate_current();
    } else {
       kprintf("(From kernel)\n");
-      kprintf("K E R N E L P A N I C K\n");
+      generate_backtrace(regs.eip, regs.ebp);
+      kprintf("K E R N E L P A N I C\n");
       cpu_hang();
    }
 }

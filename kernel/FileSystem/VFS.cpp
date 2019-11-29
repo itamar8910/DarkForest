@@ -28,5 +28,6 @@ File* VFS::open(const String& path) {
             return f;
         }
     }
+
     return nullptr;
 }

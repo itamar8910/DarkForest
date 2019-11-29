@@ -6,7 +6,8 @@ COMMON_DIR := common
 export ASM := nasm
 export CC := i686-elf-g++
 export LD = i686-elf-ld
-export CFLAGS := --std=c++17 -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone -fno-sized-deallocation
+# export CFLAGS := --std=c++17 -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone -fno-sized-deallocation  -fno-omit-frame-pointer -g -mno-omit-leaf-frame-pointer
+export CFLAGS := --std=c++17 -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -mno-red-zone -fno-sized-deallocation -g -fno-omit-frame-pointer
 
 export LDFLAGS := -ffreestanding -O2 -nostdlib
 

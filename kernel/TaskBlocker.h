@@ -7,7 +7,7 @@ class TaskBlocker {
 protected:
     TaskBlocker() {}
 public:
-    virtual bool can_unblock(); // returns whether task can be unblocked
+    virtual bool can_unblock() = 0; // returns whether task can be unblocked
     virtual ~TaskBlocker() {}
 
 };
