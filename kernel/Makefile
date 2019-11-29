@@ -70,6 +70,7 @@ OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(C
 
 SYMBOLS_FILE := ../ramdisk/kernel_symbols.txt
 LINEINFO_FILE := ../ramdisk/kernel_lineinfo.txt
+SYMBOL_GENERATOR_SCRIPT := ../toolchain/symbol_generator.py
 
 TARGET := DarkForest.bin
 
@@ -81,9 +82,8 @@ libc:
 
 $(TARGET): init $(OBJ_TO_LINK)
 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJ_TO_LINK) -lgcc
-	# generate symbol map file
-	nm $(TARGET) | c++filt > $(SYMBOLS_FILE)
-	readelf -wL $(TARGET) > $(LINEINFO_FILE)
+	# generate symbol map & line numbers files
+	$(SYMBOL_GENERATOR_SCRIPT) $(TARGET) --sym $(SYMBOLS_FILE) --line $(LINEINFO_FILE)
 
 init: $(CRTI_OBJ) $(CRTN_OBJ)
 
