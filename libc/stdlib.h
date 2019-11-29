@@ -1,4 +1,6 @@
 #pragma once
 
-int atoi(const char* str);
+#include "types.h"
+
+int atoi(const char* str, size_t base=10);
 

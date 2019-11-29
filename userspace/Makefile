@@ -2,6 +2,7 @@
 OBJS := \
 	start.ao \
 
+# NOTE: remember to add line in make clean target (or make it automatic)
 APPS := \
 	HelloWorld.app \
 	VgaTTY.app \
@@ -37,4 +38,6 @@ FORCE:
 	$(ASM) -felf32 $< -o $@
 
 clean:
+	make -C VgaTTY/ clean
+	make -C HelloWorld/ clean
 	rm -f *.o *.ao *.app

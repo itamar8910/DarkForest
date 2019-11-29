@@ -7,4 +7,6 @@
 #ifdef KERNEL
 void kprint(const char* str);
 void kprintf(const char* fmt, ...);
+// #define printf kprintf;
+constexpr auto printf = kprintf;
 #endif

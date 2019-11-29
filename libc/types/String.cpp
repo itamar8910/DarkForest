@@ -1,6 +1,7 @@
 #include "types/String.h"
 #include "string.h"
 #include "asserts.h"
+#include "logging.h"
 
 String::String(): m_chars() {}
 
@@ -9,6 +10,10 @@ String::String(const char* str) {
     ASSERT(str != nullptr, "err constructing string from nullptr char* (1)");
     #endif
     init_from(str, strlen(str));
+}
+
+String::String(char c) {
+    init_from(&c, 1);
 }
 
 void String::init_from(const char* str, size_t len) {
@@ -61,7 +66,7 @@ String::~String() {
     m_len = 0;
 }
 
-#define GENERATE_SEGFAULT
+// #define GENERATE_SEGFAULT
 
 void  __attribute__ ((noinline)) test_generate_segfault() {
     char* p = nullptr;
@@ -85,4 +90,32 @@ String String::substr(int start, int end) const {
     char* buff = new char[end-start];
     memcpy(buff, c_str()+start, end-start);
     return String(buff);
+}
+
+int String::find(const String& pattern, size_t start) {
+    auto this_cstr = c_str();
+    auto pattern_cstr = pattern.c_str();
+    for(size_t i = start; i < len(); ++i) {
+        if(!strcmp(this_cstr + i, pattern_cstr)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Vector<String> String::split(char delim) {
+    printf("String::split\n");
+    Vector<String> ret;
+    String delim_str(delim);
+    int prev_idx = 0;
+    while(true) {
+        int idx = find(delim_str, prev_idx);
+        printf("idx: %d\n", idx);
+        if(idx == -1) {
+            break;
+        }
+        ret.append(substr(prev_idx, idx));
+        idx = prev_idx+1;
+    }
+    return ret;
 }

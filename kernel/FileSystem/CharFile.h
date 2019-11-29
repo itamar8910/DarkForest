@@ -10,6 +10,9 @@ public:
 
     size_t size(){return m_size;}
 
+    // TODO: return a smart pointer
+    char* get_content();
+
 private:
     u8* m_data;
     size_t m_size;

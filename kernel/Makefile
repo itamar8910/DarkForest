@@ -14,6 +14,8 @@ KERN_OBJS := \
 	sleep.o \
 	syscall.o \
 	process.o \
+	kernel_symbols.o \
+	backtrace.o \
 	
 
 DRIVERS_DIR := drivers

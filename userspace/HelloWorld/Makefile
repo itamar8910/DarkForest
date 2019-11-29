@@ -8,4 +8,4 @@ main.o: main.cpp
 	$(CC) $(INCLUDE) -DUSERSPACE -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o
+	rm -f *.o main

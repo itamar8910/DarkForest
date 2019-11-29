@@ -25,6 +25,7 @@
 #include "HAL/KeyboardDevice.h"
 #include "FileSystem/CharFile.h"
 #include "FileSystem/FileUtils.h"
+#include "kernel_symbols.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -127,6 +128,10 @@ void init_VFS() {
 	VFS::the().mount(&RamDisk::fs());
 }
 
+void init_kernel_symbols() {
+	KernelSymbols::initialize();
+}
+
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
@@ -151,6 +156,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	RamDisk::init(*mbt);
 	DevFS::initiailize();
 	init_VFS();
+
+	init_kernel_symbols();
 
 	// vga_tty_hello();
 

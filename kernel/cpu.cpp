@@ -6,6 +6,7 @@
 #include "logging.h"
 #include "types.h"
 #include "Scheduler.h"
+#include "backtrace.h"
 
 TSS the_tss;
 
@@ -172,12 +173,6 @@ void print_register_dump(RegsDump& regs) {
       );
 }
 
-void generate_backtrace(u32 eip, u32 ebp) {
-   kprintf("backtrace: eip:0x%x, ebp:0x%x\n", eip, ebp);
-   u32* stack = (u32*) ebp;
-   kprintf("0x%x\n", stack[1]);
-
-}
 
 // Page fault
 ISR_EXCEPTION_WITH_ERRCODE(14);
@@ -192,7 +187,7 @@ void isr_14_handler(RegisterDumpWithErrCode& regs) {
       Scheduler::the().terminate_current();
    } else {
       kprintf("(From kernel)\n");
-      generate_backtrace(regs.eip, regs.ebp);
+      Backtrace::print_backtrace(regs.eip, regs.ebp);
       kprintf("K E R N E L P A N I C\n");
       cpu_hang();
    }

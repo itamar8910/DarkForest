@@ -25,3 +25,12 @@ int CharFile::write(char* data, size_t count) {
 	// ASSERT(elf_data != nullptr, "couldn't load HelloWorld");
     return count;
 }
+
+
+char* CharFile::get_content() {
+    size_t sz = size();
+    char* buff = new char[sz+1];
+    read(size(), buff);
+    buff[sz] = 0;
+    return buff;
+}
