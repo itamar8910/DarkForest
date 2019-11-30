@@ -33,7 +33,7 @@ public:
         bool operator==(const SourceAndAddress&) const;
     };
     void from_file(const String& path);
-    SourceAndAddress* find(u32 address);
+    const LinesMap::SourceAndAddress* find(u32 address) const;
     Vector<SourceAndAddress>& lines() {return m_lines;}
 private:
     Vector<SourceAndAddress> m_lines {DEFAULT_LINES_CAPACITY};

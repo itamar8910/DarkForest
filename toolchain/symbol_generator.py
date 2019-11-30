@@ -25,7 +25,7 @@ def generate_lines(img, line_file):
     # cleanup format
     with open(line_file, 'r') as f:
         lines = f.readlines()
-        lines = ['{} {} {}'.format(l.split()[2][2:], l.split()[0], l.split()[1]) for l in lines if l.split() and '0x' in l.split()[-1]]
+        lines = ['{} {} {}'.format(l.split()[2][2:], l.split()[0], l.split()[1]) for l in sorted([l for l in lines if l.split() and '0x' in l.split()[-1]], key=lambda l : int(l.split()[2][2:], 16))]
     with open(line_file, 'w') as f:
         f.write('\n'.join(lines))
 

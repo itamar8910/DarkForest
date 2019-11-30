@@ -75,17 +75,8 @@ String::~String() {
     // printf("after String::dtor");
 }
 
-// #define GENERATE_SEGFAULT
-
-void  __attribute__ ((noinline)) test_generate_segfault() {
-    char* p = nullptr;
-    *p = 0;
-}
 
 bool String::startswith(const String& other) const {
-    #ifdef GENERATE_SEGFAULT
-    test_generate_segfault();
-    #endif
     // test generate segfault
     if(len() < other.len())
         return false;
