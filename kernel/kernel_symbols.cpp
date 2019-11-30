@@ -16,9 +16,9 @@ KernelSymbols& KernelSymbols::the() {
 void KernelSymbols::initialize() {
     s_the = new KernelSymbols();
     s_the->m_lines_map.from_file(kernel_lines_file);
-    // s_the->m_symbols_map.from_file(kernel_symbols);
+    s_the->m_symbols_map.from_file(kernel_symbols);
     // kprintf("# lines: %d\n", s_the->m_lines_map.lines().size());
-    for(auto& l : s_the->m_lines_map.lines()) {
-        kprintf("0x%x: %s, %d\n", l.address, l.file_name.c_str(), l.line_num);
-    }
+    // for(auto& l : s_the->m_lines_map.lines()) {
+    //     kprintf("0x%x: %s, %d\n", l.address, l.file_name.c_str(), l.line_num);
+    // }
 }

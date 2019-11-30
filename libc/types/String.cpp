@@ -87,6 +87,7 @@ String String::substr(int start, int end) const {
     if(end == -1) {
         end = len();
     }
+    ASSERT(start>=0, "String::substr invalid start idx");
     // String ctor copies data
     return String(c_str() + start, end-start);
 }

@@ -178,10 +178,9 @@ void print_register_dump(RegsDump& regs) {
 ISR_EXCEPTION_WITH_ERRCODE(14);
 void isr_14_handler(RegisterDumpWithErrCode& regs) {
    (void)regs;
-   kprint("*** Page Fault\n");
+   kprint("##### Page Fault #####\n");
    kprintf("Address that generated Fault: 0x%x\n", get_cr2());
    print_register_dump(regs);
-   // TODO: generate backtrace
    if(is_selector_ring3(regs.ds)) {
       kprintf("(From userspace)\n");
       Scheduler::the().terminate_current();
