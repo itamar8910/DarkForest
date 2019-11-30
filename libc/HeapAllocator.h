@@ -23,6 +23,7 @@ struct MemBlock {
                                           u32 size);
     bool is_magic_free() {return magic == MAGIC_FREE;}
     bool is_magic_used() {return magic == MAGIC_USED;}
+    void assert_valid_magic();
 };
 
 class HeapAllocator {

@@ -193,7 +193,7 @@ void MemoryManager::disable_page(Frame frame) {
 }
 
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
-    kprintf("MM: allocate: 0x%x\n", virt_addr);
+    // kprintf("MM: allocate: 0x%x\n", virt_addr);
     auto pte = ensure_pte(virt_addr);
     ASSERT(!pte.is_present(), "allocate: PTE already present for virtual addr");
     Err err;

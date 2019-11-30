@@ -10,6 +10,12 @@
 #include "stdio.h"
 #endif
 
+void MemBlock::assert_valid_magic() {
+    if(magic != MAGIC_FREE &&  magic != MAGIC_USED) {
+        printf("MemBlock invalid magic: 0x%x", magic);
+    }
+}
+
 HeapAllocator::HeapAllocator(void* addr, u32 size) {
     // allocate first free block on heap itself
     m_first_free = MemBlock::initialize(addr,
@@ -123,6 +129,10 @@ u32 HeapAllocator::current_free_space(u32& num_blocks) {
 void HeapAllocator::free(void* addr) {
     // MemBlock should be stored before address
     MemBlock* block = (MemBlock*)((u32)addr - sizeof(MemBlock));
+    block->assert_valid_magic();
+    if(!block->is_magic_used()) {
+        printf("magic: 0x%x\n", block->magic);
+    }
     ASSERT(block->is_magic_used(), "HeapAllocator::free - bad block magic - double free / corrupted magic");
     block->magic = MAGIC_FREE;
     add_mem_block(block);

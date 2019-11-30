@@ -21,6 +21,7 @@ private:
 };
 
 void* kmalloc(size_t size);
+void kfree(void* addr);
 
 /**
  * allocate memory that cannot be freed

@@ -6,9 +6,17 @@
 #include "string.h"
 #include "asserts.h"
 #include "stdlib.h"
+#include "logging.h"
+#ifdef KERNEL
+#include "kernel/kmalloc.h"
+#endif
+#ifdef USERSPACE
+#include "malloc.h"
+#endif
 
 #define DEFAULT_VECTOR_CAPACITY 8
 // #define VECTOR_DBG
+
 
 template <typename T>
 class Vector {
@@ -31,22 +39,35 @@ public:
         size_t m_idx;
     };
 
-    Vector() : 
-                    m_data(new T[DEFAULT_VECTOR_CAPACITY]),
-                    m_capacity (DEFAULT_VECTOR_CAPACITY),
-                    m_size(0)
+    Vector() 
     {
+        init_with_capacity(DEFAULT_VECTOR_CAPACITY);
         #ifdef VECTOR_DBG
         kprintf("Vector::ctor\n");
         kprintf("Vector::ctor - data allocated addr: 0x%x\n", m_data);
         #endif
     }
+
+    Vector(size_t init_capacity) {
+        init_with_capacity(init_capacity);
+    }
+
+    void init_with_capacity(size_t c) {
+        if(c==0) {
+            c = DEFAULT_VECTOR_CAPACITY;
+        }
+        m_capacity = c;
+        m_size = 0;
+        m_data = (T*) allocate(c * sizeof(T));
+    }
+
     Vector(const T* data, size_t size) 
         :
-            m_data(new T[size]),
+            // m_data(new T[size]),
             m_capacity (size),
             m_size(size) 
     {
+        m_data = (T*) allocate(size * sizeof(T));
         memcpy(m_data, data, size);
     }
     size_t size() const { return m_size;};
@@ -67,8 +88,8 @@ public:
     void append(T&& value) {
         ensure_capacity(size() + 1);
         new(&m_data[m_size]) T(move(value));
-        ASSERT(m_data[m_size] == value, "vector::append sanity");
         m_size ++;
+        // printf("done rvalue append\n");
     }
 
     // TODO: impl. rvalue variant
@@ -90,7 +111,7 @@ public:
 
     ~Vector() {
         #ifdef VECTOR_DBG
-        kprintf("Vector::dtor\n");
+        printf("Vector::dtor\n");
         #endif
         clear();
     }
@@ -110,24 +131,35 @@ private:
             new(&new_data[i]) T(move(m_data[i]));
             m_data[i].~T();
         }
-        delete[] m_data;
+        #ifdef KERNEL
+        kfree(m_data);
+        #endif
+        #ifdef USERSPACE
+        free(m_data);
+        #endif
+        // delete[] m_data;
         m_data = nullptr;
     }
 
+
     /// doubles capacity & re-allocates data buffer
     /// if cap is greater than current capacity
-    void ensure_capacity(size_t cap) {
+    void ensure_capacity(size_t cap, bool check_capacity=true) {
         #ifdef VECTOR_DBG
         kprintf("Vector::ensure_capacity: %d\n", cap);
         #endif
         if(cap <= m_capacity) {
             return;
         }
+        printf("Vector::ensure_capacity: growing: %d->%d\n", m_capacity, m_capacity*2);
         #ifdef VECTOR_DBG
         kprintf("Vector::ensure_capacity: need to re-allocate\n");
         #endif
-        ASSERT(m_capacity * 2 >= cap, "Vector::ensure_capacity - capacity too large");
-        T* new_data = new T[sizeof(T) * m_capacity * 2];
+        if(check_capacity) {
+            ASSERT(m_capacity * 2 >= cap, "Vector::ensure_capacity - capacity too large");
+        }
+        // T* new_data = new T[sizeof(T) * m_capacity * 2];
+        T* new_data = (T*) allocate(sizeof(T) * m_capacity * 2);
         #ifdef VECTOR_DBG
         kprintf("Vector::ensure_capacity - new_data size: %d items\n",  m_capacity * 2);
         kprintf("Vector::ensure_capacity - new_data allocated addr: 0x%x\n", new_data);
@@ -139,24 +171,44 @@ private:
 
     void clear() {
         #ifdef VECTOR_DBG
-        kprintf("Vector::clear()\n");
+        printf("Vector::clear()\n");
         #endif
         for(size_t i = 0; i < m_size; i++ ){
             m_data[i].~T();
         }
-        delete[] m_data;
+        deallocate(m_data);
         m_data = nullptr;
         m_size = 0;
         m_capacity = 0;
     }
 
     void initialize_from(const Vector& other) {
-        m_data = new T[other.m_capacity];
+        // m_data = new T[other.m_capacity];
+        m_data = (T*) allocate(other.m_capacity * sizeof(T));
         m_size = other.m_size;
         m_capacity = other.m_capacity;
         for(size_t i = 0; i < other.m_size; i++) {
             new(&m_data[i]) T(other.m_data[i]);
         }
+    }
+
+    static void* allocate(size_t size) {
+        #ifdef KERNEL
+        return kmalloc(size);
+        #endif
+        #ifdef USERSPACE
+        return malloc(size);
+        #endif
+    }
+
+    static void deallocate(void* p) {
+        #ifdef KERNEL
+        kfree(p);
+        #endif
+        #ifdef USERSPACE
+        free(p);
+        #endif
+
     }
 
     T* m_data;

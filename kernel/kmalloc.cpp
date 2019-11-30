@@ -50,7 +50,9 @@ KernelHeapAllocator& KernelHeapAllocator::the() {
 }
 
 void* kmalloc(size_t size) {
-    return KernelHeapAllocator::the().allocate(size);
+    void* p =  KernelHeapAllocator::the().allocate(size);
+    // kprintf("KMalloc::kmalloc: 0x%x\n", p);
+    return p;
 }
 
 void kfree(void* addr) {
@@ -70,6 +72,7 @@ void* new_wrapper(size_t size) {
 }
 
 void free_wrapper(void* addr) {
+    // kprintf("KMalloc::free: 0x%x\n", addr);
     switch(kmalloc_mode) {
         case KMallocMode::KMALLOC_ETERNAL:
             ASSERT_NOT_REACHED("cannot free memory in KMALLOC_ETERNAL mode");
