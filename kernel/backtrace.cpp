@@ -7,6 +7,7 @@
 
 using namespace Backtrace;
 
+
 void Backtrace::print_backtrace(u32 eip, u32 ebp) {
    kprintf("backtrace: eip:0x%x, ebp:0x%x\n", eip, ebp);
    for(u32* stack = (u32*) ebp; stack[0] != 0; stack = (u32*) stack[0]) {
@@ -19,19 +20,20 @@ void LinesMap::from_file(const String& path) {
    CharFile* f = static_cast<CharFile*>(VFS::the().open(path));
    ASSERT(f != nullptr, "LinesMap::from_file can't open file");
    char* content_raw = f->get_content();
+   kprintf("aftet get content\n");
    String content(content_raw);
-   kprintf("content: %s\n", content.c_str());
-   auto lines = content.split('\n');
+   // kprintf("content: %s\n", content.c_str());
+   auto lines = content.split('\n', DEFAULT_LINES_CAPACITY);
+   ASSERT(lines.size() > 0, "LinesMap::from_file, lines file is empty");
    kprintf("## lines: %d\n", lines.size());
    for(auto& line : lines) {
       auto vals = line.split(' ');
-      ASSERT(vals.size() == 3);
+      ASSERT(vals.size() == 3, "size==3");
       SourceAndAddress entry{
          vals[1],
          static_cast<u32>(atoi(vals[2].c_str())),
          static_cast<u32>(atoi(vals[0].c_str(), 16)),
       };
-      kprintf("append\n");
       m_lines.append(entry);
    }
    delete[] content_raw;

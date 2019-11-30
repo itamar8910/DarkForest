@@ -22,6 +22,8 @@ private:
     Vector<SymbolAndAddress> m_symbols;
 };
 
+constexpr size_t DEFAULT_LINES_CAPACITY = 10000;
+
 class LinesMap {
 public:
     struct SourceAndAddress {
@@ -34,7 +36,7 @@ public:
     SourceAndAddress* find(u32 address);
     Vector<SourceAndAddress>& lines() {return m_lines;}
 private:
-    Vector<SourceAndAddress> m_lines;
+    Vector<SourceAndAddress> m_lines {DEFAULT_LINES_CAPACITY};
 };
 
 };

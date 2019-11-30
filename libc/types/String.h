@@ -8,6 +8,7 @@ public:
     String();
 
     String(const char* str);
+    String(const char* str, size_t len);
     String(char c);
 
     void init_from(const char* str, size_t len);
@@ -29,7 +30,7 @@ public:
     bool startswith(const String& other) const;
     String substr(int start=0, int end=-1) const;
     int find(const String& pattern, size_t start=0);
-    Vector<String> split(char delim);
+    Vector<String> split(char delim, size_t capacity=0);
 
     ~String();
 

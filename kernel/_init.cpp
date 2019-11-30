@@ -38,66 +38,6 @@
 #endif
  
 
-
-char* alloc(int size) {
-	char* buff = new char[size];
-	memset(buff, 0, size);
-	kprintf("buff addr: 0x%x\n", buff);
-	return buff;
-}
-
-void try_malloc() {
-	kprintf("1: Heap space: %d\n", KernelHeapAllocator::the().current_free_space());
-	char* b1;
-	char* b2;
-	b1 = alloc(0x20);
-	b2 = alloc(0x20);
-	kprintf("2: Heap space: %d\n", KernelHeapAllocator::the().current_free_space());
-	delete[] b1;
-	delete[] b2;
-	// b1 = alloc(0x20);
-	kprintf("3: Heap space: %d\n", KernelHeapAllocator::the().current_free_space());
-	b1 = alloc(0x2000);
-	delete[] b1;
-	alloc(0x200);
-}
-
-void try_frame_alloc() {
-	// testing frame allocation
-	Err err;
-	for(int i = 0; i < 10; i++) {
-		auto addr = MemoryManager::the().get_free_frame(err);
-		kprintf("frame: 0x%x, err:%d\n", addr, err);
-	}
-	kprintf("---\n");
-	MemoryManager::the().set_frame_available(0x503000);
-	for(int i = 0; i < 10; i++) {
-		auto addr = MemoryManager::the().get_free_frame(err);
-		kprintf("frame: 0x%x, err:%d\n", addr, err);
-	}
-}
-
-void try_virtual_alloc() {
-	u32 addr = 0x80000000;
-	MemoryManager::the().allocate(addr, PageWritable::YES, UserAllowed::YES);
-	char* str = (char*)addr;
-	strncpy(str, "I am allocated", 100);
-	str[4*1024 ] = 1; // this will generate a page fault
-
-	kprintf("%s\n", str);
-
-
-}
-
-
-void print_heap() {
-
-	u32 num_blocks = 0;
-	u32 bytes = KernelHeapAllocator::the().current_free_space(num_blocks);
-	kprintf("heap free bytes: %d, #blocks: %d\n", num_blocks, bytes);
-
-}
-
 void hello_world_userspace() {
 	size_t elf_size = 0;
 	File* f = VFS::the().open("/initrd/userspace/HelloWorld.app");
@@ -159,8 +99,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	init_kernel_symbols();
 
-	// vga_tty_hello();
-
 	init_syscalls();
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
@@ -172,8 +110,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");
 	kprintf("enabled interrupts\n");
-
-
 
 	// hang until scheduler ticks & switches to the idle task
 	for(;;){}

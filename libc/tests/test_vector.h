@@ -20,7 +20,7 @@ static void vector_tests1() {
         ASSERT(v2[i] == i, "4");
     }
     // test vector assignment operator
-    // (insure we don't do a double free)
+    // (ensure we don't do a double free)
     v2 = v;
 }
 

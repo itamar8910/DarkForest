@@ -44,5 +44,5 @@ $(TARGET): $(OBJS)
 	$(CC) $(INCLUDE) -D$(LIBCMODE) -DMODE -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o
+	rm -f *.o $(TYPES_DIR)/*.o
 
