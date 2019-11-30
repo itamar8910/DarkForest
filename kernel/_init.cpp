@@ -106,6 +106,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Scheduler::the().add_process(Process::create(vga_tty_userspace, "VgaTTYUser"));
 
 	// VFS::the().open("/inird/helllo.txt");
+	// XASSERT(false);
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");

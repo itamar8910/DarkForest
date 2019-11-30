@@ -174,6 +174,14 @@ void print_register_dump(RegsDump& regs) {
 }
 
 
+template<typename T>
+void kernel_panic(T regs) {
+   Backtrace::print_backtrace(regs.eip, regs.ebp);
+   kprintf("K E R N E L P A N I C\n");
+   cpu_hang();
+}
+
+
 // Page fault
 ISR_EXCEPTION_WITH_ERRCODE(14);
 void isr_14_handler(RegisterDumpWithErrCode& regs) {
@@ -186,9 +194,7 @@ void isr_14_handler(RegisterDumpWithErrCode& regs) {
       Scheduler::the().terminate_current();
    } else {
       kprintf("(From kernel)\n");
-      Backtrace::print_backtrace(regs.eip, regs.ebp);
-      kprintf("K E R N E L P A N I C\n");
-      cpu_hang();
+      kernel_panic(regs);
    }
 }
 
@@ -215,6 +221,23 @@ void isr_8_handler(RegisterDump& regs) {
    // kprintf("Register dump: eax: ")
    // TODO: handle page fault
    // cpu_hang(); // until we implement
+}
+
+template <int N>
+void invoke_trap() {
+   asm volatile(
+      "int %0\n"
+      ::"N"(N)
+      );
+}
+
+void invoke_crash() {
+   invoke_trap<ISR_CRASH_IDX>();
+}
+
+ISR_HANDLER(crash)
+void isr_crash_handler(RegisterDump& regs) {
+   kernel_panic(regs);
 }
 
 void register_interrupt_handler(int num, void (*func)(), bool user_allowed) {
@@ -247,6 +270,8 @@ static void init_idt() {
    register_interrupt_handler(14, isr_14_entry);
    register_interrupt_handler(15, isr_15_entry);
    register_interrupt_handler(16, isr_16_entry);
+
+   register_interrupt_handler(ISR_CRASH_IDX, isr_crash_entry);
 
    // register_interrupt_handler(0x50, isr_15_entry);
 

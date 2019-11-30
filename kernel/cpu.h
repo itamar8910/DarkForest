@@ -180,4 +180,8 @@ void register_interrupt_handler(int num, void (*func)(), bool user_allowed=false
       cpu_hang(); \
    }
 
+constexpr int ISR_CRASH_IDX = 0x81;
+
+template <int N> void invoke_trap();
+void invoke_crash();
 

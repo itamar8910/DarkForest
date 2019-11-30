@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-#define GENERATE_SEGFAULT
+// #define GENERATE_SEGFAULT
 
 
 void  __attribute__ ((noinline)) test_generate_segfault() {

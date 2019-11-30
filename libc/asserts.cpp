@@ -14,6 +14,20 @@
 #include "unistd.h"
 #endif
 
+
+void assertion_failed(const char* expression, const char* msg, const char* file, int line,  const char* func)
+{
+    (void)msg;
+    printf("\n### Assertion failed: \"%s\" at %s:%d in %s\n",expression, file, line, func);
+#ifdef KERNEL
+    invoke_crash();
+#endif
+#ifdef USERSPACE
+    exit(1);
+#endif
+}
+
+
 void ASSERT(bool x, const char* msg) {
     if(!x) {
 #ifdef KERNEL
