@@ -29,46 +29,46 @@ static void test_iteration() {
         (void)item;
         ++c2;
     }
-    ASSERT(l.size()==3, "11");
-    ASSERT(c1==3, "12a");
-    ASSERT(c2==3, "12b");
+    ASSERT(l.size()==3);
+    ASSERT(c1==3);
+    ASSERT(c2==3);
 }
 
 static void list_tests() {
     kprintf("[list_tests]\n");
     List<int> l;
-    ASSERT(l.size() == 0, "0");
+    ASSERT(l.size() == 0);
     l.append(5);
-    ASSERT(l.size() == 1, "1");
+    ASSERT(l.size() == 1);
     l.append(8);
-    ASSERT(l.size() == 2, "2");
-    ASSERT(!l.remove(9), "2a");
-    ASSERT(l.remove(8), "2b");
-    ASSERT(l.size() == 1, "3");
+    ASSERT(l.size() == 2);
+    ASSERT(!l.remove(9));
+    ASSERT(l.remove(8));
+    ASSERT(l.size() == 1);
     l.append(2);
-    ASSERT(l.size() == 2, "4");
+    ASSERT(l.size() == 2);
     l.remove(5);
-    ASSERT(l.size() == 1, "5");
+    ASSERT(l.size() == 1);
     l.append(3);
-    ASSERT(l.size() == 2, "6");
-    ASSERT(l.remove(2), "6a");
-    ASSERT(l.remove(3), "6b");
-    ASSERT(l.size() == 0, "7");
+    ASSERT(l.size() == 2);
+    ASSERT(l.remove(2));
+    ASSERT(l.remove(3));
+    ASSERT(l.size() == 0);
     l.append(4);
     l.append(5);
     l.append(11);
-    ASSERT(l.size() == 3, "8");
+    ASSERT(l.size() == 3);
 
     // test that remove an item* from list does not delete item itself
     List<A*> l2;
-    ASSERT(glob_A_ctor_called == 0, "9");
+    ASSERT(glob_A_ctor_called == 0);
     auto* a_ptr = new A();
-    ASSERT(a_ptr->alive, "10");
+    ASSERT(a_ptr->alive);
     l2.append(a_ptr);
-    ASSERT(glob_A_ctor_called == 1, "9a");
-    ASSERT(l2.remove(a_ptr), "10");
-    ASSERT(a_ptr->alive, "10a");
-    ASSERT(glob_A_ctor_called == 1, "10b");
+    ASSERT(glob_A_ctor_called == 1);
+    ASSERT(l2.remove(a_ptr));
+    ASSERT(a_ptr->alive);
+    ASSERT(glob_A_ctor_called == 1);
 
     delete a_ptr;
 

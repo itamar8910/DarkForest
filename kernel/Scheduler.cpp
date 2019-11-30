@@ -37,7 +37,7 @@ void Scheduler::tick(RegisterDump& regs) {
     #endif
     
     if(m_current_process == nullptr) {
-        ASSERT(m_idle_process != nullptr, "Scheulder::tick() idle task is null");
+        ASSERT(m_idle_process != nullptr);
         m_current_process = m_idle_process;
     }
     if(m_current_process == m_idle_process) {
@@ -57,7 +57,7 @@ void Scheduler::tick(RegisterDump& regs) {
             // preempt task
             m_current_process->task().meta_data->state = TaskMetaData::State::Runnable;
             #ifdef ASSERTS_SCHEDULER
-            ASSERT(m_runanble_list.find(m_current_process)==m_runanble_list.end(), "currently runing task should not be in runnable list");
+            ASSERT(m_runanble_list.find(m_current_process)==m_runanble_list.end());
             #endif
             m_runanble_list.append(m_current_process);
             m_current_process = nullptr;
@@ -83,7 +83,7 @@ void Scheduler::pick_next_and_switch() {
         print_scheduler_tasks();
         #endif
         bool removed = m_runanble_list.remove(chosen_process);
-        ASSERT(removed, "Scheduer: failed to remove chosen task from runnable list");
+        ASSERT(removed);
     } else {
         chosen_process = m_idle_process;
     }
@@ -97,9 +97,9 @@ void Scheduler::try_unblock_tasks() {
     for(auto* process_node = m_blocked_list.head(); process_node != nullptr; process_node = process_node->next) {
         auto* process = process_node->val;
 
-        ASSERT(process->task().meta_data->state == TaskMetaData::State::Blocked, "Scheduler: task is in blocked list but not blocked");
+        ASSERT(process->task().meta_data->state == TaskMetaData::State::Blocked);
         TaskBlocker* blocker = process->task().meta_data->blocker;
-        ASSERT(blocker != nullptr, "Task is blocked but has no TaskBlocker");
+        ASSERT(blocker != nullptr);
         if(blocker->can_unblock()) {
             #ifdef DBG_SCHEDULER
             kprintf("Scheduler: unblocking: %d\n", task->id);
@@ -117,9 +117,9 @@ Process* Scheduler::pick_next() {
     if(m_runanble_list.size() == 0) {
         return nullptr;
     }
-    ASSERT(m_runanble_list.head() != nullptr, "Scheduler: runnable_tasks head is null but size != 0");
+    ASSERT(m_runanble_list.head() != nullptr);
     auto* process = m_runanble_list.head()->val;
-    ASSERT(process->task().meta_data->state == TaskMetaData::State::Runnable, "Scheduler: task is in runnable list but not runnable");
+    ASSERT(process->task().meta_data->state == TaskMetaData::State::Runnable);
     return process;
 }
 

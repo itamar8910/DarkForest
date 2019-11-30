@@ -5,7 +5,7 @@
 
 PDE PageDirectory::get_pde(VirtualAddress addr) {
     u32 pd_index = get_index(addr);
-    ASSERT(pd_index < NUM_PAGE_DIRECTORY_ENTRIES, "index < num PD entries");
+    ASSERT(pd_index < NUM_PAGE_DIRECTORY_ENTRIES);
     return PDE(entries()[pd_index]);
 }
 

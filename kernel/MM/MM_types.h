@@ -35,7 +35,7 @@ class PhysicalAddress {
 			return m_addr % PAGE_SIZE == 0;
 		}
 		void assert_aligned() const {
-			ASSERT(is_frame_aligned(), "frame not aligned");
+			ASSERT(is_frame_aligned());
 		}
 		operator int() const{return m_addr;} // cast to int
 };

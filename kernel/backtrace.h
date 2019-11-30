@@ -51,13 +51,13 @@ public:
     SymbolsMap() : AddressMap<SymbolAndAddress>(DEFAULT_NUM_SYMB_MAPS){};
     virtual void from_file(const String& path) override {
         CharFile* f = static_cast<CharFile*>(VFS::the().open(path));
-        ASSERT(f != nullptr, "SymbolsMap::from_file can't open file");
+        ASSERT(f != nullptr);
         char* content_raw = f->get_content();
         kprintf("aftet get content\n");
         String content(content_raw);
         // kprintf("content: %s\n", content.c_str());
         auto lines = content.split('\n', DEFAULT_NUM_LINE_MAPS);
-        ASSERT(lines.size() > 0, "SymbolsMap::from_file, lines file is empty");
+        ASSERT(lines.size() > 0);
         kprintf("## lines: %d\n", lines.size());
         for(auto& line : lines) {
             ASSERT(line.find(' ') != -1);
@@ -78,17 +78,17 @@ public:
     LinesMap() : AddressMap<SourceAndAddress>(DEFAULT_NUM_LINE_MAPS){};
     virtual void from_file(const String& path) override {
         CharFile* f = static_cast<CharFile*>(VFS::the().open(path));
-        ASSERT(f != nullptr, "LinesMap::from_file can't open file");
+        ASSERT(f != nullptr);
         char* content_raw = f->get_content();
         kprintf("aftet get content\n");
         String content(content_raw);
         // kprintf("content: %s\n", content.c_str());
         auto lines = content.split('\n', DEFAULT_NUM_LINE_MAPS);
-        ASSERT(lines.size() > 0, "LinesMap::from_file, lines file is empty");
+        ASSERT(lines.size() > 0);
         kprintf("## lines: %d\n", lines.size());
         for(auto& line : lines) {
             auto vals = line.split(' ');
-            ASSERT(vals.size() == 3, "size==3");
+            ASSERT(vals.size() == 3);
             SourceAndAddress entry{
                 vals[1],
                 static_cast<u32>(atoi(vals[2].c_str())),

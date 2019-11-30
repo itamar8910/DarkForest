@@ -48,7 +48,7 @@ find_block:
        }
    }
    if(current == nullptr) {
-       ASSERT(!retried, "allocate: only retry once");
+       ASSERT(!retried);
        exapnd_heap((size / PAGE_SIZE) + 1);
        retried = true;
        goto find_block; // sorry
@@ -95,7 +95,7 @@ void HeapAllocator::exapnd_heap(u32 num_pages) {
 }
 
 void HeapAllocator::add_mem_block(MemBlock* block) {
-    ASSERT(block->is_magic_free(), "KMalloc::add_mem_block - bad block magic");
+    ASSERT(block->is_magic_free());
 
     // try to merge this chunk with an existing block in the free list
 
@@ -133,7 +133,7 @@ void HeapAllocator::free(void* addr) {
     if(!block->is_magic_used()) {
         printf("magic: 0x%x\n", block->magic);
     }
-    ASSERT(block->is_magic_used(), "HeapAllocator::free - bad block magic - double free / corrupted magic");
+    ASSERT(block->is_magic_used());
     block->magic = MAGIC_FREE;
     add_mem_block(block);
 }

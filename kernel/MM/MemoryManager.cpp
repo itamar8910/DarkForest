@@ -43,7 +43,6 @@ void MemoryManager::init(multiboot_info_t* mbt) {
         ASSERT(
             u32((mmap->base >> 32) & 0xffffffff) == 0
             && u32((mmap->len >> 32) & 0xffffffff) == 0
-            , "physical memory not accessible with 32bit"
         );
         u32 region_base = u32(mmap->base & 0xffffffff);
         u32 region_len = u32(mmap->len & 0xffffffff);
@@ -53,7 +52,7 @@ void MemoryManager::init(multiboot_info_t* mbt) {
             if(frame_base < 5 * MB)
                 continue;
             set_frame_available(PhysicalAddress(frame_base));
-            ASSERT(is_frame_available(PhysicalAddress(frame_base)), "frame should be available");
+            ASSERT(is_frame_available(PhysicalAddress(frame_base)));
         }
 	}
     disable_page(Frame(0)); // so we would page fault on null pointer deref
@@ -106,7 +105,7 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 
 VirtualAddress MemoryManager::temp_map(PhysicalAddress addr) {
     // kprintf("temp_map: 0x%x\n", (u32)addr);
-    ASSERT(!m_tempmap_used, "TempMap is already used");
+    ASSERT(!m_tempmap_used);
     auto pte = ensure_pte(TEMPMAP_ADDR, false, false);
     pte.set_addr(addr);
     pte.set_present(true);
@@ -148,13 +147,13 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bo
         
         if(address_in_kernel_space(addr)) {
             // see comment above lock_kernel_PDEs()
-            ASSERT(!m_kernel_PDEs_locked, "cannot create new kernel-space page table: kernel_PDEs is locked!");
+            ASSERT(!m_kernel_PDEs_locked);
         }
 
         // we need to create a new page table
         Err err;
         Frame pt_frame = get_free_frame(err);
-        ASSERT(!err, "could not allocate page table");
+        ASSERT(!err);
         new_pagetable = true;
 
         pde.set_addr(pt_frame);
@@ -163,7 +162,7 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bo
         pde.set_user_allowed(true);
 
     }
-    ASSERT(pde.is_present(), "page table not present");
+    ASSERT(pde.is_present());
 
     VirtualAddress pt_addr = pde.addr();
     if(tempMap_pageTable) {
@@ -195,10 +194,10 @@ void MemoryManager::disable_page(Frame frame) {
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
     // kprintf("MM: allocate: 0x%x\n", virt_addr);
     auto pte = ensure_pte(virt_addr);
-    ASSERT(!pte.is_present(), "allocate: PTE already present for virtual addr");
+    ASSERT(!pte.is_present());
     Err err;
     Frame pt_frame = get_free_frame(err);
-    ASSERT(!err, "could not allocate frame");
+    ASSERT(!err);
     pte.set_addr(pt_frame);
     pte.set_present(true);
     pte.set_writable(writable==PageWritable::YES);
@@ -210,7 +209,7 @@ void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, Us
 void MemoryManager::deallocate(VirtualAddress virt_addr, bool free_page) {
     kprintf("MM: deallocate: 0x%x\n", virt_addr);
     auto pte = ensure_pte(virt_addr);
-    ASSERT(pte.is_present(), "allocate: PTE not present for virtual addr");
+    ASSERT(pte.is_present());
     if(free_page) {
         set_frame_available(pte.addr());
     }
@@ -307,7 +306,7 @@ PageDirectory MemoryManager::clone_page_directory() {
         auto page_table = PageTable(page_table_addr);
 
         auto new_PT_addr = get_free_frame(err);
-        ASSERT(!err, "couldn't get frame for new page table");
+        ASSERT(!err);
         new_page_tables_addresses[pde_idx] = new_PT_addr;
         // kprintf("new page table addr: 0x%x\n", new_PT_addr);
         auto new_page_table = PageTable(new_PT_addr);
@@ -330,7 +329,7 @@ PageDirectory MemoryManager::clone_page_directory() {
 
 
 MemoryManager& MemoryManager::the(u32 cr3) {
-    ASSERT(mm != nullptr, "MemoryManager is uninitialized");
+    ASSERT(mm != nullptr);
     // update page table address to CR3 value
     if(cr3 == 0) {
         cr3 = get_cr3();
@@ -349,7 +348,7 @@ MemoryManager::MemoryManager()
 }
 
 MemoryManager::~MemoryManager() {
-    ASSERT(false, "MM should not be destructed");
+    ASSERT(false);
 }
 
 bool address_in_user_space(VirtualAddress addr) {

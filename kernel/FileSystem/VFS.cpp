@@ -18,11 +18,11 @@ void VFS::mount(FileSystem* fs) {
 File* VFS::open(const String& path) {
     kprintf("VFS::open %s\n", path.c_str());
     for(auto* fs : mounted_filesystems) {
-        ASSERT(fs != nullptr, "VFS::open fs is null");
+        ASSERT(fs != nullptr);
         if(!path.startswith(fs->mountpoint()))
             continue;
         String inside_path = Path::remove_mount_prefix(path, *fs);
-        ASSERT(inside_path != String(""), "VFS::open err in removing FS mount prefix");
+        ASSERT(inside_path != String(""));
         File* f = fs->open(inside_path);
         if(f != nullptr) {
             return f;

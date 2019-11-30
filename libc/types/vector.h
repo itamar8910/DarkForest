@@ -118,11 +118,11 @@ public:
 
 private:
     T& access(size_t pos) {
-        ASSERT(pos < m_size, "Vector access of out bounds");
+        ASSERT(pos < m_size);
         return m_data[pos];
     }
     const T& access(size_t pos) const {
-        ASSERT(pos < m_size, "Vector access of out bounds");
+        ASSERT(pos < m_size);
         return m_data[pos];
     }
 
@@ -156,7 +156,7 @@ private:
         kprintf("Vector::ensure_capacity: need to re-allocate\n");
         #endif
         if(check_capacity) {
-            ASSERT(m_capacity * 2 >= cap, "Vector::ensure_capacity - capacity too large");
+            ASSERT(m_capacity * 2 >= cap);
         }
         // T* new_data = new T[sizeof(T) * m_capacity * 2];
         T* new_data = (T*) allocate(sizeof(T) * m_capacity * 2);

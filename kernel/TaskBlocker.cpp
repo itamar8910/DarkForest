@@ -17,6 +17,6 @@ bool SleepBlocker::can_unblock() {
     // was called once at (e.g) 1.999sec,
     // and then at 2.001sec
     
-    ASSERT(sec - m_sleep_until_sec <= 1, "SleepBlocker: skipped a second?!");
+    ASSERT(sec - m_sleep_until_sec <= 1);
     return sec > m_sleep_until_sec || ms >= m_leftover_ms;
 }

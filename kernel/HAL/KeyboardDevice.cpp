@@ -24,7 +24,7 @@ KeyEvent keyboard_read() {
 }
 
 int KeyboardDevice::read(size_t count, void* buf) {
-    ASSERT(count == 1, "keyboard only supports read size of 1");
+    ASSERT(count == 1);
     KeyEvent e = keyboard_read();
     // copy to void* buf
     new(buf) KeyEvent(e);

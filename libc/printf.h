@@ -79,7 +79,7 @@ inline bool is_digit(char c) {
  * then fmt should point to 'd'
  */ 
 static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
-    ASSERT(is_numeric_format_type_specifier(*fmt), "get_fill_data: fmt should point to the format type specifier");
+    ASSERT(is_numeric_format_type_specifier(*fmt));
 
     char fill_number[MAX_FILL_NUMBER_LEN];
     const char* fmt_start = fmt;
@@ -130,11 +130,11 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
             }
             switch(*fmt) {
                 case 'd':
-                    ASSERT(!get_fill_data(fmt, min_chars, fill_char), "get_fill_amount failed");
+                    ASSERT(!get_fill_data(fmt, min_chars, fill_char));
                     ret += print_int_dec(putc_f, va_arg(args, int), min_chars, fill_char);
                     break;
                 case 'x':
-                    ASSERT(!get_fill_data(fmt, min_chars, fill_char), "get_fill_amount failed");
+                    ASSERT(!get_fill_data(fmt, min_chars, fill_char));
                     ret += print_int_hex(putc_f, va_arg(args, uint32_t), min_chars, fill_char);
                     break;
                 case 's':
@@ -149,7 +149,7 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
                     ret++;
                     break;
                 default:
-                    ASSERT(false, "printf invalid character before format specifier");
+                    ASSERT(false);
                     return -1;
             }
         } else {

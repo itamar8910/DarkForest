@@ -18,11 +18,11 @@ void load_and_jump_userspace(void* elf_data, u32 size) {
             continue;
          }
          // I think we can assume this
-         ASSERT(program_header->alignment == PAGE_SIZE, "elf program header elignment != PAGE_SIZE");
+         ASSERT(program_header->alignment == PAGE_SIZE);
          void* segment_data = (void*) ((u32)elf_data + program_header->offset);
          void* segment_virtual_address = (void*) (program_header->virtual_address);
          u32 segment_mem_size = program_header->size_in_memory;
-         ASSERT((u32)segment_virtual_address % PAGE_SIZE == 0, "elf segment virtual address is not aligned to PAGE_SIZE");
+         ASSERT((u32)segment_virtual_address % PAGE_SIZE == 0);
          bool writable = get_bit(program_header->flags, Elf::ProgramHeaderFlags::Writable);
          u32 page_index = 0;
          for(u32 size = 0; size < segment_mem_size; size += PAGE_SIZE, ++page_index) {

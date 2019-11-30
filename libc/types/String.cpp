@@ -23,7 +23,7 @@ String::String(char c) {
 
 void String::init_from(const char* str, size_t len) {
     #ifdef ASSERTS_LEVEL_1
-    ASSERT(str != nullptr, "err constructing string from nullptr char* (2)");
+    ASSERT(str != nullptr);
     #endif
     m_chars = new char[len+1];
     memcpy(m_chars, str, len);
@@ -43,7 +43,7 @@ String::String(String&& other) {
 }
 
 char String::operator[](size_t idx) const {
-    ASSERT(idx < len(), "String::operator[] idx overflow");
+    ASSERT(idx < len());
     return c_str()[idx];
 }
 
@@ -87,7 +87,7 @@ String String::substr(int start, int end) const {
     if(end == -1) {
         end = len();
     }
-    ASSERT(start>=0, "String::substr invalid start idx");
+    ASSERT(start>=0);
     // String ctor copies data
     return String(c_str() + start, end-start);
 }

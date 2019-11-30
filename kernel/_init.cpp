@@ -41,18 +41,18 @@
 void hello_world_userspace() {
 	size_t elf_size = 0;
 	File* f = VFS::the().open("/initrd/userspace/HelloWorld.app");
-	ASSERT(f != nullptr, "couldn't open HelloWorld");
+	ASSERT(f != nullptr);
 	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
-	ASSERT(elf_data != nullptr, "couldn't load HelloWorld");
+	ASSERT(elf_data != nullptr);
 	load_and_jump_userspace(elf_data, elf_size);
 	delete elf_data;
 }
 void vga_tty_userspace() {
 	size_t elf_size = 0;
 	File* f = VFS::the().open("/initrd/userspace/VgaTTY.app");
-	ASSERT(f != nullptr, "couldn't open VgaTTY app");
+	ASSERT(f != nullptr);
 	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
-	ASSERT(elf_data != nullptr, "couldn't load VgaTTY app");
+	ASSERT(elf_data != nullptr);
 	load_and_jump_userspace(elf_data, elf_size);
 }
 
@@ -74,7 +74,7 @@ void init_kernel_symbols() {
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
-	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC, "multiboot magic");
+	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC);
 	kprintf("I smell %x\n", 0xdeadbeef);
 	kprintf("Multiboot modules: mods_count: %d\n, mods_addr: 0x%x\n", mbt->mods_count, mbt->mods_addr);
 	PIC::initialize();

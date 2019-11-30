@@ -20,7 +20,7 @@ void* eternal_next_free = (void*) KMALLOC_ETERNAL_START;
 void* kmalloc_eternal(size_t size) {
     void* cur = eternal_next_free;
     eternal_next_free = (void*)((size_t)eternal_next_free + size);
-    ASSERT(eternal_next_free < KMALLOC_ETERNAL_END, "kmalloc ran out of memory");
+    ASSERT(eternal_next_free < KMALLOC_ETERNAL_END);
     return cur;
 }
 
@@ -45,7 +45,7 @@ void KernelHeapAllocator::initialize() {
 }
 
 KernelHeapAllocator& KernelHeapAllocator::the() {
-    ASSERT(s_the != nullptr, "KMalloc not initialized");
+    ASSERT(s_the != nullptr);
     return *s_the;
 }
 

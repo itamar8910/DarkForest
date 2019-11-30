@@ -27,7 +27,7 @@ struct [[gnu::packed]] TarHeader {
 static u32 decode_tarnum(char* num) {
     u32 res = 0;
     size_t len = strlen(num);
-    ASSERT(len < 12, "tar num string is too long");
+    ASSERT(len < 12);
     for(size_t i = 0; i < len; i++) {
         res *= 8;
         res += (num[i]-'0');

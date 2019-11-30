@@ -47,7 +47,7 @@ VgaTTY::VgaTTY() :
     {
 
         m_vga_text_device_fd = open("/dev/vgatext");
-        ASSERT(m_vga_text_device_fd >= 0, "failed to open vgatext device");
+        ASSERT(m_vga_text_device_fd >= 0);
         printf("vgatext fd: %d\n", m_vga_text_device_fd);
         clear(m_color);
     }
@@ -168,7 +168,7 @@ int main() {
     VgaTTY::the().write(buff);
 
     int keyboard_fd = open("/dev/keyboard");
-    ASSERT(keyboard_fd != 0, "err opening keyboard dev");
+    ASSERT(keyboard_fd != 0);
     KeyEvent key_event;
     while(1) {
         read(keyboard_fd, (char*) &key_event, 1);

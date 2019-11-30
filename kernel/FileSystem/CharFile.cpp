@@ -22,7 +22,7 @@ int CharFile::write(char* data, size_t count) {
     }
     memcpy(m_data+m_idx, data, count);
     m_idx += count;	// u8* elf_data = RamDisk::fs().get_content("userspace/HelloWorld.app", elf_size);
-	// ASSERT(elf_data != nullptr, "couldn't load HelloWorld");
+	// ASSERT(elf_data != nullptr);
     return count;
 }
 

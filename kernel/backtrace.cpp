@@ -12,7 +12,7 @@ using namespace Backtrace;
 void Backtrace::print_backtrace(u32 eip, u32 ebp) {
    // kprintf("backtrace: eip:0x%x, ebp:0x%x\n", eip, ebp);
    auto* source_info = KernelSymbols::the().lines_map().locate(eip);
-   ASSERT(source_info != nullptr, "print_backtrace: couldn't get source info");
+   ASSERT(source_info != nullptr);
    kprint("Generated from:\n");
    kprintf(">> 0x%x %s:%d\n", source_info->address, source_info->file_name.c_str(), source_info->line_num+1);
    kprint("Backtrace:\n");

@@ -6,7 +6,7 @@
 size_t strlen(const char* str) 
 {
 	#ifdef ASSERTS_LEVEL_1
-	ASSERT(str != nullptr, "strlen with str=nullptr");
+	ASSERT(str != nullptr);
 	#endif
 	size_t len = 0;
 	while (str[len])

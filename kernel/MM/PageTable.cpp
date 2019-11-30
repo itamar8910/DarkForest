@@ -2,7 +2,7 @@
 
 PTE PageTable::get_pte(VirtualAddress addr) {
     u32 pt_index = get_index(addr);
-    ASSERT(pt_index < NUM_PAGE_Table_ENTRIES, "index < num PT entries");
+    ASSERT(pt_index < NUM_PAGE_Table_ENTRIES);
     return PTE(entries()[pt_index]);
 }
 

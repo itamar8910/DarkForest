@@ -167,7 +167,7 @@ void PS2Keyboard::on_scan_byte(u8 val) {
 }
 
 void PS2Keyboard::add_keycode_byte(u8 val) {
-    ASSERT(m_current_keycode_byte_idx < MAX_NUM_KEYCODE_BYTES, "Keyboard: max num bytes in current keycode exceeded");
+    ASSERT(m_current_keycode_byte_idx < MAX_NUM_KEYCODE_BYTES);
     m_current_keycode_bytes[m_current_keycode_byte_idx++] = val;
 }
 
@@ -202,7 +202,7 @@ void PS2Keyboard::insert_key_state(KeyEvent key_state) {
 }
 
 KeyEvent PS2Keyboard::consume() {
-    ASSERT(m_events_pending>0, "PS2Keyboard::consume() called but there are no keycodes pending");
+    ASSERT(m_events_pending>0);
     m_events_pending -= 1;
     m_events_buffer_idx = (m_events_buffer_idx-1) % KEYCODES_BUFFER_LEN;
     auto event = m_events_buffer[m_events_buffer_idx];
