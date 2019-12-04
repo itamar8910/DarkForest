@@ -8,10 +8,10 @@ static void bits_tests() {
     u32 x = 5; // 101
     set_bit(x, 3, true);
     ASSERT(x == 13);
-    ASSERT(get_bit(x);
+    ASSERT(get_bit(x,3));
     ASSERT(get_on_bit_idx(3) == 0);
     ASSERT(get_on_bit_idx(16) == 4);
     ASSERT(get_on_bit_idx(0) == -1);
     x = 13;
-    ASSERT(set_bit(x);
+    ASSERT(set_bit(x,3,true));
 }

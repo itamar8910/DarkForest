@@ -19,7 +19,7 @@ static inline bool get_bit(I num, u8 bit) {
 }
 
 /**
- * returns the index of this first set bit
+ * returns the index of the first set bit
  * (starting for LSb)
  */
 static inline int get_on_bit_idx(u32 num) {

@@ -15,7 +15,7 @@ export CPP_FLAGS :=
 
 .PHONY: all kernel userspace
 
-all: kernel userspace
+all: kernel userspace fs
 
 tests: clean set_tests_make_cmd all
 
@@ -27,6 +27,9 @@ kernel:
 
 userspace:
 	make -C $(USERSPACE_DIR)/
+
+fs:
+	./fs.sh
 
 clean:
 	make -C $(KERNEL_DIR)/ clean

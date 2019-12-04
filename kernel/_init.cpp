@@ -26,6 +26,7 @@
 #include "FileSystem/CharFile.h"
 #include "FileSystem/FileUtils.h"
 #include "kernel_symbols.h"
+#include "shared_ptr.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -85,12 +86,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	KernelHeapAllocator::initialize();
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
-
-#ifdef TESTS
-	run_tests();
-	return;
-#endif
-
 	PS2Keyboard::initialize();
 
 	RamDisk::init(*mbt);
@@ -98,6 +93,11 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	init_VFS();
 
 	init_kernel_symbols();
+
+#ifdef TESTS
+	run_tests();
+	return;
+#endif
 
 	init_syscalls();
 	Scheduler::initialize(idle);
