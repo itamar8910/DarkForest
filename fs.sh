@@ -2,7 +2,7 @@
 
 # copy userspace binaries
 
-USERSPACE_BINARIES="../userspace/VgaTTY.app ../userspace/HelloWorld.app"
+USERSPACE_BINARIES="../userspace/shell.app ../userspace/HelloWorld.app"
 
 pushd ramdisk
 

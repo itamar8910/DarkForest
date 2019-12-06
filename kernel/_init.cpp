@@ -50,7 +50,7 @@ void hello_world_userspace() {
 }
 void vga_tty_userspace() {
 	size_t elf_size = 0;
-	File* f = VFS::the().open("/initrd/userspace/VgaTTY.app");
+	File* f = VFS::the().open("/initrd/userspace/shell.app");
 	ASSERT(f != nullptr);
 	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
 	ASSERT(elf_data != nullptr);

@@ -106,6 +106,9 @@ public:
         return *this;
     }
 
+    T* data() {return m_data;}
+    const T* data() const {return m_data;}
+
     Iterator begin() {return Iterator(*this, 0);}
     Iterator end() {return Iterator(*this, m_size);}
 

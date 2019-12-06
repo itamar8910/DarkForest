@@ -5,7 +5,7 @@ OBJS := \
 # NOTE: remember to add line in make clean target (or make it automatic)
 APPS := \
 	HelloWorld.app \
-	VgaTTY.app \
+	shell.app \
 
 LIBC_DIR := ../libc
 LIBC_OBJ := $(LIBC_DIR)/libc.o
@@ -24,7 +24,7 @@ apps: $(APPS)
 
 %.app: FORCE
 	make -C $*
-	$(CC) -T linker.ld -o $*.app $(LDFLAGS) $(OBJS_TO_LINK) $*/main.o -lgcc
+	$(CC) -T linker.ld -o $*.app $(LDFLAGS) $(OBJS_TO_LINK) $*/$*.o -lgcc
 
 FORCE:
 
@@ -38,6 +38,6 @@ FORCE:
 	$(ASM) -felf32 $< -o $@
 
 clean:
-	make -C VgaTTY/ clean
+	make -C shell/ clean
 	make -C HelloWorld/ clean
 	rm -f *.o *.ao *.app

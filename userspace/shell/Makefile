@@ -2,10 +2,11 @@
 LIBC_DIR := ../../libc
 INCLUDE += -I$(LIBC_DIR)
 
-TARGET := HelloWorld.o
+TARGET := shell.o
 
 OBJS := \
 	main.o \
+	VgaTTY.o \
 
 all: $(TARGET)
 

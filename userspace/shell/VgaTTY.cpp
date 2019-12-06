@@ -1,40 +1,12 @@
-#include "unistd.h"
-#include "stdio.h"
-#include "asserts.h"
-#include "mman.h"
-#include "string.h"
-#include "malloc.h"
 
+#include "VgaTTY.h"
 #include "ioctl_common.h"
 #include "VgaTextCommon.h"
-#include "PS2KeyboardCommon.h"
-
-
-
-class VgaTTY {
-public:
-    static const size_t VGA_WIDTH = 80;
-    static const size_t VGA_HEIGHT = 25;
-    static VgaTTY& the();
-    void set_color(uint8_t color);
-    void putchar(char c);
-    void putchar(char c, u8 color, u8 x, u8 y);
-    void write(const char* str);
-    void clear(u8 color);
-    u16 get_entry(u8 x, u8 y);
-    void update_cursor(u8 x, u8 y);
-
-private:
-    VgaTTY();
-    void newline();
-    void scrolldown();
-    void write(const char* data, size_t size);
-
-    size_t m_row;
-    size_t m_column;
-    uint8_t m_color;
-    int m_vga_text_device_fd;
-};
+#include "asserts.h"
+#include "stdio.h"
+#include "unistd.h"
+#include "string.h"
+#include "types.h"
 
 VgaTTY::VgaTTY() : 
         m_row(0),
@@ -153,29 +125,4 @@ VgaTTY& VgaTTY::the() {
         s_the = new VgaTTY();
     }
     return *s_the;
-}
-
-
-int main() {
-    printf("hello from: %s!!\n", "VgaTTY!");
-    int fd = open("/initrd/hello.txt");
-    printf("fd: %d\n", fd);
-    int size = file_size(fd);
-    printf("file size: %d\n", size);
-    char* buff = new char[size+1];
-    read(fd, buff, size);
-    buff[size] = 0;
-    VgaTTY::the().write(buff);
-
-    int keyboard_fd = open("/dev/keyboard");
-    ASSERT(keyboard_fd != 0);
-    KeyEvent key_event;
-    while(1) {
-        read(keyboard_fd, (char*) &key_event, 1);
-		if(!key_event.released && key_event.to_ascii() != 0) {
-			VgaTTY::the().putchar(key_event.to_ascii());
-		}
-    }
-    
-    return 0;
 }
