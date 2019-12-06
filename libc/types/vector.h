@@ -89,7 +89,13 @@ public:
         ensure_capacity(size() + 1);
         new(&m_data[m_size]) T(move(value));
         m_size ++;
-        // printf("done rvalue append\n");
+    }
+    void concat(const T* data, size_t len) {
+        ensure_capacity(size() + len);    
+        for(size_t i = 0; i < len; i++) {
+            new(&m_data[m_size]) T(move(data[i]));
+            m_size ++;
+        }
     }
 
     // TODO: impl. rvalue variant
@@ -100,7 +106,7 @@ public:
     // TODO: impl. rvalue variant
     Vector& operator=(const Vector& other) {
         if(this != &other) {
-            clear();
+            deallocate();
             initialize_from(other);
         }
         return *this;
@@ -112,11 +118,21 @@ public:
     Iterator begin() {return Iterator(*this, 0);}
     Iterator end() {return Iterator(*this, m_size);}
 
+    void clear() {
+        #ifdef VECTOR_DBG
+        printf("Vector::clear()\n");
+        #endif
+        deallocate();
+        init_with_capacity(DEFAULT_VECTOR_CAPACITY);
+
+    }
+
+
     ~Vector() {
         #ifdef VECTOR_DBG
         printf("Vector::dtor\n");
         #endif
-        clear();
+        deallocate();
     }
 
 private:
@@ -172,9 +188,9 @@ private:
         m_capacity *= 2;
     }
 
-    void clear() {
+    void deallocate() {
         #ifdef VECTOR_DBG
-        printf("Vector::clear()\n");
+        printf("Vector::deallocate()\n");
         #endif
         for(size_t i = 0; i < m_size; i++ ){
             m_data[i].~T();

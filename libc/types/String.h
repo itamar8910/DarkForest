@@ -20,6 +20,7 @@ public:
     void operator=(const String& other);
     bool operator!=(const String& other) const;
     bool operator==(const String& other) const;
+    String operator+(const String& other) const;
     char operator[](size_t idx) const;
 
     size_t len() const;
@@ -29,8 +30,8 @@ public:
 
     bool startswith(const String& other) const;
     String substr(int start=0, int end=-1) const;
-    int find(const String& pattern, size_t start=0);
-    Vector<String> split(char delim, size_t capacity=0);
+    int find(const String& pattern, size_t start=0) const;
+    Vector<String> split(char delim, size_t capacity=0) const;
 
     ~String();
 

@@ -92,7 +92,7 @@ String String::substr(int start, int end) const {
     return String(c_str() + start, end-start);
 }
 
-int String::find(const String& pattern, size_t start) {
+int String::find(const String& pattern, size_t start) const {
     auto this_cstr = c_str();
     auto pattern_cstr = pattern.c_str();
     size_t pattern_len = pattern.len();
@@ -104,7 +104,7 @@ int String::find(const String& pattern, size_t start) {
     return -1;
 }
 
-Vector<String> String::split(char delim, size_t capacity) {
+Vector<String> String::split(char delim, size_t capacity) const {
     Vector<String> ret(capacity);
     String delim_str(delim);
     int prev_idx = 0;
@@ -119,4 +119,13 @@ Vector<String> String::split(char delim, size_t capacity) {
         prev_idx = idx+1;
     }
     return ret;
+}
+
+String String::operator+(const String& other) const {
+    Vector<char> ret(len() + other.len() + 1);
+    ret.concat(m_chars, len());
+    ret.concat(other.m_chars, other.len());
+    ret.append(0);
+    ASSERT(ret.size() == len() + other.len() + 1);
+    return String(ret.data(), ret.size());
 }
