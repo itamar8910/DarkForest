@@ -7,12 +7,12 @@
 int VgaTextDevice::read(size_t count, void* buf) {
     (void)count;
     (void)buf;
-    NOT_IMPLEMENTED("VgaTextDevice::read");
+    NOT_IMPLEMENTED();
 }
 int VgaTextDevice::write(char* data, size_t count) {
     (void)data;
     (void)count;
-    NOT_IMPLEMENTED("VgaTextDevice::write");
+    NOT_IMPLEMENTED();
 }
 int VgaTextDevice::ioctl(u32 request, void* buf) {
     IOCTL::VgaText::Data* data = static_cast<IOCTL::VgaText::Data*>(buf);
@@ -29,7 +29,7 @@ int VgaTextDevice::ioctl(u32 request, void* buf) {
             VgaText::putchar(c, color, data->col, data->row);
             break;
         case IOCTL::VgaText::Code::MOVE_CURSOR:
-            NOT_IMPLEMENTED("move cursor");
+            NOT_IMPLEMENTED();
             break;
         case IOCTL::VgaText::Code::GET_CHAR:
             {
@@ -55,7 +55,7 @@ int VgaTextDevice::ioctl(u32 request, void* buf) {
             VgaText::clear(static_cast<u8>(data->value));
             break;
         default:
-            ASSERT_NOT_REACHED("VgaTextDevice: invalid IOCTL code");
+            ASSERT_NOT_REACHED();
     }
     return 0;
 }

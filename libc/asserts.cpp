@@ -1,6 +1,4 @@
 #include "asserts.h"
-
-
 #ifndef MODE
 #include "mode.h"
 #endif
@@ -24,45 +22,7 @@ void assertion_failed(const char* expression, const char* file, int line,  const
 #ifdef USERSPACE
     exit(1);
 #endif
-}
-
-
-// void ASSERT(bool x) {
-//     if(!x) {
-// #ifdef KERNEL
-//         kprintf("\n*** Assertion failed: %s\n", msg);
-//         cpu_hang();
-// #endif
-// #ifdef USERSPACE
-//     puts("\n** Assertion failed:\n");
-//     puts(msg);
-//     exit(1);
-// #endif
-//     }
-// }
-
-void NOT_IMPLEMENTED(const char* msg) {
-#ifdef KERNEL
-        kprintf("NOT IMPLEMENTED: %s\n", msg);
-        cpu_hang();
-#endif
-#ifdef USERSPACE
-    puts("NOT IMPLEMENTED");
-    puts(msg);
-    exit(1);
-#endif
-}
-
-[[noreturn]] void ASSERT_NOT_REACHED(const char* msg) {
-#ifdef KERNEL
-        kprintf("ASSERT NOT REACHED", msg);
-        cpu_hang();
-#endif
-#ifdef USERSPACE
-    puts("ASSERT NOT REACHED");
-    puts(msg);
-    exit(1);
-#endif
+    while(1);
 }
 
 #ifdef KERNEL

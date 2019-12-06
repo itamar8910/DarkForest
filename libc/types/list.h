@@ -53,7 +53,7 @@ public:
     void append(const T& t) {
         #ifdef ASSERT_LIST_SIZE
             if(m_size > MAX_REASONABLE_LIST_SIZE) {
-                ASSERT_NOT_REACHED("list size exceeded MAX_REASONABLE_LIST_SIZE");
+                ASSERT_NOT_REACHED();
             }
         #endif
         append(T(t));

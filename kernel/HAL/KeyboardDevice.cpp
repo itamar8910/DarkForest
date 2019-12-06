@@ -34,14 +34,14 @@ int KeyboardDevice::read(size_t count, void* buf) {
 int KeyboardDevice::write(char* data, size_t count) {
     (void)data;
     (void)count;
-    NOT_IMPLEMENTED("KeyboardDevice::write");
+    NOT_IMPLEMENTED();
     return -1;
 }
 
 int KeyboardDevice::ioctl(u32 request, void* buf) {
     (void)request;
     (void)buf;
-    NOT_IMPLEMENTED("KeyboardDevice::ioctl");
+    NOT_IMPLEMENTED();
     return -1;
 
 }

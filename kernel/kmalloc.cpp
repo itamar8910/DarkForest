@@ -67,7 +67,7 @@ void* new_wrapper(size_t size) {
         case KMallocMode::KMALLOC_NORMAL:
             return kmalloc(size);
     }
-    ASSERT_NOT_REACHED("new: invalid malloc mode");
+    ASSERT_NOT_REACHED();
     return 0;
 }
 
@@ -75,13 +75,13 @@ void free_wrapper(void* addr) {
     // kprintf("KMalloc::free: 0x%x\n", addr);
     switch(kmalloc_mode) {
         case KMallocMode::KMALLOC_ETERNAL:
-            ASSERT_NOT_REACHED("cannot free memory in KMALLOC_ETERNAL mode");
+            ASSERT_NOT_REACHED();
             return;
         case KMallocMode::KMALLOC_NORMAL:
             kfree(addr);
             return;
     }
-    ASSERT_NOT_REACHED("new: invalid free mode");
+    ASSERT_NOT_REACHED();
 }
 
 void* operator new(size_t size) {

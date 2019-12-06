@@ -32,7 +32,7 @@ int atoi_16(const char* str) {
         } else if(c >= 'a' && c <= 'f') {
             sum += 10 + (c-'a');
         } else {
-            ASSERT_NOT_REACHED("atoi_16: invalid char");
+            ASSERT_NOT_REACHED();
         }
         str++;
     }
@@ -46,7 +46,7 @@ int atoi(const char* str, size_t base) {
         case 16:
             return atoi_16(str);
     }
-    ASSERT_NOT_REACHED("atoi: invalid base");
+    ASSERT_NOT_REACHED();
 }
 
 

@@ -84,7 +84,7 @@ void PS2Keyboard::poll_for_write() {
             return;
         }
     }
-    ASSERT_NOT_REACHED("PS2Keyboard: poll for write exceeded");
+    ASSERT_NOT_REACHED();
 }
 void PS2Keyboard::poll_for_read() {
     for(size_t i = 0; i < 10; i++) {
@@ -92,7 +92,7 @@ void PS2Keyboard::poll_for_read() {
             return;
         }
     }
-    ASSERT_NOT_REACHED("PS2Keyboard: poll for read exceeded");
+    ASSERT_NOT_REACHED();
 }
 
 static PS2Keyboard* s_the = nullptr;
@@ -162,7 +162,7 @@ void PS2Keyboard::on_scan_byte(u8 val) {
         case 2:
             break;
         default:
-            ASSERT_NOT_REACHED("PS2Keyboard: invalid scan code length");
+            ASSERT_NOT_REACHED();
     };
 }
 

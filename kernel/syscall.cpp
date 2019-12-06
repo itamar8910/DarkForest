@@ -75,7 +75,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_read(arg1, (char*) arg2, arg3);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
-            ASSERT_NOT_REACHED("invalid syscall");
+            ASSERT_NOT_REACHED();
     }
     return 0;
 }
