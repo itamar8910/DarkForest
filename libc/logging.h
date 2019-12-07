@@ -11,6 +11,6 @@
 #ifdef KERNEL
 void kprint(const char* str);
 void kprintf(const char* fmt, ...);
-// #define printf kprintf;
-constexpr auto printf = kprintf;
+// #define printf(x) kprintf(x);
+static const auto& dbgprintf = kprintf;
 #endif

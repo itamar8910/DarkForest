@@ -90,6 +90,9 @@ void Scheduler::pick_next_and_switch() {
     m_current_process = chosen_process;
     m_current_process->task().meta_data->state = TaskMetaData::State::Running;
     m_tick_since_switch = 0;
+    #ifdef DBG_SCHEDULER
+    kprintf("Scheduler: switched to task: %s\n", current().name().c_str());
+    #endif
     switch_to_task(&m_current_process->task());
 }
 

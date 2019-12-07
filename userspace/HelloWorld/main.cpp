@@ -8,9 +8,9 @@ static_assert(0);
 
 
 int main() {
-    printf("hello, world!\n");
+    // printf("hello, world!\n");
     // generate a segfault
-    char* p = nullptr;
-    *p = 1;
+    // char* p = nullptr;
+    // *p = 1;
     return 0;
 }

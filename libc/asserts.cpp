@@ -15,7 +15,7 @@
 
 void assertion_failed(const char* expression, const char* file, int line,  const char* func)
 {
-    printf("\n### Assertion failed: \"%s\" at %s:%d in %s\n",expression, file, line, func);
+    dbgprintf("\n### Assertion failed: \"%s\" at %s:%d in %s\n",expression, file, line, func);
 #ifdef KERNEL
     invoke_crash();
 #endif

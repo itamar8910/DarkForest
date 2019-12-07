@@ -6,6 +6,7 @@
 #include "logging.h"
 
 u8* FileUtils::read_all(CharFile& f, size_t& size) {
+    // TODO: return a shared_ptr
     size = f.size();
     u8* buff = new u8[size];
     int res = f.read(size, buff);

@@ -27,6 +27,7 @@
 #include "FileSystem/FileUtils.h"
 #include "kernel_symbols.h"
 #include "shared_ptr.h"
+#include "HAL/VgaTTY.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -40,21 +41,11 @@
  
 
 void hello_world_userspace() {
-	size_t elf_size = 0;
-	File* f = VFS::the().open("/initrd/userspace/HelloWorld.app");
-	ASSERT(f != nullptr);
-	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
-	ASSERT(elf_data != nullptr);
-	load_and_jump_userspace(elf_data, elf_size);
-	delete elf_data;
+	load_and_jump_userspace("/initrd/userspace/HelloWorld.app");
 }
-void vga_tty_userspace() {
-	size_t elf_size = 0;
-	File* f = VFS::the().open("/initrd/userspace/shell.app");
-	ASSERT(f != nullptr);
-	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
-	ASSERT(elf_data != nullptr);
-	load_and_jump_userspace(elf_data, elf_size);
+
+void terminal_userspace() {
+	load_and_jump_userspace("/initrd/userspace/terminal.app");
 }
 
 void idle() {
@@ -75,9 +66,11 @@ void init_kernel_symbols() {
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
+	VgaTTY::the().write("DarKForest booting...\n");
 	ASSERT(magic == MULTIBOOT_BOOTLOADER_MAGIC);
 	kprintf("I smell %x\n", 0xdeadbeef);
 	kprintf("Multiboot modules: mods_count: %d\n, mods_addr: 0x%x\n", mbt->mods_count, mbt->mods_addr);
+	VgaTTY::the().write("Initializing PIC devices...\n");
 	PIC::initialize();
 	init_descriptor_tables();
 	PIT::initialize();
@@ -88,10 +81,12 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	PS2Keyboard::initialize();
 
+	VgaTTY::the().write("Initializing File Systems...\n");
 	RamDisk::init(*mbt);
 	DevFS::initiailize();
 	init_VFS();
 
+	VgaTTY::the().write("Loading kernel symbols...\n");
 	init_kernel_symbols();
 
 #ifdef TESTS
@@ -100,10 +95,11 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 #endif
 
 	init_syscalls();
+	VgaTTY::the().write("Initizliaing the Scheduler...\n");
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
 	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
-	Scheduler::the().add_process(Process::create(vga_tty_userspace, "VgaTTYUser"));
+	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
 
 	// VFS::the().open("/inird/helllo.txt");
 	// XASSERT(false);

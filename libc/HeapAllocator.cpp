@@ -12,7 +12,7 @@
 
 void MemBlock::assert_valid_magic() {
     if(magic != MAGIC_FREE &&  magic != MAGIC_USED) {
-        printf("MemBlock invalid magic: 0x%x", magic);
+        dbgprintf("MemBlock invalid magic: 0x%x", magic);
     }
 }
 
@@ -131,7 +131,7 @@ void HeapAllocator::free(void* addr) {
     MemBlock* block = (MemBlock*)((u32)addr - sizeof(MemBlock));
     block->assert_valid_magic();
     if(!block->is_magic_used()) {
-        printf("magic: 0x%x\n", block->magic);
+        dbgprintf("magic: 0x%x\n", block->magic);
     }
     ASSERT(block->is_magic_used());
     block->magic = MAGIC_FREE;

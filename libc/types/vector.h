@@ -120,7 +120,7 @@ public:
 
     void clear() {
         #ifdef VECTOR_DBG
-        printf("Vector::clear()\n");
+        dbgprintf("Vector::clear()\n");
         #endif
         deallocate();
         init_with_capacity(DEFAULT_VECTOR_CAPACITY);
@@ -130,7 +130,7 @@ public:
 
     ~Vector() {
         #ifdef VECTOR_DBG
-        printf("Vector::dtor\n");
+        dbgprintf("Vector::dtor\n");
         #endif
         deallocate();
     }
@@ -170,7 +170,7 @@ private:
         if(cap <= m_capacity) {
             return;
         }
-        printf("Vector::ensure_capacity: growing: %d->%d\n", m_capacity, m_capacity*2);
+        dbgprintf("Vector::ensure_capacity: growing: %d->%d\n", m_capacity, m_capacity*2);
         #ifdef VECTOR_DBG
         kprintf("Vector::ensure_capacity: need to re-allocate\n");
         #endif
@@ -190,7 +190,7 @@ private:
 
     void deallocate() {
         #ifdef VECTOR_DBG
-        printf("Vector::deallocate()\n");
+        dbgprintf("Vector::deallocate()\n");
         #endif
         for(size_t i = 0; i < m_size; i++ ){
             m_data[i].~T();

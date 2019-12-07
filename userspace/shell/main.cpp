@@ -36,8 +36,8 @@ void process_command(const String& command) {
     VgaTTY::the().write("\n# ");
 }
 
+
 int main() {
-    print_hello_text();
     VgaTTY::the().write("# ");
     int keyboard_fd = std::open("/dev/keyboard");
     ASSERT(keyboard_fd != 0);
