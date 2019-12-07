@@ -21,6 +21,7 @@ public:
     */
     static void terminate_current();
     Process& current();
+    Process* get_process(size_t pid);
 
 private:
     Scheduler() 

@@ -37,4 +37,9 @@ int fork_and_exec(const char* path) {
     return Syscall::invoke(Syscall::ForkAndExec, (u32)path);
 }
 
+int wait(size_t pid)
+{
+    return Syscall::invoke(Syscall::WAIT, pid);
+}
+
 }

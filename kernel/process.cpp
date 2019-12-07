@@ -33,6 +33,9 @@ Process::Process(u32 pid, ThreadControlBlock* task, String name, File** descript
 
 Process::~Process() {
     // TODO: free usespace resources & pages
+    if(m_waiter) {
+        m_waiter->waitee_finished();
+    }
     delete m_task;
 }
 
@@ -91,15 +94,13 @@ int Process::syscall_write(size_t fd, char* buff, size_t count) {
 
 }
 
-String* glob_load_path = nullptr;
+char glob_load_path[MAX_PATH_LEN];
 bool glob_load_locked = false;
 
 static void auxiliary_loader() {
     ASSERT(glob_load_path != nullptr);
-    load_and_jump_userspace(*glob_load_path);
-    delete glob_load_path;
-    glob_load_path = nullptr;
     glob_load_locked = false;
+    load_and_jump_userspace(glob_load_path);
 }
 
 int Process::syscall_ForkAndExec(char* path)
@@ -110,9 +111,29 @@ int Process::syscall_ForkAndExec(char* path)
     glob_load_locked = true;
     // path is in userspace, we need to copy it to kernel space
     // because new process won't share the data of the previous one
-    glob_load_path = new String(path);
+    strncpy(glob_load_path, path, MAX_PATH_LEN);
     // TODO: add 'name' param to syscall
-    Scheduler::the().add_process(Process::create(auxiliary_loader, "Unnamed", m_file_descriptors));
-    return 0;
+    auto* p = Process::create(auxiliary_loader, "Unnamed", m_file_descriptors);
+    int pid = p->pid();
+    Scheduler::the().add_process(p);
+    return pid;
     
+}
+int Process::syscall_wait(size_t pid)
+{
+    auto* waitee = Scheduler::the().get_process(pid);
+    if(waitee==nullptr) {
+        return -E_NOTFOUND;
+    }
+    auto* blocker = new WaitBlocker();
+    waitee->set_waiter(blocker);
+    Scheduler::the().block_current(blocker);
+    return 0;
+}
+
+
+void Process::set_waiter(WaitBlocker* blocker)
+{
+    ASSERT(m_waiter==nullptr);
+    m_waiter = blocker;
 }

@@ -6,6 +6,7 @@
 
 // the Virtual File System
 // all file systems exist as mount points of the VFS
+constexpr size_t MAX_PATH_LEN = 256;
 class VFS : public FileSystem{
 
 public:

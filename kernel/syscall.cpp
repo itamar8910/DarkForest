@@ -77,6 +77,8 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_write(arg1, (char*) arg2, arg3);
         case Syscall::ForkAndExec:
             return Scheduler::the().current().syscall_ForkAndExec((char*)arg1);
+        case Syscall::WAIT:
+            return Scheduler::the().current().syscall_wait(arg1);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

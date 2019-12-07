@@ -75,8 +75,19 @@ public:
     u32 size() const {return m_size;}
 
     Iterator find(const T& t) {
+        return find([&t](T& other) {return other==t;});
+        // for(auto* node = m_head; node != nullptr; node = node->next) {
+        //     if(node->val == t) {
+        //         return Iterator(node);
+        //     }
+        // }
+        // return end();
+    }
+
+    template<typename Func>
+    Iterator find(Func match) {
         for(auto* node = m_head; node != nullptr; node = node->next) {
-            if(node->val == t) {
+            if(match(node->val)) {
                 return Iterator(node);
             }
         }

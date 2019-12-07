@@ -30,3 +30,15 @@ private:
     u32 m_leftover_ms; 
 
 };
+
+class WaitBlocker : public TaskBlocker{
+public:
+    WaitBlocker();
+    virtual bool can_unblock() override;
+    virtual ~WaitBlocker() {}
+    void waitee_finished() {m_waitee_finished = true;}
+    
+private:
+    size_t m_waitee_finished {false};
+
+};

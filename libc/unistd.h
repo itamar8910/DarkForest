@@ -17,4 +17,5 @@ int write(size_t fd, const char* buff, size_t count);
 // executes a new process from executable at 'path',
 // with a copy of the calling process's file descriptor table
 int fork_and_exec(const char* path);
+int wait(size_t pid);
 }

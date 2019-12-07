@@ -13,6 +13,7 @@ public:
     ThreadControlBlock& task() {return *m_task;}
     u32 pid(){return m_pid;}
     String name(){return m_name;}
+    void set_waiter(WaitBlocker*);
 
     ~Process();
 
@@ -22,10 +23,12 @@ public:
     int syscall_read(size_t fd, char* buff, size_t count);
     int syscall_write(size_t fd, char* buff, size_t count);
     int syscall_ForkAndExec(char* path);
+    int syscall_wait(size_t pid);
 
 private:
     u32 m_pid;
     ThreadControlBlock* m_task;
     String m_name;
     File* m_file_descriptors[NUM_FILE_DESCRIPTORS] {0};
+    WaitBlocker* m_waiter {nullptr};
 };
