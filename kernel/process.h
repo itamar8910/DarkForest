@@ -6,12 +6,9 @@
 
 class Process {
 public:
-    static Process* create(void (*main)(), String name="[Unnamed]");
+    static Process* create(void (*main)(), String name="[Unnamed]", File** descriptors = nullptr);
 
-    Process(u32 pid, ThreadControlBlock* task, String name)
-        : m_pid(pid),
-          m_task(task),
-          m_name(name) {}
+    Process(u32 pid, ThreadControlBlock* task, String name, File** descriptors=nullptr);
 
     ThreadControlBlock& task() {return *m_task;}
     u32 pid(){return m_pid;}
@@ -24,6 +21,7 @@ public:
     int syscall_file_size(size_t fd);
     int syscall_read(size_t fd, char* buff, size_t count);
     int syscall_write(size_t fd, char* buff, size_t count);
+    int syscall_ForkAndExec(char* path);
 
 private:
     u32 m_pid;

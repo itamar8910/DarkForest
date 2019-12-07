@@ -56,6 +56,10 @@ enum class UserAllowed {
 	NO=0,
     YES=1,
 };
+enum class CopyUserPages {
+	NO=0,
+    YES=1,
+};
 
 class MemoryManager {
 private:
@@ -102,7 +106,7 @@ public:
 	 * The page directory is cloned from the current page directory
 	 * Page tables are also clones, but the physical frames they point to are NOT cloned
 	 */
-	PageDirectory clone_page_directory();
+	PageDirectory clone_page_directory(CopyUserPages);
 
 	void copy_from_physical_frame(PhysicalAddress src, u8* dst);
 	void copy_to_physical_frame(PhysicalAddress dst, u8* src);

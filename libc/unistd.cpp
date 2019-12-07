@@ -33,4 +33,8 @@ int write(size_t fd, const char* buff, size_t count) {
     return Syscall::invoke(Syscall::WRITE, fd, (u32)buff, count);
 }
 
+int fork_and_exec(const char* path) {
+    return Syscall::invoke(Syscall::ForkAndExec, (u32)path);
+}
+
 }

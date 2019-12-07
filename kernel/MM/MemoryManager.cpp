@@ -247,14 +247,18 @@ void MemoryManager::memcpy_frames(PhysicalAddress dst, PhysicalAddress src) {
 #define DBG_CLONE_PAGE_DIRECTORY
 
 /**
- * only clones userspace page tables
- * kernel-space PDEs point to the same page table
+ * returns a new page directory that's cloned from this one
+ * kernel-space PDEs are shallow copied - they point to the same page tables
+ *  (this way changes in kernel sapce memory are synced across all tasks)
+ * user-space PDEs are deep-cloned only if CopyUserPages is YES,
+ *  otherwise, they are not copied over
+ *   this flag should be YES for stuff like fork(), creating a new thread, etc
  * 
  * NOTE: if we create a new PDE in kernel-space,
  * it will not be synced across all kernel tasks!
  * that's why we have m_kernel_PDEs_locked
  */
-PageDirectory MemoryManager::clone_page_directory() {
+PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages) {
     #ifdef DBG_CLONE_PAGE_DIRECTORY
     kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory->get_base());
     #endif
@@ -272,6 +276,11 @@ PageDirectory MemoryManager::clone_page_directory() {
 
     u32* new_page_tables_addresses = new u32[NUM_PAGE_DIRECTORY_ENTRIES]; // allocate on heap because kernel stack is small
     memset(new_page_tables_addresses, 0, NUM_PAGE_DIRECTORY_ENTRIES*sizeof(u32));
+    
+    // used for userpages if CopyUserPages is 'NO'
+    bool* delete_page_directory_entry = new bool[NUM_PAGE_DIRECTORY_ENTRIES];
+    for(size_t i = 0; i < NUM_PAGE_DIRECTORY_ENTRIES; i++)
+        delete_page_directory_entry[i] = false;
 
     // two passess over original page directory
     // first pass: 
@@ -299,6 +308,10 @@ PageDirectory MemoryManager::clone_page_directory() {
             new_page_tables_addresses[pde_idx] = page_table_addr;
             continue;
         }
+        if(copy_user_pages == CopyUserPages::NO) {
+            delete_page_directory_entry[pde_idx] = true;
+            continue;
+        }
         #ifdef DBG_CLONE_PAGE_DIRECTORY
         kprintf("MemoryManager::clone page table: 0x%x\n", (u32)page_table_addr);
         #endif
@@ -317,13 +330,18 @@ PageDirectory MemoryManager::clone_page_directory() {
     // point new PDEs to new page tables
     auto new_PD_vaddr = temp_map(new_page_directory.get_base());
     for(size_t pde_idx = 0; pde_idx < NUM_PAGE_DIRECTORY_ENTRIES; ++pde_idx) {
+        auto new_pde = PDE(((u32*)new_PD_vaddr)[pde_idx]);
+        if(delete_page_directory_entry[pde_idx]) {
+            new_pde.zero();
+            continue;
+        }
         if(new_page_tables_addresses[pde_idx] == 0)
             continue;
-        auto new_pde = PDE(((u32*)new_PD_vaddr)[pde_idx]);
         new_pde.set_addr(new_page_tables_addresses[pde_idx]);
     }
     un_temp_map();
     delete[] new_page_tables_addresses;
+    delete[] delete_page_directory_entry;
     return new_page_directory;
 }
 

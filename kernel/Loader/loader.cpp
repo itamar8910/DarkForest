@@ -4,10 +4,23 @@
 #include "string.h"
 #include "Loader/ElfParser.h"
 #include "bits.h"
+#include "types/String.h"
+#include "file.h"
+#include "FileSystem/FileUtils.h"
+#include "FileSystem/VFS.h"
 
 #define USERSPACE_STACK 0xb0000000
 
-
+void load_and_jump_userspace(const String& path) {
+   kprintf("load_and_jump_userspace: %s\n", path.c_str());
+	size_t elf_size = 0;
+	File* f = VFS::the().open(path);
+	ASSERT(f != nullptr);
+	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
+	ASSERT(elf_data != nullptr);
+	load_and_jump_userspace(elf_data, elf_size);
+	delete elf_data;
+}
 
 void load_and_jump_userspace(void* elf_data, u32 size) {
    Elf::Header* header = (Elf::Header*) elf_data;

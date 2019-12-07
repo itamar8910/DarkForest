@@ -58,7 +58,7 @@ ThreadControlBlock* create_kernel_task(void (*func)()) {
             );
 
     #ifdef CLONE_PAGE_DIRECTORY
-    tcb->CR3 = (void*) (u32)MemoryManager::the().clone_page_directory().get_base();
+    tcb->CR3 = (void*) (u32)MemoryManager::the().clone_page_directory(CopyUserPages::NO).get_base();
     #else
     tcb->CR3 = (void*) (u32)get_cr3();
     #endif

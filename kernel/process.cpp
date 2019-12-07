@@ -4,14 +4,32 @@
 #include "errs.h"
 #include "device.h"
 #include "FileSystem/CharFile.h"
+#include "Loader/loader.h"
+#include "Scheduler.h"
 
 u32 g_next_pid;
 
-Process* Process::create(void (*main)(), String name) {
+Process* Process::create(void (*main)(), String name, File** descriptors) {
     auto* task = create_kernel_task(main);
-    return new Process(g_next_pid++, task, name);
+    return new Process(g_next_pid++, task, name, descriptors);
 }
 
+Process::Process(u32 pid, ThreadControlBlock* task, String name, File** descriptors)
+    : m_pid(pid),
+      m_task(task),
+      m_name(name)
+{
+    if(descriptors) {
+        for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
+            m_file_descriptors[i] = descriptors[i];
+        }
+    } else {
+        for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
+            m_file_descriptors[i] = nullptr;
+        }
+
+    }
+}
 
 Process::~Process() {
     // TODO: free usespace resources & pages
@@ -71,4 +89,30 @@ int Process::syscall_write(size_t fd, char* buff, size_t count) {
         return -E_NOTFOUND;
     return file->write(buff, count);
 
+}
+
+String* glob_load_path = nullptr;
+bool glob_load_locked = false;
+
+static void auxiliary_loader() {
+    ASSERT(glob_load_path != nullptr);
+    load_and_jump_userspace(*glob_load_path);
+    delete glob_load_path;
+    glob_load_path = nullptr;
+    glob_load_locked = false;
+}
+
+int Process::syscall_ForkAndExec(char* path)
+{
+    // not realy atomic
+    // TODO: use a mutex here
+    ASSERT(!glob_load_locked);
+    glob_load_locked = true;
+    // path is in userspace, we need to copy it to kernel space
+    // because new process won't share the data of the previous one
+    glob_load_path = new String(path);
+    // TODO: add 'name' param to syscall
+    Scheduler::the().add_process(Process::create(auxiliary_loader, "Unnamed", m_file_descriptors));
+    return 0;
+    
 }
