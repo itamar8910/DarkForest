@@ -20,7 +20,7 @@ void assertion_failed(const char* expression, const char* file, int line,  const
     invoke_crash();
 #endif
 #ifdef USERSPACE
-    exit(1);
+    std::exit(1);
 #endif
     while(1);
 }

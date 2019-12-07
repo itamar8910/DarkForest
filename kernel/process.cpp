@@ -61,5 +61,14 @@ int Process::syscall_read(size_t fd, char* buff, size_t count) {
     if(file == nullptr)
         return -E_NOTFOUND;
     return file->read(count, buff);
+}
+
+int Process::syscall_write(size_t fd, char* buff, size_t count) {
+    if(fd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+    auto* file = m_file_descriptors[fd];
+    if(file == nullptr)
+        return -E_NOTFOUND;
+    return file->write(buff, count);
 
 }

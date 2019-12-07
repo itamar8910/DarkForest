@@ -1,6 +1,9 @@
 #include "unistd.h"
 #include "syscalls.h"
 
+namespace std
+{
+
 [[noreturn]] void exit(int status) {
     Syscall::invoke(Syscall::Exit, status);
     for(;;);
@@ -24,4 +27,10 @@ int file_size(int fd) {
 
 int read(size_t fd, char* buff, size_t count) {
     return Syscall::invoke(Syscall::READ, fd, (u32)buff, count);
+}
+
+int write(size_t fd, const char* buff, size_t count) {
+    return Syscall::invoke(Syscall::WRITE, fd, (u32)buff, count);
+}
+
 }

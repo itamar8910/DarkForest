@@ -23,6 +23,7 @@ public:
     int syscall_ioctl(size_t fd, u32 code, void* data);
     int syscall_file_size(size_t fd);
     int syscall_read(size_t fd, char* buff, size_t count);
+    int syscall_write(size_t fd, char* buff, size_t count);
 
 private:
     u32 m_pid;

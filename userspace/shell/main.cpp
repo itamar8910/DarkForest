@@ -10,43 +10,51 @@
 #include "PS2KeyboardCommon.h"
 #include "VgaTTY.h"
 
+
 void print_hello_text() {
-    int fd = open("/initrd/hello.txt");
+    int fd = std::open("/initrd/hello.txt");
     ASSERT(fd>=0);
-    int size = file_size(fd);
+    int size = std::file_size(fd);
     ASSERT(size > 0);
     char* buff = new char[size+1];
-    int rc = read(fd, buff, size);
+    int rc = std::read(fd, buff, size);
     ASSERT(rc == size);
     buff[size] = 0;
     VgaTTY::the().write(buff);
 }
 
 void process_command(const String& command) {
-    (void) command;
+    auto parts = command.split(' ');
+    if(parts.size() > 0) {
+        auto program = parts[0];
+        /**
+         * fork and execute 'program'
+         * program should be configured so that its stdout is the VgaTTY
+         */
+        VgaTTY::the().write((String("\n") + program).c_str());
+    }
     VgaTTY::the().write("\n# ");
 }
 
 int main() {
     print_hello_text();
-
     VgaTTY::the().write("# ");
-    int keyboard_fd = open("/dev/keyboard");
+    int keyboard_fd = std::open("/dev/keyboard");
     ASSERT(keyboard_fd != 0);
     KeyEvent key_event;
     Vector<char> command(50);
     while(1) {
-        read(keyboard_fd, (char*) &key_event, 1);
+        std::read(keyboard_fd, (char*) &key_event, 1);
         if(key_event.released)
             continue;
         if(key_event.to_ascii() == '\n') {
             process_command(String(command.data(), command.size()));
+            command.clear();
         }
 		else if(key_event.to_ascii() != 0) {
 			VgaTTY::the().putchar(key_event.to_ascii());
             command.append(key_event.to_ascii());
 		}
     }
-    
     return 0;
 }

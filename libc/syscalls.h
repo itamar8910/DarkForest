@@ -15,6 +15,7 @@ namespace Syscall {
         IOCTL=10,
         FILE_SIZE=11,
         READ=12,
+        WRITE=13,
     };
 
     int invoke(SyscallIdx syscall, u32 arg1=0, u32 arg2=0, u32 arg3=0);

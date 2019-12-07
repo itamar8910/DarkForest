@@ -52,6 +52,7 @@ HAL_DIR := HAL
 HAL_OBJS := \
 	$(HAL_DIR)/KeyboardDevice.o \
 	$(HAL_DIR)/VgaTextDevice.o \
+	$(HAL_DIR)/VgaTTY.o \
 
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 
