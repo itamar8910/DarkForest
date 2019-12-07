@@ -1,12 +1,15 @@
 #pragma once
 #include "task.h"
 #include "file.h"
+#include "fork_args.h"
 
 #define NUM_FILE_DESCRIPTORS 256
 
 class Process {
 public:
-    static Process* create(void (*main)(), String name="[Unnamed]", File** descriptors = nullptr);
+    static Process* create(void (*main)(), 
+                        String name="[Unnamed]",
+                        File** descriptors = nullptr);
 
     Process(u32 pid, ThreadControlBlock* task, String name, File** descriptors=nullptr);
 
@@ -22,7 +25,8 @@ public:
     int syscall_file_size(size_t fd);
     int syscall_read(size_t fd, char* buff, size_t count);
     int syscall_write(size_t fd, char* buff, size_t count);
-    int syscall_ForkAndExec(char* path);
+    // int syscall_ForkAndExec(char* path, char* name, char** argv);
+    int syscall_ForkAndExec(ForkArgs*);
     int syscall_wait(size_t pid);
 
 private:

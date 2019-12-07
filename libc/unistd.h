@@ -1,5 +1,7 @@
 #pragma once
 #include "types.h"
+#include "types/String.h"
+#include "types/vector.h"
 
 #define CODE_ASSERT_NOT_REACHED 127
 
@@ -14,8 +16,12 @@ int ioctl(int fd, u32 code, void* data);
 int file_size(int fd);
 int read(size_t fd, char* buff, size_t count);
 int write(size_t fd, const char* buff, size_t count);
+
 // executes a new process from executable at 'path',
 // with a copy of the calling process's file descriptor table
-int fork_and_exec(const char* path);
+int fork_and_exec(const String& path,
+                    const String& name="Unnamed",
+                    const Vector<String>& args = Vector<String>()
+                    );
 int wait(size_t pid);
 }

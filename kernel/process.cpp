@@ -9,7 +9,9 @@
 
 u32 g_next_pid;
 
-Process* Process::create(void (*main)(), String name, File** descriptors) {
+Process* Process::create(void (*main)(), 
+                        String name,
+                        File** descriptors) {
     auto* task = create_kernel_task(main);
     return new Process(g_next_pid++, task, name, descriptors);
 }
@@ -94,26 +96,47 @@ int Process::syscall_write(size_t fd, char* buff, size_t count) {
 
 }
 
-char glob_load_path[MAX_PATH_LEN];
-bool glob_load_locked = false;
+UserspaceLoaderData userspace_loader_data;
+bool glob_userspace_loader_locked = false;
 
 static void auxiliary_loader() {
-    ASSERT(glob_load_path != nullptr);
-    glob_load_locked = false;
-    load_and_jump_userspace(glob_load_path);
+    glob_userspace_loader_locked = false;
+    load_and_jump_userspace(userspace_loader_data);
 }
 
-int Process::syscall_ForkAndExec(char* path)
+void copy_into_loader_data(UserspaceLoaderData& data, const char* path, char** argv, size_t argc)
+{
+    // TODO: copy
+    // we need to do this because that data is in one process' userspace memory
+    // and needs to be accesses from another
+    // so we copy it to a temp location in kernel space
+    strncpy(userspace_loader_data.glob_load_path, path, MAX_PATH_LEN);
+    clone_args(data.argv, data.argc, argv, argc);
+    // if(argc == 0) {
+    //     data.argv = nullptr;
+    //     data.argc = 0;
+    // } else {
+    //     data.argv = new char*[argc];
+    //     for(size_t i = 0; i < argc; ++i) {
+    //         data.argv[i] = new char[strlen(argv[i]) + 1];
+    //         strcpy(data.argv[i], argv[i]);
+    //     }
+    //     data.argc = argc;
+    // }
+}
+
+// int Process::syscall_ForkAndExec(char* path, char* name, char** argv)
+int Process::syscall_ForkAndExec(ForkArgs* args)
 {
     // not realy atomic
     // TODO: use a mutex here
-    ASSERT(!glob_load_locked);
-    glob_load_locked = true;
-    // path is in userspace, we need to copy it to kernel space
-    // because new process won't share the data of the previous one
-    strncpy(glob_load_path, path, MAX_PATH_LEN);
-    // TODO: add 'name' param to syscall
-    auto* p = Process::create(auxiliary_loader, "Unnamed", m_file_descriptors);
+    ASSERT(!glob_userspace_loader_locked);
+    ASSERT(args != nullptr);
+    glob_userspace_loader_locked = true;
+    copy_into_loader_data(userspace_loader_data, args->path, args->argv, args->argc);
+    auto* p = Process::create(auxiliary_loader, 
+                                args->name,
+                                m_file_descriptors);
     int pid = p->pid();
     Scheduler::the().add_process(p);
     return pid;

@@ -15,7 +15,7 @@ void process_command(const String& command) {
         printf("\n");
         auto program = parts[0];
         if(program == "cat") {
-            int pid = std::fork_and_exec("/initrd/userspace/cat.app");
+            int pid = std::fork_and_exec("/initrd/userspace/cat.app", "cat", parts.range(1, parts.size()));
             ASSERT(pid>0);
             std::wait(pid);
         } else {

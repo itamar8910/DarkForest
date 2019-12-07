@@ -1,5 +1,7 @@
 #include "unistd.h"
 #include "syscalls.h"
+#include "shared_ptr.h"
+#include "fork_args.h"
 
 namespace std
 {
@@ -33,8 +35,29 @@ int write(size_t fd, const char* buff, size_t count) {
     return Syscall::invoke(Syscall::WRITE, fd, (u32)buff, count);
 }
 
-int fork_and_exec(const char* path) {
-    return Syscall::invoke(Syscall::ForkAndExec, (u32)path);
+int fork_and_exec(const String& path, const String& name, const Vector<String>& args)
+{
+    char** argv = nullptr;
+    size_t argc = 0;
+    if(args.size() != 0){
+        argc = args.size();
+        argv = new char*[args.size()];
+        for(size_t i = 0; i < args.size(); ++i){
+            argv[i] = new char[args.at(i).len() + 1];
+            strcpy(argv[i], args.at(i).c_str());
+        }
+    } 
+    ForkArgs fork_args = {path.c_str(), name.c_str(), argv, argc};
+    int rc =  Syscall::invoke(Syscall::ForkAndExec,
+                                (u32) &fork_args
+                            );
+    if(argv != nullptr) {
+        for(size_t i = 0; i < args.size(); ++i){
+            delete[] argv[i];
+        }
+        delete[] argv;
+    }
+    return rc;
 }
 
 int wait(size_t pid)

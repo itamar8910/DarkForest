@@ -127,6 +127,15 @@ public:
 
     }
 
+    Vector<T> range(size_t start, size_t end)
+    {
+        Vector<T> vec;
+        for(size_t i = start; i < end; ++i) {
+            vec.append(access(i));
+        }
+        return vec;
+    }
+
 
     ~Vector() {
         #ifdef VECTOR_DBG

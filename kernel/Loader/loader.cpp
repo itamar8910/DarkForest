@@ -8,21 +8,79 @@
 #include "file.h"
 #include "FileSystem/FileUtils.h"
 #include "FileSystem/VFS.h"
+#include "errs.h"
 
 #define USERSPACE_STACK 0xb0000000
+
+static int read_elf_from_path(const String& path, u8*& elf_data, size_t& elf_size)
+{
+	File* f = VFS::the().open(path);
+   if(f == nullptr) {
+      return E_NOTFOUND;
+   }
+	elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
+   if(elf_data == nullptr) {
+      return E_INVALID;
+   }
+   return 0;
+}
 
 void load_and_jump_userspace(const String& path) {
    kprintf("load_and_jump_userspace: %s\n", path.c_str());
 	size_t elf_size = 0;
-	File* f = VFS::the().open(path);
-	ASSERT(f != nullptr);
-	u8* elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
-	ASSERT(elf_data != nullptr);
+   u8* elf_data;
+   int rc = read_elf_from_path(path, elf_data, elf_size);
+   ASSERT(rc == 0);
 	load_and_jump_userspace(elf_data, elf_size);
-	delete elf_data;
+	delete elf_data; // control won't reach here
 }
 
-void load_and_jump_userspace(void* elf_data, u32 size) {
+void load_and_jump_userspace(UserspaceLoaderData& data) {
+	size_t elf_size = 0;
+   u8* elf_data;
+   int rc = read_elf_from_path(data.glob_load_path, elf_data, elf_size);
+   ASSERT(rc == 0);
+   load_and_jump_userspace(elf_data, elf_size, data.argv, data.argc);
+	delete elf_data; // control won't reach here
+}
+
+static void* allocate_from_buffer(size_t len, void*& current_alloc_buff) {
+   kprintf("allocate_from_buffer with len: %d\n", len);
+   void* t = current_alloc_buff;
+   current_alloc_buff = (void*)((u32)current_alloc_buff + len);
+   kprintf("current_alloc_buffer res: 0x%x\n", t);
+   return t;
+}
+static void clone_args_into_userspace(char**& argv_dst, size_t& argc_dst, char** argv_src, size_t argc_src, void* argv_mem_start)
+{
+    if(argc_src == 0) {
+        argv_dst = nullptr;
+        argc_dst = 0;
+    } else {
+         argv_dst = (char**) allocate_from_buffer(argc_src * sizeof(char*), argv_mem_start);
+         kprintf("argv_dst: 0x%x\n", argv_dst);
+        for(size_t i = 0; i < argc_src; ++i) {
+            kprintf("strlen(argv_src[i]) = %d\n", strlen(argv_src[i]));
+            argv_dst[i] = (char*) allocate_from_buffer((strlen(argv_src[i]) + 1)*sizeof(char), argv_mem_start);
+            kprintf("pre: argv_dst[i] = 0x%x\n", argv_dst[i]);
+            kprintf("pre: argv_dst = 0x%x\n", argv_dst);
+            kprintf("argv_src[%d] = %s\n", i, argv_src[i]);
+            strcpy(argv_dst[i], argv_src[i]);
+            kprintf("argv_dst[i] = 0x%x\n", argv_dst[i]);
+            kprintf("argv_dst[i] = %s\n", argv_dst[i]);
+            // kprintf("argv_dst[%d][0] = %c\n", i, 'X');
+            // kprintf("argv_dst[%d][0] = %c\n", i, argv_dst[i][0]);
+            // kprintf("argv_dst[%d] = %s\n", i, argv_dst[i]);
+        }
+        argc_dst = argc_src;
+    }
+}
+
+void load_and_jump_userspace(void* elf_data,
+                                u32 size,
+                                char** argv,
+                                size_t argc)
+{
    Elf::Header* header = (Elf::Header*) elf_data;
    Elf::ParseInfo elf_parse_info = Elf::from(elf_data, size);
    for(auto& offset : elf_parse_info.program_header_offsets) {
@@ -54,6 +112,19 @@ void load_and_jump_userspace(void* elf_data, u32 size) {
 	u32 user_stack_top = user_stack_bottom - PAGE_SIZE;
 	u32* user_esp = (u32*) (user_stack_bottom - 16);
 	MemoryManager::the().allocate(user_stack_top, PageWritable::YES, UserAllowed::YES);
+   // allocate args(argc, argv)
+   u32 user_args_end = USERSPACE_STACK + PAGE_SIZE*2;
+   u32 user_args_start = user_args_end - PAGE_SIZE;
+	MemoryManager::the().allocate(user_args_start, PageWritable::YES, UserAllowed::YES);
+   char*** dst_argv = (char***)(user_args_start+4);
+   size_t* dst_argc_ptr = (size_t*)user_args_start+8;
+   clone_args_into_userspace(*dst_argv, *dst_argc_ptr, argv, argc, (void*)(user_args_start+16));
+   kprintf("-- after clone_args\n");
+   kprintf("argv: 0x%x\n", *dst_argv);
+   if(argc==1) {
+      kprintf("argv[0]: 0x%x\n", (*dst_argv)[0]);
+   }
+
    // jumpp to entry
    jump_to_usermode((void (*)())(header->entry), (u32) user_esp);
 }
@@ -76,3 +147,18 @@ asm(
    "pushl %ebx\n"
    "iret\n"
 );
+
+void clone_args(char**& argv_dst, size_t& argc_dst, char** argv_src, size_t argc_src)
+ {
+    if(argc_src == 0) {
+        argv_dst = nullptr;
+        argc_dst = 0;
+    } else {
+        argv_dst = new char*[argc_src];
+        for(size_t i = 0; i < argc_src; ++i) {
+            argv_dst[i] = new char[strlen(argv_src[i]) + 1];
+            strcpy(argv_dst[i], argv_src[i]);
+        }
+        argc_dst = argc_src;
+    }
+ }

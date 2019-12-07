@@ -2,7 +2,9 @@
 #include "unistd.h"
 #include "asserts.h"
 #include "stdio.h"
+#include "constants.h"
 
+#define USERSPACE_STACK 0xb0000000
 
 void print_hello_text() {
     int fd = std::open("/initrd/a.txt");
@@ -19,5 +21,15 @@ void print_hello_text() {
 int main() {
     // std::sleep_ms(500);
     print_hello_text();
+   u32 user_args_end = USERSPACE_STACK + PAGE_SIZE*2;
+   u32 user_args_start = user_args_end - PAGE_SIZE;
+   char*** argv_ptr = (char***) (user_args_start+4);
+   size_t* argc_ptr = (size_t*) user_args_start+8;
+   char** argv = *argv_ptr;
+   kprintf("argv: 0x%x\n", argv);
+   kprintf("argc: 0x%x\n", *argc_ptr);
+   kprintf("argv[0]: %s\n", argv[0]);
+   kprintf("argv[0]: 0x%x\n", argv[0]);
+//    kprintf("argv[0][0]: 0x%x\n", argv[0][0]);
     return 0;
 }
