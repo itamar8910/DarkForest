@@ -2,7 +2,11 @@
 
 # copy userspace binaries
 
-USERSPACE_BINARIES="../userspace/shell.app ../userspace/HelloWorld.app ../userspace/terminal.app"
+USERSPACE_BINARIES=""
+USERSPACE_BINARIES="$USERSPACE_BINARIES ../userspace/shell.app"
+USERSPACE_BINARIES="$USERSPACE_BINARIES ../userspace/HelloWorld.app"
+USERSPACE_BINARIES="$USERSPACE_BINARIES ../userspace/terminal.app"
+USERSPACE_BINARIES="$USERSPACE_BINARIES ../userspace/cat.app"
 
 pushd ramdisk
 

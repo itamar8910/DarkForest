@@ -12,14 +12,17 @@
 void process_command(const String& command) {
     auto parts = command.split(' ');
     if(parts.size() > 0) {
+        printf("\n");
         auto program = parts[0];
-        /**
-         * fork and execute 'program'
-         * program should be configured so that its stdout is the VgaTTY
-         */
-        puts((String("\n") + program).c_str());
+        if(program == "cat") {
+            int pid = std::fork_and_exec("/initrd/userspace/cat.app");
+            ASSERT(pid>0);
+            std::wait(pid);
+        } else {
+            printf("program: %s not found\n", program.c_str());
+        }
     }
-    puts("\n# ");
+    puts("# ");
 }
 
 
