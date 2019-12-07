@@ -4,7 +4,7 @@
 #include "stdio.h"
 
 void initialize_descriptors() {
-    int keyboard_fd = std::open("/dev/keyboard");
+    int keyboard_fd = std::open("/dev/asciiKeyboard");
     int vga_tty_fd = std::open("/dev/vgatty");
     ASSERT(keyboard_fd == STDIN);
     ASSERT(vga_tty_fd == STDOUT);

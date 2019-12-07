@@ -3,6 +3,7 @@
 #include "HAL/KeyboardDevice.h"
 #include "HAL/VgaTextDevice.h"
 #include "HAL/VgaTTY.h"
+#include "HAL/AsciiKeyboardDevice.h"
 
 static DevFS* s_the;
 
@@ -17,6 +18,7 @@ void DevFS::initiailize() {
     DevFS::the().add_device(new KeyboardDevice("keyboard"));
     DevFS::the().add_device(new VgaTextDevice("vgatext"));
     DevFS::the().add_device(new VgaTTYDevice("vgatty"));
+    DevFS::the().add_device(new AsciiKeyboardDevice("asciiKeyboard"));
 }
 
 void DevFS::add_device(Device* device) {

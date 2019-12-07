@@ -4,13 +4,6 @@
 #include "Scheduler.h"
 #include "asserts.h"
 
-class KeyboardReadBlocker: public TaskBlocker {
-public:
-    KeyboardReadBlocker(): TaskBlocker() {}
-    virtual bool can_unblock() override;
-    virtual ~KeyboardReadBlocker() {}
-};
-
 
 bool KeyboardReadBlocker::can_unblock() {
     return PS2Keyboard::the().can_consume();
