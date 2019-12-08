@@ -58,19 +58,9 @@ static void clone_args_into_userspace(char**& argv_dst, size_t& argc_dst, char**
         argc_dst = 0;
     } else {
          argv_dst = (char**) allocate_from_buffer(argc_src * sizeof(char*), argv_mem_start);
-         kprintf("argv_dst: 0x%x\n", argv_dst);
         for(size_t i = 0; i < argc_src; ++i) {
-            kprintf("strlen(argv_src[i]) = %d\n", strlen(argv_src[i]));
             argv_dst[i] = (char*) allocate_from_buffer((strlen(argv_src[i]) + 1)*sizeof(char), argv_mem_start);
-            kprintf("pre: argv_dst[i] = 0x%x\n", argv_dst[i]);
-            kprintf("pre: argv_dst = 0x%x\n", argv_dst);
-            kprintf("argv_src[%d] = %s\n", i, argv_src[i]);
             strcpy(argv_dst[i], argv_src[i]);
-            kprintf("argv_dst[i] = 0x%x\n", argv_dst[i]);
-            kprintf("argv_dst[i] = %s\n", argv_dst[i]);
-            // kprintf("argv_dst[%d][0] = %c\n", i, 'X');
-            // kprintf("argv_dst[%d][0] = %c\n", i, argv_dst[i][0]);
-            // kprintf("argv_dst[%d] = %s\n", i, argv_dst[i]);
         }
         argc_dst = argc_src;
     }
@@ -117,13 +107,8 @@ void load_and_jump_userspace(void* elf_data,
    u32 user_args_start = user_args_end - PAGE_SIZE;
 	MemoryManager::the().allocate(user_args_start, PageWritable::YES, UserAllowed::YES);
    char*** dst_argv = (char***)(user_args_start+4);
-   size_t* dst_argc_ptr = (size_t*)user_args_start+8;
+   size_t* dst_argc_ptr = (size_t*)(user_args_start+8);
    clone_args_into_userspace(*dst_argv, *dst_argc_ptr, argv, argc, (void*)(user_args_start+16));
-   kprintf("-- after clone_args\n");
-   kprintf("argv: 0x%x\n", *dst_argv);
-   if(argc==1) {
-      kprintf("argv[0]: 0x%x\n", (*dst_argv)[0]);
-   }
 
    // jumpp to entry
    jump_to_usermode((void (*)())(header->entry), (u32) user_esp);
