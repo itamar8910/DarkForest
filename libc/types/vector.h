@@ -136,6 +136,11 @@ public:
         return vec;
     }
 
+    void pop() {
+        ASSERT(m_size > 0);
+        m_data[m_size--].~T();
+    }
+
 
     ~Vector() {
         #ifdef VECTOR_DBG

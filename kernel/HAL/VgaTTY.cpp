@@ -70,6 +70,17 @@ void VgaTTY::putchar(char c)
 {
     if(c == '\n') {
         newline();
+    } else if(c == '\b') {
+        if(m_column > 0) {
+            m_column -= 1;
+        }
+        else if(m_row > 0) {
+            m_row -= 1;
+            m_column = VgaTTY::VGA_WIDTH-1;
+        } else {
+            m_column = 0;
+        }
+        putchar(' ', m_color, m_column, m_row);
     }
     else {
         // else, regular char

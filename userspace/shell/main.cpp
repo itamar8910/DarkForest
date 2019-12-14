@@ -11,8 +11,8 @@
 
 void process_command(const String& command) {
     auto parts = command.split(' ');
-    if(parts.size() > 0) {
-        printf("\n");
+    printf("\n");
+    if(parts.size() > 0 && parts[0].len() > 0) {
         auto program = parts[0];
         if(program == "cat") {
             int pid = std::fork_and_exec("/initrd/userspace/cat.app", "cat", parts.range(0, parts.size()));
@@ -36,8 +36,14 @@ int main() {
             command.clear();
         }
 		else {
+            if(c == '\b') { // backspace
+                if(command.size() == 0)
+                    continue;
+                command.pop();
+            } else {
+                command.append(c);
+            }
             putc(c);
-            command.append(c);
 		}
     }
     return 0;

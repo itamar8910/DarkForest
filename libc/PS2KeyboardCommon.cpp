@@ -39,10 +39,14 @@ static char to_upper(char val) {
     return val;
 }
 
+constexpr u8 KEYCODE_BACKSPACE = 139;
 
 char KeyEvent::to_ascii() {
     // valid ascii has bit 7 clear
     if(get_bit(keycode.data, 7)) {
+        if(keycode.data == KEYCODE_BACKSPACE) {
+            return '\b';
+        }
         return 0;
     }
     if(modifiers.caps_lock | modifiers.shift) {
