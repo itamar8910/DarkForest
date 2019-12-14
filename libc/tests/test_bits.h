@@ -2,6 +2,7 @@
 #include "logging.h"
 #include "asserts.h"
 #include "bits.h"
+#include "string.h"
 
 static void bits_tests() {
     kprintf("[BITS_TESTS]\n");
@@ -14,4 +15,7 @@ static void bits_tests() {
     ASSERT(get_on_bit_idx(0) == -1);
     x = 13;
     ASSERT(set_bit(x,3,true));
+    char a1[] = {1,2,3, 0};
+    char a2[] = {1,2,4, 0};
+    ASSERT(memcmp(a1, a2, 3) != 0);
 }
