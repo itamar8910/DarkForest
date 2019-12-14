@@ -4,22 +4,38 @@
 #include "stdio.h"
 #include "constants.h"
 
-void print_hello_text() {
-    int fd = std::open("/initrd/a.txt");
-    ASSERT(fd>=0);
+void print_file(const String& path) {
+    int fd = std::open(path.c_str());
+    if(fd < 0) {
+        printf("error opening file: %s\n", path.c_str());
+        return;
+    }
     int size = std::file_size(fd);
-    ASSERT(size > 0);
-    char* buff = new char[size+1];
-    int rc = std::read(fd, buff, size);
-    ASSERT(rc == size);
-    buff[size] = 0;
-    printf("%s\n", buff);
+    if(size < 0) {
+        printf("error getting file size: %s\n", path.c_str());
+        return;
+    }
+    Vector<char> buff(size+1);
+    int rc = std::read(fd, buff.data(), size);
+    if(rc != size) {
+        printf("error reading file: %s\n", path.c_str());
+        return;
+    }
+    buff.data()[size] = 0;
+    printf("%s\n", buff.data());
 }
 
 int main(char** argv, size_t argc) {
-    print_hello_text();
-    kprintf("argc: %d\n", argc);
-    if(argc > 0)
-        kprintf("argv[0]: %s\n", argv[0]);
+    if(argc < 1) {
+        printf("expected argc >= 1\n");
+        return 1;
+    }
+    if(argc == 1) {
+        printf("Usage: %s [file1] [file2] ...\n", argv[0]);
+        return 1;
+    }
+    for(size_t i = 1; i < argc; i++) {
+        print_file(argv[i]);
+    }
     return 0;
 }
