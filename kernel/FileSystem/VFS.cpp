@@ -22,7 +22,9 @@ File* VFS::open(const String& path) {
         if(!path.startswith(fs->mountpoint()))
             continue;
         String inside_path = Path::remove_mount_prefix(path, *fs);
-        ASSERT(inside_path != String(""));
+        if(inside_path.empty()) {
+            continue;
+        }
         File* f = fs->open(inside_path);
         if(f != nullptr) {
             return f;
