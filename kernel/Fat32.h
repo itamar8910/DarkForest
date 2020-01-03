@@ -59,6 +59,14 @@ struct [[gnu::packed]] FatDirectoryEntry
     u16 WriteDate;
     u16 ClusterIdxLow;
     u32 FileSize;
+
+    u32 cluster_idx() const
+    {
+        return (
+                static_cast<u32>(ClusterIdxHigh)<<16) 
+                | (static_cast<u32>(ClusterIdxLow) & 0xffff
+                );
+    }
 };
 static_assert(sizeof(FatDirectoryEntry)==32);
 
@@ -74,7 +82,15 @@ private:
 
     u32 cluster_to_sector(u32 cluster) const;
     u32 entry_in_fat(u32 cluster) const;
+
     shared_ptr<Vector<u8>> read_cluster(u32 cluster) const;
+
+    void read_cluster(u32 cluster, u8* buff) const;
+
+    shared_ptr<Vector<u8>> read_whole_entry(u32 start_cluster, u32 size) const;
+
+    shared_ptr<Vector<u8>> read_whole_entry(const FatDirectoryEntry& entry) const;
+
 
 
     u32 FAT_sector {0};

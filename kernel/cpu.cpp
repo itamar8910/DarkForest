@@ -8,6 +8,8 @@
 #include "Scheduler.h"
 #include "backtrace.h"
 
+// #define GENERATE_BACKTRACE
+
 TSS the_tss;
 
 extern "C" void gdt_flush(uint32_t); // arg is ptr to descriptor ptr struct
@@ -176,7 +178,9 @@ void print_register_dump(RegsDump& regs) {
 
 template<typename T>
 void kernel_panic(T regs) {
+   #ifdef GENERATE_BACKTRACE
    Backtrace::print_backtrace(regs.eip, regs.ebp);
+   #endif
    kprintf("K E R N E L P A N I C\n");
    cpu_hang();
 }

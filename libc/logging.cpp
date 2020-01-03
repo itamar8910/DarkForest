@@ -30,12 +30,12 @@ void print_hexdump(const u8* data, size_t size)
 {
     for(size_t i = 0; i < size; i += 16)
     {
-        for(size_t j = 0; j < 4; ++j)
+        for(size_t j = 0; j < 8; ++j)
         {
             kprintf("0x%x ", data[i+j]);
         }
         kprint(" ");
-        for(size_t j = 0; j < 4; ++j)
+        for(size_t j = 8; j < 16; ++j)
         {
             kprintf("0x%x ", data[i+j]);
         }
