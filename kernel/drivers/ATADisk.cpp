@@ -10,11 +10,6 @@
 
 namespace ATADisk{
     // static struct ata_device ata_primary_master   = {.io_base = 0x1F0, .control = 0x3F6, .slave = 0};
-    enum class DriveType
-    {
-        Primary,
-        Secondary
-    };
     constexpr u16 IO_BASE_PRIMARY = 0x1f0;
     constexpr u16 CONTROL_PRIMARY = 0x3F6;
     constexpr u16 REG_ALT_STATUS_ABS_ADDRESS = CONTROL_PRIMARY;
@@ -44,8 +39,6 @@ namespace ATADisk{
     constexpr u8 STATUS_BIT_DF = 5;
     constexpr u8 STATUS_BIT_RDY = 6;
 
-    constexpr size_t SECTOR_SIZE_BYTES = 512;
-    constexpr size_t SECTOR_SIZE_WORDS = SECTOR_SIZE_BYTES/2;
 
     ISR_HANDLER(ata_primary);
     void isr_ata_primary_handler(RegisterDump& regs) {
@@ -140,16 +133,16 @@ namespace ATADisk{
         u8 status = 0;
         do
         {
-            kprintf("loop1\n");
+            // kprintf("loop1\n");
             status = IO::inb(IO_BASE_PRIMARY + REG_STATUS);
-            kprintf("status: 0x%d\n", status);
+            // kprintf("status: 0x%d\n", status);
         } while((status & (1<<STATUS_BIT_BUSY)) != 0);
 
         do
         {
-            kprintf("loop2\n");
+            // kprintf("loop2\n");
             status = IO::inb(IO_BASE_PRIMARY + REG_STATUS);
-            kprintf("status: %d\n", status);
+            // kprintf("status: %d\n", status);
             ASSERT((status & (1<<STATUS_BIT_ERR)) == 0);
             ASSERT((status & (1<<STATUS_BIT_DF)) == 0);
         } while ((status & (1<<STATUS_BIT_DRQ)) == 0);
@@ -210,11 +203,11 @@ namespace ATADisk{
         // test
         u8 buff[SECTOR_SIZE_BYTES] = {0};
         read_sectors(0, 1, DriveType::Primary, buff);
-        kprintf("Read!\n");
-        for(size_t i = 0; i < SECTOR_SIZE_BYTES; ++i)
-        {
-            kprintf("%d 0x%x\n", i, buff[i]);
-        }
+        // kprintf("Read!\n");
+        // for(size_t i = 0; i < SECTOR_SIZE_BYTES; ++i)
+        // {
+        //     kprintf("%d 0x%x\n", i, buff[i]);
+        // }
         // // ata_soft_reset(ctrl->dev_ctl);		/* waits until master drive is ready again */
         // u8 slavebit = 0;
         // // identify command

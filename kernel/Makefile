@@ -16,6 +16,7 @@ KERN_OBJS := \
 	process.o \
 	kernel_symbols.o \
 	backtrace.o \
+	Fat32.o \
 	
 
 DRIVERS_DIR := drivers

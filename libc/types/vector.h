@@ -141,6 +141,11 @@ public:
         m_data[m_size--].~T();
     }
 
+    void set_size(size_t size)
+    {
+        m_size = size;
+    }
+
 
     ~Vector() {
         #ifdef VECTOR_DBG

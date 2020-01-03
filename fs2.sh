@@ -9,5 +9,6 @@ mkdir mnt
 mount disk_img.bin mnt
 echo "hello1" > mnt/a.txt
 echo "hello2" > mnt/b.txt
+echo "hello2fsasf" > mnt/thef.dat
 umount mnt
 rm -r mnt
