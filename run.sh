@@ -8,6 +8,6 @@ $qemu -kernel $image \
     -m 1G \
     -d guest_errors \
     -initrd ramdisk/ramdisk.tar \
-    # -s -S
+    -hda disk_img.bin
 
 

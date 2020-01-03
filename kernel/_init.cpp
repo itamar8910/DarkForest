@@ -28,6 +28,7 @@
 #include "kernel_symbols.h"
 #include "shared_ptr.h"
 #include "HAL/VgaTTY.h"
+#include "drivers/ATADisk.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -80,6 +81,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
 	PS2Keyboard::initialize();
+	ATADisk::initialize();
+	cpu_hang();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
 	RamDisk::init(*mbt);

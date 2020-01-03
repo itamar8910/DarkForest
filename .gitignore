@@ -11,3 +11,4 @@ settings.json
 
 ramdisk/kernel_lineinfo.txt
 ramdisk/kernel_symbols.txt
+disk_img.bin

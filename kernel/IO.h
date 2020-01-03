@@ -24,4 +24,11 @@ namespace IO {
         return ret;
     }
 
+    static inline uint16_t in16(uint16_t port) {
+        uint16_t ret;
+        asm volatile ( "inw %1, %0"
+                    : "=a"(ret)
+                    : "Nd"(port) );
+        return ret;
+    }
 }
