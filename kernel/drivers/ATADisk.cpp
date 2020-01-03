@@ -75,7 +75,6 @@ namespace ATADisk{
         ASSERT((val & (1<<STATUS_BIT_ERR)) == 0);
 
         u8 data_ready = (val & (1<<STATUS_BIT_READY));
-        kprintf("data ready: %d\n", data_ready);
     }
 
     void identify(DriveType type)
@@ -91,11 +90,9 @@ namespace ATADisk{
 
         IO::outb(IO_BASE_PRIMARY + REG_COMMAND, COMMAND_IDENTIFY);
         u8 val = IO::inb(IO_BASE_PRIMARY + REG_STATUS);
-        kprintf("identify status: %d\n", val);
         ASSERT(val != 0);
         poll_until_ready_for_read(type);
 
-        kprintf("data is ready to read\n");
         constexpr size_t IDENTIFY_SIZE = 512;
         uint8_t identify_data[IDENTIFY_SIZE] = {0};
         for(size_t i = 0; i < IDENTIFY_SIZE/2; ++i)
@@ -103,6 +100,8 @@ namespace ATADisk{
             u16 val = IO::in16(IO_BASE_PRIMARY + REG_DATA);
             identify_data[i*2] = MSB(val);
             identify_data[(i*2)+1] = LSB(val);
+            // kprintf("%d: 0x%x\n", i*2, identify_data[i*2]);
+            // kprintf("%d: 0x%x\n", i*2 + 1, identify_data[i*2 + 1]);
         }
         constexpr size_t NAME_OFFSET_START = 27*2;
         constexpr size_t NAME_OFFSET_END = 46*2;
@@ -111,6 +110,13 @@ namespace ATADisk{
         memcpy(name.data(), identify_data+NAME_OFFSET_START, NAME_LENGTH);
         name.data()[NAME_LENGTH] = 0;
         kprintf("Device name: %s\n", name.data());
+
+        u8 cylinders = identify_data[1*2+1];
+        u8 heads = identify_data[3*2+1];
+        u8 sectors_per_track = identify_data[6*2+1];
+        kprintf("#cylinders: %d\n", (int) cylinders);
+        kprintf("#heads: %d\n", (int)heads);
+        kprintf("#sectors/track: %d\n", (int)sectors_per_track);
     }
 
     void initialize()
