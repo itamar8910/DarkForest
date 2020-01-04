@@ -88,6 +88,7 @@ String String::substr(int start, int end) const {
         end = len();
     }
     ASSERT(start>=0);
+    ASSERT(end > start);
     // String ctor copies data
     return String(c_str() + start, end-start);
 }

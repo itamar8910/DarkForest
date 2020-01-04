@@ -8,7 +8,7 @@
 #include "Scheduler.h"
 #include "backtrace.h"
 
-// #define GENERATE_BACKTRACE
+#define GENERATE_BACKTRACE
 
 TSS the_tss;
 
@@ -180,6 +180,8 @@ template<typename T>
 void kernel_panic(T regs) {
    #ifdef GENERATE_BACKTRACE
    Backtrace::print_backtrace(regs.eip, regs.ebp);
+   #else
+   (void)regs;
    #endif
    kprintf("K E R N E L P A N I C\n");
    cpu_hang();

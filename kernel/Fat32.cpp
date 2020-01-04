@@ -26,7 +26,6 @@ Fat32& Fat32::the(){
 
 Fat32::Fat32(FatBootSector& boot_sector, const Fat32Extension& extension)
 {
-    kprintf("OEM: %s\n", boot_sector.oem_name);
 
     ASSERT(boot_sector.table_count == 2);
     ASSERT(boot_sector.bytes_per_sector == 512);
@@ -40,6 +39,7 @@ Fat32::Fat32(FatBootSector& boot_sector, const Fat32Extension& extension)
     sectors_per_cluster = boot_sector.sectors_per_cluster;
     root_cluster = extension.root_cluster;
 
+    kprintf("OEM: %s\n", boot_sector.oem_name);
     kprintf("bytes per sector: 0x%x\n", (boot_sector.bytes_per_sector & 0xffff));
     kprintf("reserved sector count: %d\n", boot_sector.reserved_sector_count);
     kprintf("FAT sector: %d\n", FAT_sector);
@@ -71,7 +71,6 @@ u32 Fat32::entry_in_fat(u32 cluster) const
     ATADisk::read_sectors(FAT_sector + sector_idx, 1, ATADisk::DriveType::Primary, buff);
     u32* entries = (u32*) buff;
     u32 val = entries[entry_idx_in_sector];
-    kprintf("cluster %d in FAT: 0x%x\n", cluster, val);
     // kprintf("FAT:\n");
     // print_hexdump(buff, ATADisk::SECTOR_SIZE_BYTES);
     return val;
@@ -89,9 +88,7 @@ shared_ptr<Vector<u8>> Fat32::read_cluster(u32 cluster) const
 void Fat32::read_cluster(u32 cluster, u8* buff) const
 {
     u32 start_sector = cluster_to_sector(cluster);
-    kprintf("reading cluster %d (sector %d)\n", cluster, start_sector);
     ATADisk::read_sectors(start_sector, sectors_per_cluster, ATADisk::DriveType::Primary, buff);
-    kprintf("buff[0] = 0x%x\n", buff[0]);
 }
 
 constexpr u32 FAT_ENTRY_EOF = 0x0FFFFFFF;
@@ -103,15 +100,11 @@ Vector<FatDirectoryEntry> Fat32::read_directory(u32 cluster) const
     bool done = false;
     while(!done)
     {
-        kprintf("current cluster: %d\n", current_cluster);
         auto cluster_data = read_cluster(current_cluster);
-        kprintf("cluster:\n");
         print_hexdump(cluster_data->data(), cluster_data->size());
         FatDirectoryEntry* current = (FatDirectoryEntry*) cluster_data->data();
         while(!done)
         {
-            kprintf("current->name: %s\n", current->name);
-            kprintf("FileSize: 0x%x\n", current->FileSize);
             // some wierd entries I see in the hex -- check this out
             if(current->FileSize == 0xffffffff)
             {
@@ -137,7 +130,6 @@ Vector<FatDirectoryEntry> Fat32::read_directory(u32 cluster) const
         u32 next_cluster = (cluster_entry & 0x0fffffff); // take lower 28 bits
         current_cluster = next_cluster;
     }
-    kprintf("done get_root_dir_entries\n");
     return entries;
 }
 
@@ -150,15 +142,12 @@ shared_ptr<Vector<u8>> Fat32::read_whole_entry(u32 start_cluster, u32 size) cons
     u32 current_cluster = start_cluster;
     for(size_t cluster_i = 0; ; cluster_i++)
     {
-        kprintf("current_cluster: %d\n", current_cluster);
         read_cluster(current_cluster, data_vec->data() + cluster_size * cluster_i);
-        kprintf("read data_vec[0]: 0x%x\n", data_vec->data()[0]);
         u32 next_cluster = entry_in_fat(current_cluster);
         if(next_cluster == FAT_ENTRY_EOF)
         {
             break;
         }
-        kprintf("next cluster: 0x%x\n", next_cluster);
         current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
     }
     return data_vec;
@@ -166,6 +155,5 @@ shared_ptr<Vector<u8>> Fat32::read_whole_entry(u32 start_cluster, u32 size) cons
 
 shared_ptr<Vector<u8>> Fat32::read_whole_entry(const FatDirectoryEntry& entry) const
 {
-    kprintf("entry's cluster idx: %d\n", entry.cluster_idx());
     return read_whole_entry(entry.cluster_idx(), entry.FileSize);
 }

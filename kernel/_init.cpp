@@ -84,7 +84,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	PS2Keyboard::initialize();
 	ATADisk::initialize();
 	Fat32::initialize();
-	cpu_hang();
+	// cpu_hang();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
 	RamDisk::init(*mbt);
