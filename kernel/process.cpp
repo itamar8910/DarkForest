@@ -42,7 +42,7 @@ Process::~Process() {
 }
 
 int Process::syscall_open(const String& path) {
-    auto* file = VFS::the().open(path);
+    auto* file = VFS::the().open(Path(path));
     if(file == nullptr)
         return -E_NOTFOUND;
     for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {

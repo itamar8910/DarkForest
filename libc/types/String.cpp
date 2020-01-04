@@ -114,7 +114,8 @@ Vector<String> String::split(char delim, size_t capacity) const {
         int idx = find(delim_str, prev_idx);
         // printf("find idx:%d\n", idx);
         if(idx == -1) {
-            ret.append(substr(prev_idx));
+            if(prev_idx > 0)
+                ret.append(substr(prev_idx));
             break;
         }
         ret.append(substr(prev_idx, idx));

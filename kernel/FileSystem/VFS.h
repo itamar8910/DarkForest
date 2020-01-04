@@ -12,12 +12,12 @@ class VFS : public FileSystem{
 public:
     static VFS& the();
 
-    File* open(const String& path) override;
+    File* open(const Path& path) override;
 
     void mount(FileSystem* fs);
 
 private:
-    VFS() : FileSystem("/") {}
+    VFS() : FileSystem(Path("/")) {}
 
     Vector<FileSystem*> mounted_filesystems;
 

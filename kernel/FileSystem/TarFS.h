@@ -13,6 +13,6 @@ class TarFS : public RamDiskFS {
 public:
     TarFS(multiboot_info_t& mbt) : RamDiskFS(mbt) {}
 
-    File* open(const String& path) override;
+    File* open(const Path& path) override;
 
 };

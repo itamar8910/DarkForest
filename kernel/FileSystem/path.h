@@ -1,7 +1,9 @@
 #pragma once
 
 #include "types/String.h"
-#include "FileSystem.h"
+// #include "FileSystem.h"
+
+class FileSystem;
 
 class Path {
 
@@ -13,14 +15,14 @@ public:
         Invalid,
     };
 
-    Path(const String& path);
+    explicit Path(const String& path);
+    explicit Path(const Vector<String>& parts, PathType);
 
     /**
      * e.g (/dev/keyboard, DevFS) => keyboard
      */
-    static String remove_mount_prefix(const String& path, 
-                            const FileSystem& fs);
-    
+    bool remove_mount_prefix(const FileSystem& fs, Path& res) const;
+
     size_t num_parts() const {return m_parts.size();}
     const String& get_part(size_t idx) const {return m_parts[idx];}
     PathType type() const {return m_type;}

@@ -14,7 +14,7 @@
 
 static int read_elf_from_path(const String& path, u8*& elf_data, size_t& elf_size)
 {
-	File* f = VFS::the().open(path);
+	File* f = VFS::the().open(Path(path));
    if(f == nullptr) {
       return E_NOTFOUND;
    }

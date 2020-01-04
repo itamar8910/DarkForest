@@ -15,14 +15,14 @@ void VFS::mount(FileSystem* fs) {
     mounted_filesystems.append(fs);
 }
 
-File* VFS::open(const String& path) {
-    kprintf("VFS::open %s\n", path.c_str());
+File* VFS::open(const Path& path) {
+    kprintf("VFS::open %s\n", path.to_string().c_str());
     for(auto* fs : mounted_filesystems) {
         ASSERT(fs != nullptr);
-        if(!path.startswith(fs->mountpoint()))
-            continue;
-        String inside_path = Path::remove_mount_prefix(path, *fs);
-        if(inside_path.empty()) {
+        kprintf("trying FS: %s\n", fs->mountpoint().to_string().c_str());
+        Path inside_path("/");
+        bool rc = path.remove_mount_prefix(*fs, inside_path);
+        if(!rc) {
             continue;
         }
         File* f = fs->open(inside_path);

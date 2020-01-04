@@ -5,7 +5,7 @@
 
 class RamDiskFS : public FileSystem{
 public:
-    virtual File* open(const String& path) = 0;
+    virtual File* open(const Path& path) = 0;
 
     void* base(){return m_base;}
     u32 size(){return m_size;}

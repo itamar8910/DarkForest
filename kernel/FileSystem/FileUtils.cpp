@@ -18,16 +18,12 @@ u8* FileUtils::read_all(CharFile& f, size_t& size) {
 }
 
 int FileUtils::file_size(const String& path) {
-    kprint("a\n");
-    File* f = VFS::the().open(path);
-    kprint("b\n");
+    File* f = VFS::the().open(Path(path));
     if(f == nullptr) {
         return E_NOTFOUND;
     }
-    kprint("c\n");
     // TODO: dynamic_cast
     auto* char_f = static_cast<CharFile*>(f);
-    kprint("d\n");
     return char_f->size();
     
 }

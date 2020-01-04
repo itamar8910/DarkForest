@@ -2,7 +2,7 @@
 #include "logging.h"
 
 RamDiskFS::RamDiskFS(multiboot_info_t& mbt)
-: FileSystem("/initrd") {
+: FileSystem(Path("/initrd")) {
 	ASSERT(mbt.mods_count == 1);
 	multiboot_module_t* ramdisk_module = (multiboot_module_t*) mbt.mods_addr;
 	kprintf("mod_start: 0x%x, mod_end: 0x%x\n", ramdisk_module->mod_start, ramdisk_module->mod_end);

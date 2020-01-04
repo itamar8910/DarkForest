@@ -25,10 +25,12 @@ void DevFS::add_device(Device* device) {
     devices.append(device);
 }
 
-File* DevFS::open(const String& path) {
+File* DevFS::open(const Path& path) {
+    ASSERT(path.num_parts() == 1);
+    auto path_str = path.to_string();
     for(size_t i = 0; i < devices.size(); i++) {
         auto& dev = *devices[i];
-        if(dev.path() == path) {
+        if(dev.path() == path_str) {
             return &dev;
         }
     }

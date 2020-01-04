@@ -50,7 +50,7 @@ class SymbolsMap : public AddressMap<SymbolAndAddress> {
 public:
     SymbolsMap() : AddressMap<SymbolAndAddress>(DEFAULT_NUM_SYMB_MAPS){};
     virtual void from_file(const String& path) override {
-        CharFile* f = static_cast<CharFile*>(VFS::the().open(path));
+        CharFile* f = static_cast<CharFile*>(VFS::the().open(Path(path)));
         ASSERT(f != nullptr);
         char* content_raw = f->get_content();
         kprintf("aftet get content\n");
@@ -77,7 +77,7 @@ class LinesMap : public AddressMap<SourceAndAddress> {
 public:
     LinesMap() : AddressMap<SourceAndAddress>(DEFAULT_NUM_LINE_MAPS){};
     virtual void from_file(const String& path) override {
-        CharFile* f = static_cast<CharFile*>(VFS::the().open(path));
+        CharFile* f = static_cast<CharFile*>(VFS::the().open(Path(path)));
         ASSERT(f != nullptr);
         char* content_raw = f->get_content();
         kprintf("aftet get content\n");

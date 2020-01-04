@@ -40,7 +40,8 @@ u32 round_up(u32 num, u32 round) {
     return num + (round-num)%round;
 }
 
-File* TarFS::open(const String& path) {
+File* TarFS::open(const Path& path) {
+    auto path_str = path.to_string();
     TarHeader* current = (TarHeader*) base();
     while(strcmp(current->name, "")) {
         size_t size = decode_tarnum(current->size);
@@ -49,8 +50,8 @@ File* TarFS::open(const String& path) {
                 + TAR_PADDING
             );
 
-        if(!strcmp(current->name, path.c_str())) {
-            return new CharFile(path, (u8*) content_addr, size);
+        if(!strcmp(current->name, path_str.c_str())) {
+            return new CharFile(path_str, (u8*) content_addr, size);
         }
         current = (TarHeader*) round_up(content_addr + size, TAR_PADDING);
     }
