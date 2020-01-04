@@ -4,6 +4,7 @@
 #include "types/vector.h"
 #include "types/String.h"
 #include "shared_ptr.h"
+#include "FileSystem/path.h"
 
 struct [[gnu::packed]] Fat32Extension
 {
@@ -45,6 +46,17 @@ struct [[gnu::packed]] FatBootSector
  
 };
 
+enum class FatDirAttr : u8
+{
+    ATTR_READ_ONLY = 0x1,
+    ATTR_HIDDEN = 0x2,
+    ATTR_SYSTEM = 0x4, 
+    ATTR_VOLUME_ID = 0x8,
+    ATTR_DIRECTORY = 0x10, 
+    ATTR_ARCHIVE = 0x20,
+    ATTR_LONG_NAME = ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID,
+};
+
 struct [[gnu::packed]] FatDirectoryEntry
 {
     char name[11];
@@ -67,14 +79,45 @@ struct [[gnu::packed]] FatDirectoryEntry
                 | (static_cast<u32>(ClusterIdxLow) & 0xffff
                 );
     }
+
+    String name_lower() const
+    {
+        String name_str(name, 11);
+        // name[0..7] = base name
+        // name[8..10] = extension
+        int space_idx = name_str.find(" ");
+        String basename = name_str.substr(0, (space_idx == -1) ? 8 : space_idx);
+        String extension = name_str.substr(8);
+        // String res = basename + String(".") + extension;
+        String res = basename;
+        if(extension[0] != ' ') // if extension is not empty
+        {
+            res = res + String(".") + extension;
+        }
+        res = res.lower();
+        return res;
+    }
+
+    bool is_long_name() {
+        return attr == static_cast<u8>(FatDirAttr::ATTR_LONG_NAME);
+    }
+
+    bool is_directory()
+    {
+        return attr == static_cast<u8>(FatDirAttr::ATTR_DIRECTORY);
+    }
+
 };
 static_assert(sizeof(FatDirectoryEntry)==32);
+
 
 class Fat32
 {
 public:
     static void initialize();
     static Fat32& the();
+
+    shared_ptr<Vector<u8>> read_file(const Path& path) const;
 
 private:
     Fat32(FatBootSector& boot_sector, const Fat32Extension& extension);
@@ -91,6 +134,8 @@ private:
 
     shared_ptr<Vector<u8>> read_whole_entry(const FatDirectoryEntry& entry) const;
 
+
+    bool find_file(const Path& path, FatDirectoryEntry& res) const;
 
 
     u32 FAT_sector {0};

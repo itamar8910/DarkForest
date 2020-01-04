@@ -15,4 +15,9 @@ void string_tests() {
     ASSERT(s1 == String("123"));
 
 
+    String res = String("Hello") + String("|") + String("Everyone");
+    kprintf("res: %s\n", res.c_str());
+    ASSERT(res == "Hello|Everyone");
+
+
 }

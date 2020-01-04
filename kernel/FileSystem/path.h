@@ -28,6 +28,8 @@ public:
     Vector<String> parts_from_string(const String& path) const;
     PathType type_from_string(const String& path) const;
 
+    String to_string() const;
+
 private:
     Vector<String> m_parts;
     PathType m_type;

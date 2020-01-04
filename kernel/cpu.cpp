@@ -8,7 +8,7 @@
 #include "Scheduler.h"
 #include "backtrace.h"
 
-#define GENERATE_BACKTRACE
+// #define GENERATE_BACKTRACE
 
 TSS the_tss;
 

@@ -54,3 +54,18 @@ Path::PathType Path::type_from_string(const String& path) const
         return PathType::Absolute;
     return PathType::Relative;
 }
+
+String Path::to_string() const
+{
+    String res;
+    for(size_t i = 0; i < num_parts(); ++i)
+    {
+        String part_i = get_part(i);
+        res = res + part_i;
+        if(i != num_parts() - 1)
+        {
+            res = res + String("/");
+        }
+    }
+    return res;
+}

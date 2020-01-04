@@ -33,6 +33,8 @@ public:
     int find(const String& pattern, size_t start=0) const;
     Vector<String> split(char delim, size_t capacity=0) const;
 
+    String lower() const;
+
     ~String();
 
 private:

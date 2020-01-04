@@ -4,7 +4,7 @@
 #include "logging.h"
 #include "asserts.h"
 
-
+// #define FAT32_DBG
 
 static Fat32* s_the = nullptr;
 
@@ -39,6 +39,7 @@ Fat32::Fat32(FatBootSector& boot_sector, const Fat32Extension& extension)
     sectors_per_cluster = boot_sector.sectors_per_cluster;
     root_cluster = extension.root_cluster;
 
+    #ifdef FAT32_DBG
     kprintf("OEM: %s\n", boot_sector.oem_name);
     kprintf("bytes per sector: 0x%x\n", (boot_sector.bytes_per_sector & 0xffff));
     kprintf("reserved sector count: %d\n", boot_sector.reserved_sector_count);
@@ -52,10 +53,24 @@ Fat32::Fat32(FatBootSector& boot_sector, const Fat32Extension& extension)
     kprintf("# root dir entries: %d\n", entries.size());
     for(auto& entry : entries)
     {
+        if(entry.is_directory())
+        {
+            continue;
+        }
         kprintf("file: %s\n", entry.name);
         auto content = read_whole_entry(entry);
         kprintf("content: %s\n", content->data());
     }
+    auto content = read_file(Path("/a/myfile.txt"));
+    ASSERT(content.get() != nullptr);
+    kprintf("content: %s\n", content->data());
+    auto content2 = read_file(Path("/a/subdir/another.dat"));
+    ASSERT(content2.get() != nullptr);
+    kprintf("content: %s\n", content2->data());
+    auto content3 = read_file(Path("/dir2/aa.txt"));
+    ASSERT(content3.get() != nullptr);
+    kprintf("content: %s\n", content3->data());
+    #endif
 }
 
 u32 Fat32::cluster_to_sector(u32 cluster) const
@@ -78,7 +93,9 @@ u32 Fat32::entry_in_fat(u32 cluster) const
 
 shared_ptr<Vector<u8>> Fat32::read_cluster(u32 cluster) const
 {
+    #ifdef FAT32_DBG
     kprintf("read cluster: %d\n", cluster);
+    #endif
     auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(sectors_per_cluster * bytes_per_sector));
     read_cluster(cluster, data_vec->data());
     data_vec->set_size(sectors_per_cluster * bytes_per_sector);
@@ -101,12 +118,12 @@ Vector<FatDirectoryEntry> Fat32::read_directory(u32 cluster) const
     while(!done)
     {
         auto cluster_data = read_cluster(current_cluster);
-        print_hexdump(cluster_data->data(), cluster_data->size());
+        // print_hexdump(cluster_data->data(), cluster_data->size());
         FatDirectoryEntry* current = (FatDirectoryEntry*) cluster_data->data();
         while(!done)
         {
-            // some wierd entries I see in the hex -- check this out
-            if(current->FileSize == 0xffffffff)
+            // skip long names for now
+            if(current->is_long_name())
             {
                 current++;
                 continue;
@@ -156,4 +173,50 @@ shared_ptr<Vector<u8>> Fat32::read_whole_entry(u32 start_cluster, u32 size) cons
 shared_ptr<Vector<u8>> Fat32::read_whole_entry(const FatDirectoryEntry& entry) const
 {
     return read_whole_entry(entry.cluster_idx(), entry.FileSize);
+}
+
+bool Fat32::find_file(const Path& path, FatDirectoryEntry& res) const
+{
+    #ifdef FAT32_DBG
+    kprintf("Fat32: find_file: %s\n", path.to_string().c_str());
+    #endif
+    ASSERT(path.type() == Path::PathType::Absolute);
+    u32 dir_cluster = root_cluster;
+    for(size_t i = 0; i < path.num_parts(); ++i)
+    {
+        auto entries = read_directory(dir_cluster);
+        auto part = path.get_part(i);
+        bool found = false;
+        for(auto& entry : entries)
+        {
+            if(entry.name_lower() == part)
+            {
+                if(entry.is_directory())
+                {
+                    ASSERT(i != path.num_parts() -1);
+                    dir_cluster = entry.cluster_idx();
+                    found = true;
+                    break;
+                } else {
+                    ASSERT(i == path.num_parts() -1);
+                    res = entry;
+                    return true;
+                }
+            }
+        }
+        if(!found)
+            return false;
+    }
+    return false;
+}
+
+shared_ptr<Vector<u8>> Fat32::read_file(const Path& path) const
+{
+    FatDirectoryEntry res;
+    bool found = find_file(path, res);
+    if(!found)
+    {
+        return shared_ptr<Vector<u8>>(nullptr);
+    }
+    return read_whole_entry(res);
 }

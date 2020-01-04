@@ -3,7 +3,7 @@
 #include "asserts.h"
 #include "logging.h"
 
-String::String(): m_chars() {}
+String::String(): m_chars(), m_len(0) {}
 
 String::String(const char* str) {
     init_from(str, strlen(str));
@@ -71,6 +71,7 @@ String::~String() {
     if(m_chars != nullptr) {
         delete[] m_chars;
     }
+    m_chars = nullptr;
     m_len = 0;
     // printf("after String::dtor");
 }
@@ -126,7 +127,24 @@ String String::operator+(const String& other) const {
     Vector<char> ret(len() + other.len() + 1);
     ret.concat(m_chars, len());
     ret.concat(other.m_chars, other.len());
-    ret.append(0);
-    ASSERT(ret.size() == len() + other.len() + 1);
+    ASSERT(ret.size() == len() + other.len());
+    auto res = String(ret.data(), ret.size());
+    // ASSERT(res[0] == (*this)[0]);
+    // ASSERT(res[len()] == other[0]);
+    // ASSERT(res[len()] == other[0]);
+    return res;
+}
+
+String String::lower() const
+{
+    Vector<char> ret(len());
+    for(size_t i = 0; i < len(); ++i)
+    {
+        char c = m_chars[i];
+        if((c >= 'A' && c <= 'Z'))
+            ret.append(c + ('a'-'A'));
+        else
+            ret.append(c);
+    }
     return String(ret.data(), ret.size());
 }
