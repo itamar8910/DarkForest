@@ -119,8 +119,10 @@ public:
     static Fat32FS& the();
 
     File* open(const Path& path) override;
+    virtual bool list_directory(const Path& path, Vector<DirectoryEntry> res) override;
 
     shared_ptr<Vector<u8>> read_file(const Path& path) const;
+
 
 private:
     Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension);
@@ -137,8 +139,10 @@ private:
 
     shared_ptr<Vector<u8>> read_whole_entry(const FatDirectoryEntry& entry) const;
 
-
+    bool find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type type) const;
     bool find_file(const Path& path, FatDirectoryEntry& res) const;
+    bool find_directory(const Path& path, FatDirectoryEntry& res) const;
+
 
 
     u32 FAT_sector {0};

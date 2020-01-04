@@ -4,6 +4,7 @@
 #include "types/vector.h"
 #include "FileSystem.h"
 
+
 // the Virtual File System
 // all file systems exist as mount points of the VFS
 constexpr size_t MAX_PATH_LEN = 256;
@@ -13,6 +14,7 @@ public:
     static VFS& the();
 
     File* open(const Path& path) override;
+    virtual bool list_directory(const Path& path, Vector<DirectoryEntry> res) override;
 
     void mount(FileSystem* fs);
 

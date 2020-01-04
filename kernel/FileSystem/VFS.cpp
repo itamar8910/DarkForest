@@ -33,3 +33,10 @@ File* VFS::open(const Path& path) {
 
     return nullptr;
 }
+
+bool VFS::list_directory(const Path& path, Vector<DirectoryEntry> res)
+{
+    (void)path;
+    (void)res;
+    return false;
+}

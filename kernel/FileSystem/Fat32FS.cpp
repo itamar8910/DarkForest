@@ -188,10 +188,10 @@ shared_ptr<Vector<u8>> Fat32FS::read_whole_entry(const FatDirectoryEntry& entry)
     return read_whole_entry(entry.cluster_idx(), entry.FileSize);
 }
 
-bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
+bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type target_type) const
 {
     #ifdef FAT32_DBG
-    kprintf("Fat32: find_file: %s\n", path.to_string().c_str());
+    kprintf("Fat32: find: %s\n", path.to_string().c_str());
     #endif
     // ASSERT(path.type() == Path::PathType::Absolute);
     u32 dir_cluster = root_cluster;
@@ -212,20 +212,33 @@ bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
                 #endif
                 if(entry.is_directory())
                 {
-                    if(i == path.num_parts() -1)
+                    if((target_type == DirectoryEntry::Type::File) && (i == path.num_parts() -1))
                     {
                         // can't read a directory
                         return false;
                     }
                     dir_cluster = entry.cluster_idx();
+                    if((target_type == DirectoryEntry::Type::Directory) && (i == path.num_parts() -1))
+                    {
+                        res = entry;
+                        return true;
+                    }
                     found = true;
                     break;
                 } else {
-                    if(i != path.num_parts() -1)
+                    if( (target_type == DirectoryEntry::Type::Directory))
                     {
-                        // incomplete path
+                        // expected to see only directories in path
                         return false;
                     }
+                    else if(target_type == DirectoryEntry::Type::File){
+                        if((i != path.num_parts() - 1))
+                        {
+                            // expected to see file only in last component in path
+                            return false;
+                        }
+                    }
+
                     res = entry;
                     return true;
                 }
@@ -235,6 +248,16 @@ bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
             return false;
     }
     return false;
+
+}
+bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
+{
+    return find(path, res, DirectoryEntry::Type::File);
+}
+
+bool Fat32FS::find_directory(const Path& path, FatDirectoryEntry& res) const
+{
+    return find(path, res, DirectoryEntry::Type::Directory);
 }
 
 shared_ptr<Vector<u8>> Fat32FS::read_file(const Path& path) const
@@ -253,4 +276,29 @@ File* Fat32FS::open(const Path& path) {
     if(content.get() == nullptr)
         return nullptr;
     return new CharFile(path.to_string(), content, content->size());
+}
+
+bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry> res)
+{
+    u32 cluster = 0;
+    if((path.num_parts() == 0) && path.type() == Path::PathType::Absolute)
+    {
+        cluster = root_cluster;
+    } else{
+        FatDirectoryEntry entry;
+        bool found = find_directory(path, entry);
+        if(!found)
+        {
+            kprintf("dir not found!\n");
+            return false;
+        }
+        cluster = entry.cluster_idx();
+    }
+    kprintf("list dir cluster: %d\n", cluster);
+    auto dir_entries = read_directory(cluster);
+    for(auto& e : dir_entries)
+    {
+        res.append(DirectoryEntry(Path(e.name_lower()), (e.is_directory() ? DirectoryEntry::Type::Directory : DirectoryEntry::Type::File)));
+    }
+    return true;
 }

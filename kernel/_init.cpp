@@ -89,6 +89,12 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	RamDisk::init(*mbt);
 	DevFS::initiailize();
 	Fat32FS::initialize();
+
+	Vector<DirectoryEntry> res;
+	Fat32FS::the().list_directory(Path("/a"), res);
+	kprintf("# entries: %d\n", res.size());
+	cpu_hang();
+
 	init_VFS();
 	// auto* f = VFS::the().open(Path("/root/a.txt"));
 	// (void)f;
