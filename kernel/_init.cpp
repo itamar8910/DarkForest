@@ -29,7 +29,7 @@
 #include "shared_ptr.h"
 #include "HAL/VgaTTY.h"
 #include "drivers/ATADisk.h"
-#include "Fat32.h"
+#include "FileSystem/Fat32FS.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -60,6 +60,7 @@ void idle() {
 void init_VFS() {
 	VFS::the().mount(&DevFS::the());
 	VFS::the().mount(&RamDisk::fs());
+	VFS::the().mount(&Fat32FS::the());
 }
 
 void init_kernel_symbols() {
@@ -83,12 +84,15 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	PS2Keyboard::initialize();
 	ATADisk::initialize();
-	Fat32::initialize();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
 	RamDisk::init(*mbt);
 	DevFS::initiailize();
+	Fat32FS::initialize();
 	init_VFS();
+	// auto* f = VFS::the().open(Path("/root/a.txt"));
+	// (void)f;
+	// cpu_hang();
 
 	VgaTTY::the().write("Loading kernel symbols...\n");
 	init_kernel_symbols();

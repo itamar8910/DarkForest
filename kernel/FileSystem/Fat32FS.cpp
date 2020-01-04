@@ -1,30 +1,32 @@
-#include "Fat32.h"
+#include "FileSystem/Fat32FS.h"
 #include "drivers/ATADisk.h"
 #include "types.h"
 #include "logging.h"
 #include "asserts.h"
+#include "CharFile.h"
 
 // #define FAT32_DBG
 
-static Fat32* s_the = nullptr;
+static Fat32FS* s_the = nullptr;
 
-void Fat32::initialize()
+void Fat32FS::initialize()
 {
     ASSERT(s_the == nullptr);
     u8 buff[ATADisk::SECTOR_SIZE_BYTES] = {0};
     ATADisk::read_sectors(0, 1, ATADisk::DriveType::Primary, buff);
     FatBootSector* boot_sector = (FatBootSector*) buff;
     Fat32Extension* extension = (Fat32Extension*) boot_sector->extended_section;
-    s_the = new Fat32(*boot_sector, *extension);
+    s_the = new Fat32FS(*boot_sector, *extension);
 
 }
 
-Fat32& Fat32::the(){
+Fat32FS& Fat32FS::the(){
     ASSERT(s_the != nullptr);
     return *s_the;
 }
 
-Fat32::Fat32(FatBootSector& boot_sector, const Fat32Extension& extension)
+Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
+    : FileSystem(Path("/root"))
 {
 
     ASSERT(boot_sector.table_count == 2);
@@ -70,15 +72,22 @@ Fat32::Fat32(FatBootSector& boot_sector, const Fat32Extension& extension)
     auto content3 = read_file(Path("/dir2/aa.txt"));
     ASSERT(content3.get() != nullptr);
     kprintf("content: %s\n", content3->data());
+
+    auto content4 = read_file(Path("a.txt"));
+    ASSERT(content4.get() != nullptr);
+    kprintf("content: %s\n", content4->data());
+    kprintf("content size: %d\n", content4->size());
+
+    open(Path("a.txt"));
     #endif
 }
 
-u32 Fat32::cluster_to_sector(u32 cluster) const
+u32 Fat32FS::cluster_to_sector(u32 cluster) const
 {
     return data_start_sector + (cluster-2)*sectors_per_cluster;
 }
 
-u32 Fat32::entry_in_fat(u32 cluster) const
+u32 Fat32FS::entry_in_fat(u32 cluster) const
 {
     u8 buff[ATADisk::SECTOR_SIZE_BYTES] = {0};
     u32 sector_idx = cluster / (bytes_per_sector / 4);
@@ -91,7 +100,7 @@ u32 Fat32::entry_in_fat(u32 cluster) const
     return val;
 }
 
-shared_ptr<Vector<u8>> Fat32::read_cluster(u32 cluster) const
+shared_ptr<Vector<u8>> Fat32FS::read_cluster(u32 cluster) const
 {
     #ifdef FAT32_DBG
     kprintf("read cluster: %d\n", cluster);
@@ -102,7 +111,7 @@ shared_ptr<Vector<u8>> Fat32::read_cluster(u32 cluster) const
     return data_vec;
 }
 
-void Fat32::read_cluster(u32 cluster, u8* buff) const
+void Fat32FS::read_cluster(u32 cluster, u8* buff) const
 {
     u32 start_sector = cluster_to_sector(cluster);
     ATADisk::read_sectors(start_sector, sectors_per_cluster, ATADisk::DriveType::Primary, buff);
@@ -110,7 +119,7 @@ void Fat32::read_cluster(u32 cluster, u8* buff) const
 
 constexpr u32 FAT_ENTRY_EOF = 0x0FFFFFFF;
 
-Vector<FatDirectoryEntry> Fat32::read_directory(u32 cluster) const
+Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
 {
     Vector<FatDirectoryEntry> entries;
     u32 current_cluster = cluster;
@@ -151,8 +160,11 @@ Vector<FatDirectoryEntry> Fat32::read_directory(u32 cluster) const
 }
 
 
-shared_ptr<Vector<u8>> Fat32::read_whole_entry(u32 start_cluster, u32 size) const
+shared_ptr<Vector<u8>> Fat32FS::read_whole_entry(u32 start_cluster, u32 size) const
 {
+    #ifdef FAT32_DBG
+    kprintf("read cluster: %d\n", start_cluster);
+    #endif
     // round size up to sector size
     u32 cluster_size = bytes_per_sector * sectors_per_cluster;
     auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(size + (cluster_size-(size%cluster_size))));
@@ -167,20 +179,21 @@ shared_ptr<Vector<u8>> Fat32::read_whole_entry(u32 start_cluster, u32 size) cons
         }
         current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
     }
+    data_vec->set_size(size);
     return data_vec;
 }
 
-shared_ptr<Vector<u8>> Fat32::read_whole_entry(const FatDirectoryEntry& entry) const
+shared_ptr<Vector<u8>> Fat32FS::read_whole_entry(const FatDirectoryEntry& entry) const
 {
     return read_whole_entry(entry.cluster_idx(), entry.FileSize);
 }
 
-bool Fat32::find_file(const Path& path, FatDirectoryEntry& res) const
+bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
 {
     #ifdef FAT32_DBG
     kprintf("Fat32: find_file: %s\n", path.to_string().c_str());
     #endif
-    ASSERT(path.type() == Path::PathType::Absolute);
+    // ASSERT(path.type() == Path::PathType::Absolute);
     u32 dir_cluster = root_cluster;
     for(size_t i = 0; i < path.num_parts(); ++i)
     {
@@ -189,16 +202,30 @@ bool Fat32::find_file(const Path& path, FatDirectoryEntry& res) const
         bool found = false;
         for(auto& entry : entries)
         {
+            #ifdef FAT32_DBG
+            kprintf("trying: %s\n", entry.name_lower().c_str());
+            #endif
             if(entry.name_lower() == part)
             {
+                #ifdef FAT32_DBG
+                kprintf("match!\n");
+                #endif
                 if(entry.is_directory())
                 {
-                    ASSERT(i != path.num_parts() -1);
+                    if(i == path.num_parts() -1)
+                    {
+                        // can't read a directory
+                        return false;
+                    }
                     dir_cluster = entry.cluster_idx();
                     found = true;
                     break;
                 } else {
-                    ASSERT(i == path.num_parts() -1);
+                    if(i != path.num_parts() -1)
+                    {
+                        // incomplete path
+                        return false;
+                    }
                     res = entry;
                     return true;
                 }
@@ -210,7 +237,7 @@ bool Fat32::find_file(const Path& path, FatDirectoryEntry& res) const
     return false;
 }
 
-shared_ptr<Vector<u8>> Fat32::read_file(const Path& path) const
+shared_ptr<Vector<u8>> Fat32FS::read_file(const Path& path) const
 {
     FatDirectoryEntry res;
     bool found = find_file(path, res);
@@ -219,4 +246,11 @@ shared_ptr<Vector<u8>> Fat32::read_file(const Path& path) const
         return shared_ptr<Vector<u8>>(nullptr);
     }
     return read_whole_entry(res);
+}
+
+File* Fat32FS::open(const Path& path) {
+    auto content = read_file(path);
+    if(content.get() == nullptr)
+        return nullptr;
+    return new CharFile(path.to_string(), content, content->size());
 }

@@ -51,7 +51,9 @@ File* TarFS::open(const Path& path) {
             );
 
         if(!strcmp(current->name, path_str.c_str())) {
-            return new CharFile(path_str, (u8*) content_addr, size);
+            shared_ptr<Vector<u8>> data(new Vector<u8>(size));
+            memcpy(data->data(), (u8*)content_addr, size);
+            return new CharFile(path_str, data, size);
         }
         current = (TarHeader*) round_up(content_addr + size, TAR_PADDING);
     }

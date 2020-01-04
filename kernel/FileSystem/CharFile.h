@@ -1,10 +1,12 @@
 #pragma once
 
 #include "kernel/file.h"
+#include "types/vector.h"
+#include "shared_ptr.h"
 
 class CharFile : public File {
 public:
-    CharFile(const String& path, u8* data, size_t size);
+    CharFile(const String& path, shared_ptr<Vector<u8>> data, size_t size);
     virtual int read(size_t count, void* buf) override;
     virtual int write(char* data, size_t count) override;
 
@@ -14,7 +16,7 @@ public:
     char* get_content();
 
 private:
-    u8* m_data;
+    shared_ptr<Vector<u8>> m_data;
     size_t m_size;
     size_t m_idx;
 };

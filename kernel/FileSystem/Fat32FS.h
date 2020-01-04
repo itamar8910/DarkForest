@@ -5,6 +5,7 @@
 #include "types/String.h"
 #include "shared_ptr.h"
 #include "FileSystem/path.h"
+#include "FileSystem/FileSystem.h"
 
 struct [[gnu::packed]] Fat32Extension
 {
@@ -111,16 +112,18 @@ struct [[gnu::packed]] FatDirectoryEntry
 static_assert(sizeof(FatDirectoryEntry)==32);
 
 
-class Fat32
+class Fat32FS : public FileSystem
 {
 public:
     static void initialize();
-    static Fat32& the();
+    static Fat32FS& the();
+
+    File* open(const Path& path) override;
 
     shared_ptr<Vector<u8>> read_file(const Path& path) const;
 
 private:
-    Fat32(FatBootSector& boot_sector, const Fat32Extension& extension);
+    Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension);
     Vector<FatDirectoryEntry> read_directory(u32 cluster) const;
 
     u32 cluster_to_sector(u32 cluster) const;

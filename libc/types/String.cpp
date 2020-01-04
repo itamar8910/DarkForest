@@ -108,18 +108,26 @@ int String::find(const String& pattern, size_t start) const {
 
 Vector<String> String::split(char delim, size_t capacity) const {
     Vector<String> ret(capacity);
+    if(delim == '\0')
+        return ret;
     String delim_str(delim);
-    int prev_idx = 0;
+    size_t prev_idx = 0;
     while(true) {
         int idx = find(delim_str, prev_idx);
-        // printf("find idx:%d\n", idx);
         if(idx == -1) {
-            if(prev_idx > 0)
+            if(len() > prev_idx)
+            {
                 ret.append(substr(prev_idx));
+            }
             break;
         }
         ret.append(substr(prev_idx, idx));
         prev_idx = idx+1;
+        // skip duplicate delimiters
+        while(m_chars[prev_idx] == delim)
+        {
+            prev_idx++;
+        }
     }
     return ret;
 }

@@ -16,7 +16,6 @@ KERN_OBJS := \
 	process.o \
 	kernel_symbols.o \
 	backtrace.o \
-	Fat32.o \
 	
 
 DRIVERS_DIR := drivers
@@ -44,6 +43,7 @@ FS_OBJS := \
 	$(FS_DIR)/CharFile.o \
 	$(FS_DIR)/path.o \
 	$(FS_DIR)/FileUtils.o \
+	$(FS_DIR)/Fat32FS.o \
 
 LOADER_DIR := Loader
 LOADER_OBJS := \
