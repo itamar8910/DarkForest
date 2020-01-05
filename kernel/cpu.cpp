@@ -175,9 +175,18 @@ void print_register_dump(RegsDump& regs) {
       );
 }
 
+static bool kernel_has_panicked = false;
 
 template<typename T>
 void kernel_panic(T regs) {
+   if(kernel_has_panicked)
+   {
+      (void)regs;
+      kprintf("K E R N E L * D O U B L E * P A N I C\n");
+      cpu_hang();
+      return;
+   }
+   kernel_has_panicked = true;
    #ifdef GENERATE_BACKTRACE
    Backtrace::print_backtrace(regs.eip, regs.ebp);
    #else

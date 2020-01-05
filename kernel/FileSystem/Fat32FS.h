@@ -107,6 +107,11 @@ struct [[gnu::packed]] FatDirectoryEntry
     {
         return attr == static_cast<u8>(FatDirAttr::ATTR_DIRECTORY);
     }
+    
+    bool is_fake_direcotry()
+    {
+        return (name_lower() == ".") || (name_lower() == "..");
+    }
 
 };
 static_assert(sizeof(FatDirectoryEntry)==32);
@@ -119,7 +124,7 @@ public:
     static Fat32FS& the();
 
     File* open(const Path& path) override;
-    virtual bool list_directory(const Path& path, Vector<DirectoryEntry> res) override;
+    virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) override;
 
     shared_ptr<Vector<u8>> read_file(const Path& path) const;
 

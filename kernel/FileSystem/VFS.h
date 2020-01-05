@@ -14,7 +14,7 @@ public:
     static VFS& the();
 
     File* open(const Path& path) override;
-    virtual bool list_directory(const Path& path, Vector<DirectoryEntry> res) override;
+    virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) override;
 
     void mount(FileSystem* fs);
 

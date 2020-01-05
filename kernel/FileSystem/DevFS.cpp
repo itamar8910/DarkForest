@@ -37,7 +37,7 @@ File* DevFS::open(const Path& path) {
     return nullptr;
 }
 
-bool DevFS::list_directory(const Path& path, Vector<DirectoryEntry> res)
+bool DevFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
     (void)path;
     (void)res;

@@ -60,7 +60,7 @@ File* TarFS::open(const Path& path) {
     return nullptr;
 }
 
-bool TarFS::list_directory(const Path& path, Vector<DirectoryEntry> res)
+bool TarFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
     (void)path;
     (void)res;

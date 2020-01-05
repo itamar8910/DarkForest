@@ -11,7 +11,7 @@ public:
 
     virtual File* open(const Path& path) = 0;
 
-    virtual bool list_directory(const Path& path, Vector<DirectoryEntry> res) = 0;
+    virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) = 0;
 
     Path mountpoint() const {return m_mount_point;}
 

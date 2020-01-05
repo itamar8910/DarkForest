@@ -14,6 +14,6 @@ public:
     TarFS(multiboot_info_t& mbt) : RamDiskFS(mbt) {}
 
     File* open(const Path& path) override;
-    virtual bool list_directory(const Path& path, Vector<DirectoryEntry> res) override;
+    virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) override;
 
 };

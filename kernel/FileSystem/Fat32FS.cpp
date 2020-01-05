@@ -137,6 +137,10 @@ Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
                 current++;
                 continue;
             }
+            if(current->is_fake_direcotry()){
+                current++;
+                continue;
+            }
             // TODO: handle "free" directory entry (name[0] == 0xE5)
             if(current->name[0] == 0){
                 done = true;
@@ -278,7 +282,7 @@ File* Fat32FS::open(const Path& path) {
     return new CharFile(path.to_string(), content, content->size());
 }
 
-bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry> res)
+bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
     u32 cluster = 0;
     if((path.num_parts() == 0) && path.type() == Path::PathType::Absolute)
@@ -289,12 +293,10 @@ bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry> res)
         bool found = find_directory(path, entry);
         if(!found)
         {
-            kprintf("dir not found!\n");
             return false;
         }
         cluster = entry.cluster_idx();
     }
-    kprintf("list dir cluster: %d\n", cluster);
     auto dir_entries = read_directory(cluster);
     for(auto& e : dir_entries)
     {

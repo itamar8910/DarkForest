@@ -91,14 +91,15 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Fat32FS::initialize();
 
 	Vector<DirectoryEntry> res;
-	Fat32FS::the().list_directory(Path("/a"), res);
+	ASSERT(Fat32FS::the().list_directory(Path("/a"), res));
+	for(auto& entry : res)
+	{
+		kprintf("%s\n", entry.path.to_string().c_str());
+	}
 	kprintf("# entries: %d\n", res.size());
 	cpu_hang();
 
 	init_VFS();
-	// auto* f = VFS::the().open(Path("/root/a.txt"));
-	// (void)f;
-	// cpu_hang();
 
 	VgaTTY::the().write("Loading kernel symbols...\n");
 	init_kernel_symbols();
