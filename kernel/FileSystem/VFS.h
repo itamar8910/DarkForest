@@ -21,6 +21,8 @@ public:
 private:
     VFS() : FileSystem(Path("/")) {}
 
+    FileSystem* get_fs(const Path& path, Path& path_inside_fs);
+
     Vector<FileSystem*> mounted_filesystems;
 
 };
