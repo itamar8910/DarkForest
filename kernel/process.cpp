@@ -160,3 +160,42 @@ void Process::set_waiter(WaitBlocker* blocker)
     ASSERT(m_waiter==nullptr);
     m_waiter = blocker;
 }
+
+int Process::syscall_listdir(const String& path, void* dest, size_t* size)
+{
+    kprintf("syscall_listdir for path: %s\n", path.c_str());
+    if(size==nullptr)
+        return E_INVALID;
+
+
+    Vector<DirectoryEntry> entries;
+    bool rc = VFS::the().list_directory(Path(path), entries);
+    if(!rc)
+    {
+        kprintf("listdir: not found\n");
+        return E_NOTFOUND;
+    }
+
+    kprintf("listdir # entries: %d\n", entries.size());
+    size_t required_size = 0;
+    for(auto& entry : entries)
+    {
+        required_size += entry.serialize(nullptr);
+    }
+    if(*size < required_size)
+    {
+        *size = required_size;
+        return E_TOO_SMALL;
+    }
+
+    if(dest==nullptr)
+        return E_INVALID;
+
+    size_t offset = 0;
+    for(auto& entry : entries)
+    {
+        u8* current = ((u8*)dest) + offset;
+        offset += entry.serialize(current);
+    }
+    return 0;
+}

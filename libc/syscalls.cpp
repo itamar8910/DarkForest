@@ -1,9 +1,6 @@
 #include "syscalls.h"
 #include "types.h"
 
-// TODO: when we'll have syscalls with multiple args,
-// just put arg0=0, arg1=0,.. (i.e default paramter values)
-// in this function
 int Syscall::invoke(SyscallIdx syscall, u32 arg1, u32 arg2, u32 arg3) {
     int ret;
     asm volatile(
@@ -18,7 +15,7 @@ int Syscall::invoke(SyscallIdx syscall, u32 arg1, u32 arg2, u32 arg3) {
           "rm"(arg2),
           "rm"(arg3),
           "rm"((u32)syscall)
-        : "ebx", "eax"
+        : "ebx", "eax", "ecx", "edx"
     );
     return ret;
 } 

@@ -6,6 +6,7 @@
 #include "malloc.h"
 #include "types/vector.h"
 #include "types/String.h"
+#include "kernel/errs.h"
 
 #include "PS2KeyboardCommon.h"
 
@@ -18,7 +19,19 @@ void process_command(const String& command) {
             int pid = std::fork_and_exec("/initrd/userspace/cat.app", "cat", parts.range(0, parts.size()));
             ASSERT(pid>0);
             std::wait(pid);
-        } else {
+        } 
+        if(program == "ls") { // TODO: extract to separate userspace exectuable
+            size_t size = 0;
+            int rc = std::list_dir(parts[1], nullptr, &size);
+            kprintf("rc1:%d\n", rc);
+            ASSERT(rc == E_TOO_SMALL);
+            Vector<u8> buff(size);
+            rc = std::list_dir(parts[1], buff.data(), &size);
+            ASSERT(rc == 0);
+            
+
+        }
+        else {
             printf("program: %s not found\n", program.c_str());
         }
     }

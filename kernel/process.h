@@ -25,9 +25,9 @@ public:
     int syscall_file_size(size_t fd);
     int syscall_read(size_t fd, char* buff, size_t count);
     int syscall_write(size_t fd, char* buff, size_t count);
-    // int syscall_ForkAndExec(char* path, char* name, char** argv);
     int syscall_ForkAndExec(ForkArgs*);
     int syscall_wait(size_t pid);
+    int syscall_listdir(const String& path, void* dest, size_t* size);
 
 private:
     u32 m_pid;

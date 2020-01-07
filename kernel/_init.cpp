@@ -93,14 +93,14 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	init_VFS();
 
-	Vector<DirectoryEntry> res;
-	ASSERT(VFS::the().list_directory(Path("/root/a"), res));
-	for(auto& entry : res)
-	{
-		kprintf("%s\n", entry.path.to_string().c_str());
-	}
-	kprintf("# entries: %d\n", res.size());
-	cpu_hang();
+	// Vector<DirectoryEntry> res;
+	// ASSERT(VFS::the().list_directory(Path("/root/a"), res));
+	// for(auto& entry : res)
+	// {
+	// 	kprintf("%s\n", entry.path.to_string().c_str());
+	// }
+	// kprintf("# entries: %d\n", res.size());
+	// cpu_hang();
 
 	VgaTTY::the().write("Loading kernel symbols...\n");
 	init_kernel_symbols();

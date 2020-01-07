@@ -24,4 +24,6 @@ int fork_and_exec(const String& path,
                     const Vector<String>& args = Vector<String>()
                     );
 int wait(size_t pid);
+
+int list_dir(const String& path, void* dest, size_t* size);
 }
