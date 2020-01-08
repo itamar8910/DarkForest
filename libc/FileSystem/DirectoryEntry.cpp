@@ -22,14 +22,10 @@ DirectoryEntry DirectoryEntry::deserialize(u8* data, size_t& out_size)
 { 
     out_size = 0;
     Type type = static_cast<Type>(*(data+out_size));
-    kprintf("deser type: %d\n", static_cast<int>(type));
     out_size+=sizeof(u8);
     u16 path_len = *reinterpret_cast<u16*>(data+out_size);
-    kprintf("deser path len: %d\n", path_len);
     out_size += sizeof(u16);
-    kprintf("path size: %d\n", path_len);
     String path_str(reinterpret_cast<char*>(data+out_size), path_len);
     out_size += path_len;
-    kprintf("deser path str: %s\n", path_str.c_str());
     return DirectoryEntry(Path(path_str), type);
 }

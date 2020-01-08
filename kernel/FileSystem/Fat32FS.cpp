@@ -284,8 +284,9 @@ File* Fat32FS::open(const Path& path) {
 
 bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
+    kprintf("Fat32FS::list_directory %s\n", path.to_string().c_str());
     u32 cluster = 0;
-    if((path.num_parts() == 0) && path.type() == Path::PathType::Absolute)
+    if((path.num_parts() == 0))
     {
         cluster = root_cluster;
     } else{

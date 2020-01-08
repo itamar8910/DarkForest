@@ -39,7 +39,7 @@ void do_ls(const Vector<String>& cmd_parts)
 
     for(auto& entry : entries)
     {
-        printf("%s  ", entry.path.to_string().c_str());
+        printf("%s%s  ", entry.path.to_string().c_str(), entry.type == DirectoryEntry::Type::Directory ? "/" : "");
     }
 }
 

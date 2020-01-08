@@ -3,7 +3,11 @@
 #include "asserts.h"
 #include "logging.h"
 
-String::String(): m_chars(), m_len(0) {}
+// String::String(): m_chars(nullptr), m_len(0) {
+// }
+String::String(): m_chars(new char[1]), m_len(0) {
+    m_chars[0] = '\0';
+}
 
 String::String(const char* str) {
     init_from(str, strlen(str));
@@ -61,6 +65,7 @@ void String::operator=(const String& other) {
 }
 
 const char* String::c_str() const {
+    ASSERT(m_chars != nullptr);
     return m_chars;
 }
 

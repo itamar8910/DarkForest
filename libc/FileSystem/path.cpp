@@ -18,7 +18,7 @@ Path::Path(const Vector<String>& parts, PathType type)
 bool Path::remove_mount_prefix(const FileSystem& fs, Path& res) const
 {
     auto mount_point = fs.mountpoint();
-    if(num_parts() <= mount_point.num_parts()) {
+    if(num_parts() < mount_point.num_parts()) {
         return false;
     }
 
@@ -27,6 +27,7 @@ bool Path::remove_mount_prefix(const FileSystem& fs, Path& res) const
         if(get_part(i) != mount_point.get_part(i))
             return false;
     }
+
     Vector<String> parts;
     for(size_t i = mount_point.num_parts(); i < num_parts(); ++i)
     {
