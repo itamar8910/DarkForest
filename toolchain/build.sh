@@ -5,9 +5,9 @@ BINUTILS_FTP="https://ftp.gnu.org/gnu/binutils"
 GCC_VER="9.2.0"
 GCC_FTP="https://ftp.gnu.org/gnu/gcc/gcc-"
 
-download=false
-extract=false
-build_bintuils=false
+download=true
+extract=true
+build_binutils=true
 build_gcc=true
 
 if [[ "$download" == true ]]; then
