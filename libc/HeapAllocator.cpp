@@ -37,6 +37,7 @@ void* HeapAllocator::allocate(u32 size) {
                     returned ptr
                     
     */
+   ASSERT(size < 10000 * PAGE_SIZE);
     bool retried = false;
 find_block:
    MemBlock* current;

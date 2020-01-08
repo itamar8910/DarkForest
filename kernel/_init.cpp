@@ -64,7 +64,9 @@ void init_VFS() {
 }
 
 void init_kernel_symbols() {
+	#ifdef KERNEL_SYMBOLS_ENABLED
 	KernelSymbols::initialize();
+	#endif
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {

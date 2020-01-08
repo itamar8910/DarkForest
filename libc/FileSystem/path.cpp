@@ -1,6 +1,6 @@
 #include "path.h"
 #include "logging.h"
-#include "FileSystem.h"
+#include "kernel/FileSystem/FileSystem.h"
 
 
 Path::Path(const String& path)

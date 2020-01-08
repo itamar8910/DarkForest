@@ -1,5 +1,5 @@
 #include "VFS.h"
-#include "path.h"
+#include "libc/FileSystem/path.h"
 #include "logging.h"
 
 static VFS* s_the = nullptr;

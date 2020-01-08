@@ -28,12 +28,18 @@ TYPES_DIR := types
 TYPES_OBJS := \
 	$(TYPES_DIR)/String.o	
 
+FS_DIR := FileSystem
+
+FS_OBJS := \
+	$(FS_DIR)/path.o \
+	$(FS_DIR)/DirectoryEntry.o	\
+
 HEADERS := $(OBJS:.o=.h)
 INCLUDE = -I. -I../
 
 TARGET := libc.o
 
-OBJS := $(LIBC_OBJS) $(TYPES_OBJS)
+OBJS := $(LIBC_OBJS) $(TYPES_OBJS) $(FS_OBJS)
 
 all: $(TARGET)
 
@@ -44,5 +50,5 @@ $(TARGET): $(OBJS)
 	$(CC) $(INCLUDE) -D$(LIBCMODE) -DMODE -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o $(TYPES_DIR)/*.o
+	rm -f *.o $(TYPES_DIR)/*.o $(FS_DIR)/*.o
 

@@ -2,6 +2,8 @@
 
 #include "backtrace.h"
 
+// #define KERNEL_SYMBOLS_ENABLED
+
 class KernelSymbols {
 public:
     static KernelSymbols& the();

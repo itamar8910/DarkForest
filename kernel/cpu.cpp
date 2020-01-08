@@ -187,7 +187,7 @@ void kernel_panic(T regs) {
       return;
    }
    kernel_has_panicked = true;
-   #ifdef GENERATE_BACKTRACE
+   #if defined(GENERATE_BACKTRACE) && defined(KERNEL_SYMBOLS_ENABLED)
    Backtrace::print_backtrace(regs.eip, regs.ebp);
    #else
    (void)regs;

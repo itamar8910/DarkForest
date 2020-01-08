@@ -41,7 +41,6 @@ FS_OBJS := \
 	$(FS_DIR)/DevFS.o \
 	$(FS_DIR)/RamDiskFS.o \
 	$(FS_DIR)/CharFile.o \
-	$(FS_DIR)/path.o \
 	$(FS_DIR)/FileUtils.o \
 	$(FS_DIR)/Fat32FS.o \
 
