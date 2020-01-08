@@ -14,6 +14,11 @@
 // TODO: extract to a separate userpsace executable
 void do_ls(const Vector<String>& cmd_parts)
 {
+    if(cmd_parts.size() != 2)
+    {
+        printf("usage: ls [directory_path]\n");
+        return;
+    }
     size_t size = 0;
     int rc = std::list_dir(cmd_parts[1], nullptr, &size);
     kprintf("rc1:%d\n", rc);
@@ -53,7 +58,7 @@ void process_command(const String& command) {
             ASSERT(pid>0);
             std::wait(pid);
         } 
-        if(program == "ls") { // TODO: extract to separate userspace exectuable
+        else if(program == "ls") { // TODO: extract to separate userspace exectuable
             do_ls(parts);
             printf("\n");
         }
