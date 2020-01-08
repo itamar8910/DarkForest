@@ -27,6 +27,17 @@ File* VFS::open(const Path& path) {
 
 bool VFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
+    if(path.num_parts() == 0)
+    {
+        // this is not really correct because
+        // in the future not all filesystem must be mounted in /
+        // + there could be things in / which are not filesystems
+        for(auto* fs : mounted_filesystems)
+        {
+           res.append(DirectoryEntry(fs->mountpoint(), DirectoryEntry::Type::Directory));
+        }
+        return true;
+    }
     kprintf("VFS::ls %s\n", path.to_string().c_str());
     Path inside_path("/");
     FileSystem* fs = get_fs(path, inside_path);
