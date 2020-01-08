@@ -13,6 +13,8 @@ A work in progress x86 operating system
 - Tar RamDisk filesystem
 - Partial elf parser
 - Userspace
+- ATA Disk driver (currently read only)
+- Fat32 (currently read only)
 
 ## Coming up:
 - userspace shell
@@ -23,6 +25,7 @@ cd toolchain
 ./build.sh
 cd ..
 export PATH="$HOME/DarkForest/toolchain/cross/bin:$PATH"
+./fs2_setup.sh # needs root priv to mount fs
 make
 ```
 
