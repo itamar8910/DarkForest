@@ -13,6 +13,8 @@ A work in progress x86 operating system
 - Tar RamDisk filesystem
 - Partial elf parser
 - Userspace
+- ATA Disk driver (currently read only)
+- Fat32 (currently read only)
 
 ## Coming up
 - userspace shell
@@ -28,15 +30,18 @@ apt-get install gcc g++ make curl libmpc-dev nasm qemu-system-i386 dosfstools
 ```bash
 cd toolchain
 ./build.sh full
-cd ..
-export LOCATION_OF_DARKFOREST_REPO=$HOME/DarkForest # change this to where you have placed the repo
-export PATH="$LOCATION_OF_DARKFOREST_REPO/toolchain/cross/bin:$PATH"
 ```
 
 ## Build DarkForest
 ```bash
+export LOCATION_OF_DARKFOREST_REPO=$HOME/DarkForest # change this to where you have placed the repo
+export PATH="$LOCATION_OF_DARKFOREST_REPO/toolchain/cross/bin:$PATH"
+
 make
 ```
+
+## Setup filesystem
+./fs_setup.sh # needs root priv to mount fs
 
 ## Run
 ```bash

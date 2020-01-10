@@ -10,10 +10,11 @@
 #include "stdio.h"
 #endif
 
+void print_hexdump(const u8* data, size_t size);
+
 #ifdef KERNEL
 void kprint(const char* str);
 void kprintf(const char* fmt, ...);
-void print_hexdump(const u8* data, size_t size);
 // #define printf(x) kprintf(x);
 static const auto& dbgprintf = kprintf;
 #endif

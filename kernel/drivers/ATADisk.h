@@ -16,4 +16,5 @@ namespace ATADisk
     void initialize();
 
     void read_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, u8* buff);
+    void write_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, const u8* buff);
 }

@@ -9,8 +9,16 @@ namespace IO {
                 "1:jmp 2f\n\t"
                 "2:" );
         }
+
     static inline void outb(uint16_t port, uint8_t val, bool wait = false) {
         asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
+        if(wait) {
+            IO::wait();
+        }
+    }
+
+    static inline void out16(uint16_t port, uint16_t val, bool wait = false) {
+        asm volatile ( "outw %0, %1" : : "a"(val), "Nd"(port) );
         if(wait) {
             IO::wait();
         }

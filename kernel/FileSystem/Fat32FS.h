@@ -127,6 +127,7 @@ public:
     virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) override;
 
     shared_ptr<Vector<u8>> read_file(const Path& path) const;
+    int write_file(const Path& path, const Vector<u8>& data);
 
 
 private:
@@ -139,10 +140,13 @@ private:
     shared_ptr<Vector<u8>> read_cluster(u32 cluster) const;
 
     void read_cluster(u32 cluster, u8* buff) const;
+    void write_cluster(u32 cluster, u8* buff) const;
 
     shared_ptr<Vector<u8>> read_whole_entry(u32 start_cluster, u32 size) const;
 
     shared_ptr<Vector<u8>> read_whole_entry(const FatDirectoryEntry& entry) const;
+
+    int write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data);
 
     bool find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type type) const;
     bool find_file(const Path& path, FatDirectoryEntry& res) const;
@@ -150,7 +154,8 @@ private:
 
 
 
-    u32 FAT_sector {0};
+    
+    u32 FAT_sector {0}; // the sector in which the FAT resides
     u32 FAT_size_in_sectors {0};
     u32 data_start_sector {0};
     u32 sectors_per_cluster {0};

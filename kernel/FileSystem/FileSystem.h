@@ -1,9 +1,9 @@
 #pragma once
 
 #include "types/String.h"
-#include "file.h"
-#include "path.h"
-#include "DirectoryEntry.hpp"
+#include "kernel/file.h"
+#include "libc/FileSystem/path.h"
+#include "libc/FileSystem/DirectoryEntry.h"
 
 class FileSystem {
 public:

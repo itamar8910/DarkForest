@@ -16,6 +16,7 @@ static int read_elf_from_path(const String& path, u8*& elf_data, size_t& elf_siz
 {
 	File* f = VFS::the().open(Path(path));
    if(f == nullptr) {
+      kprintf("elf at path: %s was not found!\n", path.c_str());
       return E_NOTFOUND;
    }
 	elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
@@ -28,9 +29,12 @@ static int read_elf_from_path(const String& path, u8*& elf_data, size_t& elf_siz
 void load_and_jump_userspace(const String& path) {
    kprintf("load_and_jump_userspace: %s\n", path.c_str());
 	size_t elf_size = 0;
-   u8* elf_data;
+   u8* elf_data = nullptr;
    int rc = read_elf_from_path(path, elf_data, elf_size);
    ASSERT(rc == 0);
+   ASSERT(elf_data != nullptr);
+   kprintf("a1\n");
+   print_hexdump(elf_data, 0x100);
 	load_and_jump_userspace(elf_data, elf_size);
 	delete elf_data; // control won't reach here
 }

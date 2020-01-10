@@ -13,9 +13,13 @@ export LDFLAGS := -ffreestanding -O2 -nostdlib
 
 export CPP_FLAGS := 
 
+GREEN := \033[0;32m
+NC := \033[0m # No Color
+
 .PHONY: all kernel userspace
 
 all: kernel userspace fs
+	@ printf "$(GREEN)BUILD SUCCESSFUL$(NC)\n"
 
 tests: clean set_tests_make_cmd all
 

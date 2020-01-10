@@ -17,7 +17,6 @@
 #include "Scheduler.h"
 #include "drivers/PS2Keyboard.h"
 #include "sleep.h"
-#include "FileSystem/RamDisk.h"
 #include "syscall.h"
 #include "Loader/loader.h"
 #include "FileSystem/VFS.h"
@@ -43,11 +42,11 @@
  
 
 void hello_world_userspace() {
-	load_and_jump_userspace("/initrd/userspace/HelloWorld.app");
+	load_and_jump_userspace("/root/bin/hello.app");
 }
 
 void terminal_userspace() {
-	load_and_jump_userspace("/initrd/userspace/terminal.app");
+	load_and_jump_userspace("/root/bin/terminal.app");
 }
 
 void idle() {
@@ -59,12 +58,13 @@ void idle() {
 
 void init_VFS() {
 	VFS::the().mount(&DevFS::the());
-	VFS::the().mount(&RamDisk::fs());
 	VFS::the().mount(&Fat32FS::the());
 }
 
 void init_kernel_symbols() {
+	#ifdef KERNEL_SYMBOLS_ENABLED
 	KernelSymbols::initialize();
+	#endif
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
@@ -86,7 +86,6 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	ATADisk::initialize();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
-	RamDisk::init(*mbt);
 	DevFS::initiailize();
 	Fat32FS::initialize();
 
@@ -114,7 +113,10 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	VgaTTY::the().write("Initizliaing the Scheduler...\n");
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
-	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
+
+	// can't have them run concurrently becuase of FAT races
+	// TODO: add locks to FAT
+	// Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
 	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
 
 	// VFS::the().open("/inird/helllo.txt");
