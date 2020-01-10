@@ -32,6 +32,9 @@ namespace ATADisk{
 
     constexpr u8 IO_SELECT_PRIAMRY = 0xE0;
     constexpr u8 COMMAND_READ_SECTORS = 0x20;
+    constexpr u8 COMMAND_WRITE_SECTORS = 0x30;
+    constexpr u8 COMMAND_CACHE_FLUSH = 0xE7;
+    
 
     constexpr u8 STATUS_BIT_ERR = 0;
     constexpr u8 STATUS_BIT_DRQ = 3;
@@ -157,9 +160,9 @@ namespace ATADisk{
         }
     }
 
-    void read_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, u8* buff)
+    void select_io_target(u32 start_sector, u16 num_sectors, DriveType drive_type)
     {
-        ASSERT(drive_type==DriveType::Primary);
+        (void) drive_type;
         ASSERT(num_sectors>0);
         u8 type = IO_SELECT_PRIAMRY;
 
@@ -171,9 +174,12 @@ namespace ATADisk{
         IO::outb(IO_BASE_PRIMARY + REG_LBA_LOW, (u8)(start_sector));
         IO::outb(IO_BASE_PRIMARY + REG_LBA_MID, (u8)(start_sector>>8));
         IO::outb(IO_BASE_PRIMARY + REG_LBA_HIGH, (u8)(start_sector>>16));
+    }
 
-        // IO::outb(0x3F6, 0x08);
-        // while (!(IO::inb(IO_BASE_PRIMARY + REG_STATUS) & (1<<STATUS_BIT_RDY)));
+    void read_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, u8* buff)
+    {
+        ASSERT(drive_type==DriveType::Primary);
+        select_io_target(start_sector, num_sectors, drive_type);
 
         IO::outb(IO_BASE_PRIMARY + REG_COMMAND, COMMAND_READ_SECTORS);
 
@@ -190,6 +196,26 @@ namespace ATADisk{
         }
     }
 
+    void write_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, u8* buff)
+    {
+        ASSERT(drive_type==DriveType::Primary);
+        select_io_target(start_sector, num_sectors, drive_type);
+
+        IO::outb(IO_BASE_PRIMARY + REG_COMMAND, COMMAND_WRITE_SECTORS);
+
+        for(size_t sector_i = 0; sector_i < num_sectors; ++sector_i)
+        {
+            poll(drive_type);
+            for(size_t i = 0; i < SECTOR_SIZE_WORDS; i++)
+            {
+                u16 val = static_cast<u16>(buff[(sector_i*SECTOR_SIZE_BYTES) + i*2]) | (static_cast<u16>(buff[(sector_i*SECTOR_SIZE_BYTES) + i*2 + 1])<<8);
+                IO::out16(IO_BASE_PRIMARY + REG_DATA, val, true);
+            }
+            // wait_400ns(drive_type);
+            IO::outb(IO_BASE_PRIMARY + REG_COMMAND, COMMAND_CACHE_FLUSH);
+        }
+    }
+
     void initialize()
     {
         kprintf("ATADisk::initialize()\n");
@@ -198,28 +224,23 @@ namespace ATADisk{
         PIC::enable_irq(IRQ_ATA_PRIMARY);
         PIC::enable_irq(IRQ_ATA_SECONDARY);
         identify(DriveType::Primary);
-
-
-        // test
+        
+        // test read/write
         u8 buff[SECTOR_SIZE_BYTES] = {0};
-        read_sectors(0, 1, DriveType::Primary, buff);
-        // kprintf("Read!\n");
-        // for(size_t i = 0; i < SECTOR_SIZE_BYTES; ++i)
-        // {
-        //     kprintf("%d 0x%x\n", i, buff[i]);
-        // }
-        // // ata_soft_reset(ctrl->dev_ctl);		/* waits until master drive is ready again */
-        // u8 slavebit = 0;
-        // // identify command
-        // IO::outb(IO_BASE + REG_DEVSEL, 0xA0 | slavebit<<4);
-        // // wait 400ns
-        // IO::inb(CONTROL);
-        // IO::inb(CONTROL);
-        // IO::inb(CONTROL);
-        // IO::inb(CONTROL);
-        // unsigned cl=IO::inb(IO_BASE + REG_CYL_LO);	/* get the "signature bytes" */
-        // unsigned ch=IO::inb(IO_BASE + REG_CYL_HI);
-        // kprintf("cl: 0x%x, ch: 0x%x\n", cl, ch);
+        read_sectors(2, 1, DriveType::Primary, buff);
+        kprintf("1:\n");
+        u8 orig_value = buff[5];
+        buff[5] = 0x1;
+        write_sectors(2, 1, DriveType::Primary, buff);
+        u8 buff2[SECTOR_SIZE_BYTES] = {0};
+        read_sectors(2, 1, DriveType::Primary, buff2);
+        ASSERT(buff2[5] == 0x1);
+        buff2[5] = orig_value;
+        write_sectors(2, 1, DriveType::Primary, buff2);
+        buff2[5] = 0;
+        read_sectors(2, 1, DriveType::Primary, buff2);
+        ASSERT(buff2[5] == orig_value);
+
 
     }
 }
