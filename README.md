@@ -21,7 +21,7 @@ A work in progress x86 operating system
 
 ### On debian
 ```bash
-apt-get install gcc g++ make curl libmpc-dev nasm qemu-system-i386
+apt-get install gcc g++ make curl libmpc-dev nasm qemu-system-i386 dosfstools
 ```
 
 ## Build toolchain
