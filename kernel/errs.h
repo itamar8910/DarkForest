@@ -6,4 +6,5 @@ enum ERRS {
     E_TOO_BIG,
     E_INVALID,
     E_TOO_SMALL,
+    E_INVALID_SIZE,
 };

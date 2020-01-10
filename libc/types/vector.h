@@ -48,6 +48,9 @@ public:
         #endif
     }
 
+
+    // TODO: this ctor should also create 'init_capcity' T objects
+    // and set m_size to init_capcity
     Vector(size_t init_capacity) {
         init_with_capacity(init_capacity);
     }

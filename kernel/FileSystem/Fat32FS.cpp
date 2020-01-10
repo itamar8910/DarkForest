@@ -4,6 +4,8 @@
 #include "logging.h"
 #include "asserts.h"
 #include "CharFile.h"
+#include "errs.h"
+#include "libc/Math.h"
 
 // #define FAT32_DBG
 
@@ -18,6 +20,13 @@ void Fat32FS::initialize()
     Fat32Extension* extension = (Fat32Extension*) boot_sector->extended_section;
     s_the = new Fat32FS(*boot_sector, *extension);
 
+    // test writing
+    // Vector<u8> buff2(ATADisk::SECTOR_SIZE_BYTES);
+    // buff2.set_size(ATADisk::SECTOR_SIZE_BYTES);
+    // buff2.data()[0] = 'a';
+    // buff2.data()[1] = '!';
+    // buff2.data()[2] = 0;
+    // the().write_file(Path("a.txt"), buff2);
 }
 
 Fat32FS& Fat32FS::the(){
@@ -115,6 +124,12 @@ void Fat32FS::read_cluster(u32 cluster, u8* buff) const
 {
     u32 start_sector = cluster_to_sector(cluster);
     ATADisk::read_sectors(start_sector, sectors_per_cluster, ATADisk::DriveType::Primary, buff);
+}
+
+void Fat32FS::write_cluster(u32 cluster, u8* buff) const
+{
+    u32 start_sector = cluster_to_sector(cluster);
+    ATADisk::write_sectors(start_sector, sectors_per_cluster, ATADisk::DriveType::Primary, buff);
 }
 
 constexpr u32 FAT_ENTRY_EOF = 0x0FFFFFFF;
@@ -273,6 +288,52 @@ shared_ptr<Vector<u8>> Fat32FS::read_file(const Path& path) const
         return shared_ptr<Vector<u8>>(nullptr);
     }
     return read_whole_entry(res);
+}
+
+int Fat32FS::write_file(const Path& path, const Vector<u8>& data)
+{
+    kprintf("FAT32::write_file: path: %s\n", path.to_string().c_str());
+    FatDirectoryEntry res;
+    bool found = find_file(path, res);
+    kprintf("a1\n");
+    if(!found)
+    {
+        kprintf("a3\n");
+        // TODO: see if parent directory exists
+        // if it does, add a file to the directory
+        NOT_IMPLEMENTED();
+    }
+    kprintf("a2\n");
+    return write_to_existing_file(res, data);
+}
+
+int Fat32FS::write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data)
+{
+    if((data.size() % ATADisk::SECTOR_SIZE_BYTES) != 0)
+    {
+        kprintf("Fat32::write data size is not a multiple of sector size\n");
+        return E_INVALID_SIZE;
+    }
+    u32 current_cluster = entry.cluster_idx();
+    const size_t num_clusters = Math::div_ceil(data.size(), (sectors_per_cluster * ATADisk::SECTOR_SIZE_BYTES));
+    kprintf("b1\n");
+    for(size_t cluster_i = 0; cluster_i < num_clusters; ++cluster_i)
+    {
+        if(current_cluster == FAT_ENTRY_EOF)
+        {
+            // TODO: allocate new clusters in FAT
+            NOT_IMPLEMENTED();
+        }
+        const u32 start_sector = cluster_to_sector(current_cluster);
+        const u32 data_offset = cluster_i * sectors_per_cluster * ATADisk::SECTOR_SIZE_BYTES;
+        const u32 num_sectors_to_write = Math::min(sectors_per_cluster, (data.size() - data_offset) / ATADisk::SECTOR_SIZE_BYTES);
+        kprintf("writing to sector: %d\n", start_sector);
+        ATADisk::write_sectors(start_sector, num_sectors_to_write, ATADisk::DriveType::Primary, data.data() + data_offset);
+
+        u32 next_cluster = entry_in_fat(current_cluster);
+        current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
+    }
+    return 0;
 }
 
 File* Fat32FS::open(const Path& path) {
