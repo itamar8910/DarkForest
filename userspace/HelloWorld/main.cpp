@@ -8,7 +8,7 @@ static_assert(0);
 
 
 int main() {
-    // printf("hello, world!\n");
+    kprintf("hello, world!\n");
     // generate a segfault
     // char* p = nullptr;
     // *p = 1;

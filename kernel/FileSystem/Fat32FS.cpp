@@ -271,7 +271,11 @@ bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Typ
 }
 bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
 {
-    return find(path, res, DirectoryEntry::Type::File);
+    kprintf("Fat32: find_file: %s\n", path.to_string().c_str());
+    bool rc = find(path, res, DirectoryEntry::Type::File);
+    kprintf("rc: %d\n", rc);
+    kprintf("sector: %d\n", cluster_to_sector(res.cluster_idx()));
+    return rc;
 }
 
 bool Fat32FS::find_directory(const Path& path, FatDirectoryEntry& res) const

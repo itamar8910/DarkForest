@@ -35,11 +35,8 @@ MM_OBJS := \
 
 FS_DIR := FileSystem
 FS_OBJS := \
-	$(FS_DIR)/TarFS.o \
-	$(FS_DIR)/RamDisk.o \
 	$(FS_DIR)/VFS.o \
 	$(FS_DIR)/DevFS.o \
-	$(FS_DIR)/RamDiskFS.o \
 	$(FS_DIR)/CharFile.o \
 	$(FS_DIR)/FileUtils.o \
 	$(FS_DIR)/Fat32FS.o \
@@ -73,8 +70,8 @@ CRTN_OBJ=init/crtn.ao
 
 OBJ_TO_LINK := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(LIBC_OBJ) $(CRTEND_OBJ) $(CRTN_OBJ)
 
-SYMBOLS_FILE := ../ramdisk/kernel_symbols.txt
-LINEINFO_FILE := ../ramdisk/kernel_lineinfo.txt
+SYMBOLS_FILE := ../init_files/kernel_symbols.txt
+LINEINFO_FILE := ../init_files/kernel_lineinfo.txt
 SYMBOL_GENERATOR_SCRIPT := ../toolchain/symbol_generator.py
 
 TARGET := DarkForest.bin

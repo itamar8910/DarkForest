@@ -9,7 +9,7 @@ settings.json
 **/*.tar
 
 
-ramdisk/kernel_lineinfo.txt
-ramdisk/kernel_symbols.txt
+init_files/kernel_lineinfo.txt
+init_files/kernel_symbols.txt
 disk_img.bin
 mnt
