@@ -4,7 +4,7 @@
 
 class Device: public File {
 protected:
-    Device(String path): File(path) {}
+    Device(const Path& path): File(path) {}
 
 public:
     virtual int ioctl(u32 request, void* buf) = 0;

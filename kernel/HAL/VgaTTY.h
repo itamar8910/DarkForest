@@ -30,7 +30,7 @@ private:
 
 class VgaTTYDevice : public Device {
 public:
-    VgaTTYDevice(String path)
+    VgaTTYDevice(const Path& path)
         : Device(path) {}
 
     virtual int read(size_t count, void* buf) override;

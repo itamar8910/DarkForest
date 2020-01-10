@@ -15,10 +15,10 @@ DevFS& DevFS::the() {
 }
 
 void DevFS::initiailize() {
-    DevFS::the().add_device(new KeyboardDevice("keyboard"));
-    DevFS::the().add_device(new VgaTextDevice("vgatext"));
-    DevFS::the().add_device(new VgaTTYDevice("vgatty"));
-    DevFS::the().add_device(new AsciiKeyboardDevice("asciiKeyboard"));
+    DevFS::the().add_device(new KeyboardDevice(Path("keyboard")));
+    DevFS::the().add_device(new VgaTextDevice(Path("vgatext")));
+    DevFS::the().add_device(new VgaTTYDevice(Path("vgatty")));
+    DevFS::the().add_device(new AsciiKeyboardDevice(Path("asciiKeyboard")));
 }
 
 void DevFS::add_device(Device* device) {
@@ -30,7 +30,7 @@ File* DevFS::open(const Path& path) {
     auto path_str = path.to_string();
     for(size_t i = 0; i < devices.size(); i++) {
         auto& dev = *devices[i];
-        if(dev.path() == path_str) {
+        if(dev.path().to_string() == path_str) {
             return &dev;
         }
     }
