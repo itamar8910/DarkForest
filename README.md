@@ -27,7 +27,7 @@ apt-get install gcc g++ make curl libmpc-dev nasm qemu-system-i386
 ## Build toolchain
 ```bash
 cd toolchain
-./build.sh
+./build.sh full
 cd ..
 export LOCATION_OF_DARKFOREST_REPO=$HOME/DarkForest # change this to where you have placed the repo
 export PATH="$LOCATION_OF_DARKFOREST_REPO/toolchain/cross/bin:$PATH"

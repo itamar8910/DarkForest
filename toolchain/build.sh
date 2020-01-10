@@ -5,18 +5,46 @@ BINUTILS_FTP="https://ftp.gnu.org/gnu/binutils"
 GCC_VER="9.2.0"
 GCC_FTP="https://ftp.gnu.org/gnu/gcc/gcc-"
 
-download=true
-extract=true
-build_binutils=true
-build_gcc=true
+download=false
+extract=false
+build_binutils=false
+build_gcc=false
+
+requested_operation=$1
+
+case $requested_operation in
+	full )
+		download=true
+		extract=true
+		build_binutils=true
+		build_gcc=true
+		;;
+	download )
+		download=true
+		;;
+	extract )
+		extract=true
+		;;
+	build_binutils )
+		build_binutils=true
+		;;
+	build_gcc )
+		build_gcc=true
+		;;
+	* )
+		echo "Usage: $0 full/download/extract/build_binutils/build_gcc"
+		exit 1
+		;;
+esac
 
 if [[ "$download" == true ]]; then
 	curl "$BINUTILS_FTP/binutils-$BINUTILS_VER.tar.gz" -o binutils.tar.gz
 	curl "$GCC_FTP$GCC_VER/gcc-$GCC_VER.tar.gz" -o gcc.tar.gz
 fi
+
 if [[ "$extract" == true ]]; then
-tar -xzf binutils.tar.gz
-tar -xzf gcc.tar.gz
+	tar -xzf binutils.tar.gz
+	tar -xzf gcc.tar.gz
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
