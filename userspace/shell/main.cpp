@@ -48,6 +48,34 @@ void do_ls(const Vector<String>& cmd_parts)
     }
 }
 
+void do_echo(const Vector<String>& cmd_parts)
+{
+    // echo hello > a.txt
+    if(
+        (cmd_parts.size() != 4)
+        || (cmd_parts[2] != ">")
+    )
+    {
+        kprintf("cmd_parts.size(): %d\n", cmd_parts.size());
+        kprintf("cmd_parts[2]: %s\n", cmd_parts[2].c_str());
+        printf("usage: echo [text] > [path to file]\n");
+        return;
+    }
+    String text = cmd_parts[1] + "\n";
+    String path = cmd_parts[3];
+
+    int fd = std::open(path.c_str());
+    if(fd < 0) {
+        printf("error opening file: %s\n", path.c_str());
+        return;
+    }
+    int rc = std::write(fd, text.c_str(), text.len());
+    if(rc < 0)
+    {
+        printf("error in write: %d\n", rc);
+    }
+}
+
 void process_command(const String& command) {
     auto parts = command.split(' ');
     printf("\n");
@@ -60,6 +88,10 @@ void process_command(const String& command) {
         } 
         else if(program == "ls") { // TODO: extract to separate userspace exectuable
             do_ls(parts);
+            printf("\n");
+        }
+        else if(program == "echo") { // TODO: extract to separate userspace exectuable
+            do_echo(parts);
             printf("\n");
         }
         else {

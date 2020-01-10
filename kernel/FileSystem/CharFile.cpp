@@ -1,5 +1,6 @@
 #include "CharFile.h"
 #include "errs.h"
+#include "constants.h"
 
 
 int CharFile::read(size_t count, void* buf) {
@@ -26,6 +27,14 @@ int CharFile::write(char* data, size_t count) {
     }
 
     Vector<u8> to_write(reinterpret_cast<u8*>(data), count);
+    kprintf("to_write size before pad: %d\n", to_write.size());
+    // pad to be a multiple of sector size
+    size_t leftover = SECTOR_SIZE_BYTES - (count % SECTOR_SIZE_BYTES);
+    for(size_t i = 0; i < leftover; ++i)
+    {
+        to_write.append(0);
+    }
+    kprintf("writing with size: %d\n", to_write.size());
     m_fs.write_file(m_dir_entry, to_write);
 
     m_idx += count;
