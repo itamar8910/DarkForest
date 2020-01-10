@@ -16,6 +16,7 @@ KERN_OBJS := \
 	process.o \
 	kernel_symbols.o \
 	backtrace.o \
+	lock.o
 	
 
 DRIVERS_DIR := drivers
