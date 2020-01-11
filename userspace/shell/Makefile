@@ -6,6 +6,7 @@ TARGET := shell.o
 
 OBJS := \
 	main.o \
+    ShellManager.o \
 	VgaTTY.o \
 
 all: $(TARGET)
