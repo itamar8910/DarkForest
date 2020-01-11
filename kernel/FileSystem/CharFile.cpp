@@ -1,21 +1,22 @@
 #include "CharFile.h"
 #include "errs.h"
+#include "constants.h"
 
-CharFile::CharFile(const String& path, shared_ptr<Vector<u8>> data, size_t size)
-    : File(path),
-      m_data(data),
-      m_size(size),
-      m_idx(0) {}
 
 int CharFile::read(size_t count, void* buf) {
-    if(m_data.get() == nullptr)
+    kprintf("charfile read: count: %d", count);
+    // NOTE: we reading the entire file even though
+    // the request could be for only a small chunk of it
+    auto res = m_fs.read_file(m_dir_entry);
+    if(res.get() == nullptr)
     {
         return 0;
     }
     if(count > (m_size - m_idx)) {
-        return E_TOO_BIG;
+        kprintf("too big: count: %d. size: %d, m_idx: %d\n", count, m_size, m_idx);
+        return -E_TOO_BIG;
     }
-    memcpy(buf, m_data->data()+m_idx, count);
+    memcpy(buf, res->data()+m_idx, count);
     m_idx += count;
     return count;
 }
@@ -24,14 +25,20 @@ int CharFile::write(char* data, size_t count) {
     if(count > (m_size - m_idx)) {
         return E_TOO_BIG;
     }
-    if(m_data.get() == nullptr)
-    {
-        return E_INVALID;
-    }
 
-    memcpy(m_data->data()+m_idx, data, count);
-    m_idx += count;	// u8* elf_data = RamDisk::fs().get_content("userspace/HelloWorld.app", elf_size);
-	// ASSERT(elf_data != nullptr);
+    Vector<u8> to_write(reinterpret_cast<u8*>(data), count);
+    kprintf("to_write size before pad: %d\n", to_write.size());
+    // pad to be a multiple of sector size
+    size_t leftover = SECTOR_SIZE_BYTES - (count % SECTOR_SIZE_BYTES);
+    for(size_t i = 0; i < leftover; ++i)
+    {
+        to_write.append(0);
+    }
+    kprintf("writing with size: %d\n", to_write.size());
+    m_fs.write_file(m_dir_entry, to_write);
+
+    m_idx += count;
+
     return count;
 }
 

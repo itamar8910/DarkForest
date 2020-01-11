@@ -1,11 +1,12 @@
 #pragma once
 
 #include "types.h"
+#include "constants.h"
 
 namespace ATADisk
 {
-    constexpr size_t SECTOR_SIZE_BYTES = 512;
-    constexpr size_t SECTOR_SIZE_WORDS = SECTOR_SIZE_BYTES/2;
+    constexpr size_t SECTOR_SIZE_BYTES = ::SECTOR_SIZE_BYTES;
+    constexpr size_t SECTOR_SIZE_WORDS = ::SECTOR_SIZE_WORDS;
 
     enum class DriveType
     {

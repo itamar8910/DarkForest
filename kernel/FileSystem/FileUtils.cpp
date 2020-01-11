@@ -10,6 +10,7 @@ u8* FileUtils::read_all(CharFile& f, size_t& size) {
     size = f.size();
     u8* buff = new u8[size];
     int res = f.read(size, buff);
+    kprintf("res: %d, size: %d\n", res, size);
     if(res != (int)size) {
         delete[] buff;
         return nullptr;

@@ -4,7 +4,7 @@
 
 class AsciiKeyboardDevice : public Device {
 public:
-    AsciiKeyboardDevice(String path): Device(path) {}
+    AsciiKeyboardDevice(const Path& path): Device(path) {}
 
     int read(size_t count, void* buf) override;
     int write(char* data, size_t count) override;

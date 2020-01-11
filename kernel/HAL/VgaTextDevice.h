@@ -6,7 +6,7 @@
 
 class VgaTextDevice : public Device {
 public:
-    VgaTextDevice(String path)
+    VgaTextDevice(const Path& path)
         : Device(path)
             {
             }

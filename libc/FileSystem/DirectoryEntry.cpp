@@ -1,14 +1,14 @@
 #include "DirectoryEntry.h"
 
 size_t DirectoryEntry::serialize(u8* data) const{
-    const String path_str = path.to_string();
+    const String path_str = m_path.to_string();
     const size_t serialized_size = sizeof(u8) + sizeof(u16) + path_str.len();
     if(data == nullptr)
     {
         return serialized_size;
     }
     size_t offset = 0;
-    *(u8*)data = static_cast<u8>(type);
+    *(u8*)data = static_cast<u8>(m_type);
     offset+=sizeof(u8);
     *(u16*)(data+offset) = static_cast<u16>(path_str.len());
     offset+=sizeof(u16);

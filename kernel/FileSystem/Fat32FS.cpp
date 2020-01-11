@@ -35,7 +35,7 @@ Fat32FS& Fat32FS::the(){
 }
 
 Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
-    : FileSystem(Path("/root"))
+    : CharFileSystem(Path("/root"))
 {
 
     ASSERT(boot_sector.table_count == 2);
@@ -308,10 +308,11 @@ int Fat32FS::write_file(const Path& path, const Vector<u8>& data)
         NOT_IMPLEMENTED();
     }
     kprintf("a2\n");
-    return write_to_existing_file(res, data);
+    auto char_dir_entry = res.to_char_directory_entry(path);
+    return write_to_existing_file(char_dir_entry, data);
 }
 
-int Fat32FS::write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data)
+int Fat32FS::write_to_existing_file(CharDirectoryEntry& entry, const Vector<u8>& data)
 {
     if((data.size() % ATADisk::SECTOR_SIZE_BYTES) != 0)
     {
@@ -341,10 +342,18 @@ int Fat32FS::write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& 
 }
 
 File* Fat32FS::open(const Path& path) {
-    auto content = read_file(path);
-    if(content.get() == nullptr)
+    FatDirectoryEntry res;
+    bool rc = find_file(path, res);
+    if(rc == false)
+    {
         return nullptr;
-    return new CharFile(path.to_string(), content, content->size());
+    }
+    return new CharFile(
+        path,
+        Fat32FS::the(),
+        res.to_char_directory_entry(path),
+        res.FileSize
+    );
 }
 
 bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
@@ -369,4 +378,14 @@ bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
         res.append(DirectoryEntry(Path(e.name_lower()), (e.is_directory() ? DirectoryEntry::Type::Directory : DirectoryEntry::Type::File)));
     }
     return true;
+}
+
+shared_ptr<Vector<u8>> Fat32FS::read_file(CharDirectoryEntry& entry) const
+{
+    return read_whole_entry(entry.cluster_idx(), entry.file_size());
+}
+
+int Fat32FS::write_file(CharDirectoryEntry& entry, const Vector<u8>& data)
+{
+    return write_to_existing_file(entry, data);
 }

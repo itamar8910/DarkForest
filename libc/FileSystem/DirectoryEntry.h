@@ -2,18 +2,17 @@
 
 #include "path.h"
 
-struct DirectoryEntry
+class DirectoryEntry
 {
+public:
     enum class Type : u8
     {
         File,
         Directory,
     };
-    Path path;
-    Type type;
 
     DirectoryEntry(const Path& path, Type type)
-        : path(path), type(type) {}
+        : m_path(path), m_type(type) {}
     
 
     // if data is nullptr, just returns length to be serialized
@@ -22,6 +21,10 @@ struct DirectoryEntry
     // construct DirectoryEntry object out of 'data', returns number of bytes use via out_size
     static DirectoryEntry deserialize(u8* data, size_t& out_size);
 
-};
+    Path path() const{return m_path;}
+    Type type() const{return m_type;}
 
-// DirectoryEntry DirectoryEntry::deserialize(u8* data, size_t& out_size) 
+private:
+    Path m_path;
+    Type m_type;
+};

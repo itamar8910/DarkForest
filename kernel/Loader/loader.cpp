@@ -31,6 +31,7 @@ void load_and_jump_userspace(const String& path) {
 	size_t elf_size = 0;
    u8* elf_data = nullptr;
    int rc = read_elf_from_path(path, elf_data, elf_size);
+   kprintf("rc: %d\n", rc);
    ASSERT(rc == 0);
    ASSERT(elf_data != nullptr);
    kprintf("a1\n");

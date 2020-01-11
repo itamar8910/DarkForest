@@ -5,7 +5,7 @@
 #include "types/String.h"
 #include "shared_ptr.h"
 #include "FileSystem/path.h"
-#include "FileSystem/FileSystem.h"
+#include "FileSystem/CharFileSystem.h"
 
 struct [[gnu::packed]] Fat32Extension
 {
@@ -113,11 +113,26 @@ struct [[gnu::packed]] FatDirectoryEntry
         return (name_lower() == ".") || (name_lower() == "..");
     }
 
+    DirectoryEntry::Type get_dir_entry_type()
+    {
+        return is_directory() ? DirectoryEntry::Type::Directory : DirectoryEntry::Type::File;
+    }
+
+    CharDirectoryEntry to_char_directory_entry(const Path& path)
+    {
+        return CharDirectoryEntry(
+            path, 
+            get_dir_entry_type(),
+            FileSize,
+            cluster_idx()
+        );
+    }
+
 };
 static_assert(sizeof(FatDirectoryEntry)==32);
 
 
-class Fat32FS : public FileSystem
+class Fat32FS : public CharFileSystem
 {
 public:
     static void initialize();
@@ -128,6 +143,9 @@ public:
 
     shared_ptr<Vector<u8>> read_file(const Path& path) const;
     int write_file(const Path& path, const Vector<u8>& data);
+
+    virtual shared_ptr<Vector<u8>> read_file(CharDirectoryEntry& entry) const override;
+    virtual int write_file(CharDirectoryEntry& entry, const Vector<u8>& data) override;
 
 
 private:
@@ -146,7 +164,7 @@ private:
 
     shared_ptr<Vector<u8>> read_whole_entry(const FatDirectoryEntry& entry) const;
 
-    int write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data);
+    int write_to_existing_file(CharDirectoryEntry& entry, const Vector<u8>& data);
 
     bool find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type type) const;
     bool find_file(const Path& path, FatDirectoryEntry& res) const;
