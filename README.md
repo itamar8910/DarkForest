@@ -41,7 +41,9 @@ make
 ```
 
 ## Setup filesystem
+```bash
 ./fs_setup.sh # needs root priv to mount fs
+```
 
 ## Run
 ```bash
