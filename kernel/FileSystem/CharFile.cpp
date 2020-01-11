@@ -1,14 +1,17 @@
 #include "CharFile.h"
 #include "errs.h"
 #include "constants.h"
+#include "BigBuffer.hpp"
+#include "Math.h"
 
 
 int CharFile::read(size_t count, void* buf) {
     kprintf("charfile read: count: %d\n", count);
     // NOTE: we reading the entire file even though
     // the request could be for only a small chunk of it
-    auto res = m_fs.read_file(m_dir_entry);
-    if(res.get() == nullptr)
+    auto buffer = BigBuffer::allocate(Math::round_up(m_size, m_fs.cluster_size()));
+    bool rc = m_fs.read_file(m_dir_entry, buffer->data());
+    if(rc == false)
     {
         return 0;
     }
@@ -16,7 +19,7 @@ int CharFile::read(size_t count, void* buf) {
         kprintf("too big: count: %d. size: %d, m_idx: %d\n", count, m_size, m_idx);
         return -E_TOO_BIG;
     }
-    memcpy(buf, res->data()+m_idx, count);
+    memcpy(buf, buffer->data()+m_idx, count);
     m_idx += count;
     return count;
 }

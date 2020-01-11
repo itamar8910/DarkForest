@@ -147,7 +147,11 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bo
         
         if(address_in_kernel_space(addr)) {
             // see comment above lock_kernel_PDEs()
-            ASSERT(!m_kernel_PDEs_locked);
+            // we do allow kernel PDEs to diverge in big buffer allocations
+            if((addr < BIG_BUFFER_START) && (addr > BIG_BUFFER_END))
+            {
+                ASSERT(!m_kernel_PDEs_locked);
+            }
         }
 
         // we need to create a new page table

@@ -6,6 +6,7 @@
 #include "shared_ptr.h"
 #include "FileSystem/path.h"
 #include "FileSystem/CharFileSystem.h"
+#include "constants.h"
 
 struct [[gnu::packed]] Fat32Extension
 {
@@ -143,11 +144,17 @@ public:
 
     virtual bool does_directory_exist(const Path& path) override;
 
-    shared_ptr<Vector<u8>> read_file(const Path& path) const;
+    bool read_file(const Path& path, u8* data, u32& size) const;
     int write_file(const Path& path, const Vector<u8>& data);
 
-    virtual shared_ptr<Vector<u8>> read_file(CharDirectoryEntry& entry) const override;
+    // virtual shared_ptr<Vector<u8>> read_file(CharDirectoryEntry& entry) const override;
+    virtual bool read_file(CharDirectoryEntry& entry, u8* data) const override;
     virtual int write_file(CharDirectoryEntry& entry, const Vector<u8>& data) override;
+
+    virtual u32 cluster_size() const override
+    {
+        return SECTOR_SIZE_BYTES * sectors_per_cluster;
+    }
 
 
 private:
@@ -157,14 +164,13 @@ private:
     u32 cluster_to_sector(u32 cluster) const;
     u32 entry_in_fat(u32 cluster) const;
 
-    shared_ptr<Vector<u8>> read_cluster(u32 cluster) const;
+    void read_cluster(u32 cluster, u8* data) const;
 
-    void read_cluster(u32 cluster, u8* buff) const;
     void write_cluster(u32 cluster, u8* buff) const;
 
-    shared_ptr<Vector<u8>> read_whole_entry(u32 start_cluster, u32 size) const;
+    bool read_whole_entry(u32 start_cluster, u32 size, u8* data) const;
 
-    shared_ptr<Vector<u8>> read_whole_entry(const FatDirectoryEntry& entry) const;
+    bool read_whole_entry(const FatDirectoryEntry& entry, u8* data) const;
 
     int write_to_existing_file(CharDirectoryEntry& entry, const Vector<u8>& data);
 

@@ -109,16 +109,16 @@ u32 Fat32FS::entry_in_fat(u32 cluster) const
     return val;
 }
 
-shared_ptr<Vector<u8>> Fat32FS::read_cluster(u32 cluster) const
-{
-    #ifdef FAT32_DBG
-    kprintf("read cluster: %d\n", cluster);
-    #endif
-    auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(sectors_per_cluster * bytes_per_sector));
-    read_cluster(cluster, data_vec->data());
-    data_vec->set_size(sectors_per_cluster * bytes_per_sector);
-    return data_vec;
-}
+// bool Fat32FS::read_cluster(u32 cluster, u8* data) const
+// {
+//     #ifdef FAT32_DBG
+//     kprintf("read cluster: %d\n", cluster);
+//     #endif
+//     // auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(sectors_per_cluster * bytes_per_sector));
+//     read_cluster(cluster, data);
+//     // data_vec->set_size(sectors_per_cluster * bytes_per_sector);
+//     return data_vec;
+// }
 
 void Fat32FS::read_cluster(u32 cluster, u8* buff) const
 {
@@ -141,9 +141,10 @@ Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
     bool done = false;
     while(!done)
     {
-        auto cluster_data = read_cluster(current_cluster);
+        u8 buff[sectors_per_cluster * SECTOR_SIZE_BYTES];
+        read_cluster(current_cluster, buff);
         // print_hexdump(cluster_data->data(), cluster_data->size());
-        FatDirectoryEntry* current = (FatDirectoryEntry*) cluster_data->data();
+        FatDirectoryEntry* current = (FatDirectoryEntry*) buff;
         while(!done)
         {
             // skip long names for now
@@ -179,18 +180,19 @@ Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
 }
 
 
-shared_ptr<Vector<u8>> Fat32FS::read_whole_entry(u32 start_cluster, u32 size) const
+bool Fat32FS::read_whole_entry(u32 start_cluster, u32 size, u8* data) const
 {
     #ifdef FAT32_DBG
     kprintf("read cluster: %d\n", start_cluster);
     #endif
+    (void) size;
     // round size up to sector size
     u32 cluster_size = bytes_per_sector * sectors_per_cluster;
-    auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(size + (cluster_size-(size%cluster_size))));
+    // auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(size + (cluster_size-(size%cluster_size))));
     u32 current_cluster = start_cluster;
     for(size_t cluster_i = 0; ; cluster_i++)
     {
-        read_cluster(current_cluster, data_vec->data() + cluster_size * cluster_i);
+        read_cluster(current_cluster, data + cluster_size * cluster_i);
         u32 next_cluster = entry_in_fat(current_cluster);
         if(next_cluster == FAT_ENTRY_EOF)
         {
@@ -198,13 +200,12 @@ shared_ptr<Vector<u8>> Fat32FS::read_whole_entry(u32 start_cluster, u32 size) co
         }
         current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
     }
-    data_vec->set_size(size);
-    return data_vec;
+    return true;
 }
 
-shared_ptr<Vector<u8>> Fat32FS::read_whole_entry(const FatDirectoryEntry& entry) const
+bool Fat32FS::read_whole_entry(const FatDirectoryEntry& entry, u8* data) const
 {
-    return read_whole_entry(entry.cluster_idx(), entry.FileSize);
+    return read_whole_entry(entry.cluster_idx(), entry.FileSize, data);
 }
 
 bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type target_type) const
@@ -283,15 +284,16 @@ bool Fat32FS::find_directory(const Path& path, FatDirectoryEntry& res) const
     return find(path, res, DirectoryEntry::Type::Directory);
 }
 
-shared_ptr<Vector<u8>> Fat32FS::read_file(const Path& path) const
+bool Fat32FS::read_file(const Path& path, u8* data, u32& size) const
 {
     FatDirectoryEntry res;
     bool found = find_file(path, res);
     if(!found)
     {
-        return shared_ptr<Vector<u8>>(nullptr);
+        return false;
     }
-    return read_whole_entry(res);
+    size = res.FileSize;
+    return read_whole_entry(res, data);
 }
 
 int Fat32FS::write_file(const Path& path, const Vector<u8>& data)
@@ -394,12 +396,14 @@ bool Fat32FS::does_directory_exist(const Path& path)
     return find_directory(path, entry);
 }
 
-shared_ptr<Vector<u8>> Fat32FS::read_file(CharDirectoryEntry& entry) const
+bool Fat32FS::read_file(CharDirectoryEntry& entry, u8* data) const
 {
-    return read_whole_entry(entry.cluster_idx(), entry.file_size());
+    return read_whole_entry(entry.cluster_idx(), entry.file_size(), data);
+
 }
 
 int Fat32FS::write_file(CharDirectoryEntry& entry, const Vector<u8>& data)
 {
     return write_to_existing_file(entry, data);
 }
+

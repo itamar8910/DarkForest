@@ -28,12 +28,16 @@
     0xc0000000 - 0xffffffff : kernel address space
     0xc0000000 - 0xc0ffffff : kernel image (code + data)
     0xc1000000 - 0xc5000000 : kernel heap
+    0xca000000 - 0xcfffe000 : big buffers area
 	0xd0000000 - 0xe0000000 - kernel stacks (a kernel stack per task)
 */
 
 constexpr u32 IDENTITY_MAP_END = 4*MB;
 constexpr u32 USERSPACE_START = 4*MB;
 constexpr u32 KERNELSPACE_START = 0xc0000000;
+
+static constexpr u32 BIG_BUFFER_START = 0xca000000;
+static constexpr u32 BIG_BUFFER_END = 0xcfffe000;
 
 
 // each PDE entry is responsible for 4MB of memory
