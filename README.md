@@ -2,7 +2,7 @@
 
 A work in progress x86 operating system
 
-## Current features:
+## Current features
 
 - Preemptive Multiprocessing
 - Basic round-robin scheduler
@@ -16,24 +16,41 @@ A work in progress x86 operating system
 - ATA Disk driver (currently read only)
 - Fat32 (currently read only)
 
-## Coming up:
+## Coming up
 - userspace shell
 
-## build
+## Build prerequisites
+
+### On debian
+```bash
+apt-get install gcc g++ make curl libmpc-dev nasm qemu-system-i386 dosfstools
+```
+
+## Build toolchain
 ```bash
 cd toolchain
-./build.sh
-cd ..
-export PATH="$HOME/DarkForest/toolchain/cross/bin:$PATH"
-./fs_setup.sh # needs root priv to mount fs
+./build.sh full
+```
+
+## Build DarkForest
+```bash
+export LOCATION_OF_DARKFOREST_REPO=$HOME/DarkForest # change this to where you have placed the repo
+export PATH="$LOCATION_OF_DARKFOREST_REPO/toolchain/cross/bin:$PATH"
+
 make
 ```
 
-## run
+## Setup filesystem
 ```bash
-./run
+./fs_setup.sh # needs root priv to mount fs
+```
+
+## Run
+```bash
+./run.sh
 ```
 
 
 I take a lot of inspiration from Andreas Kling's amazing [SerenityOS](https://github.com/SerenityOS/serenity) - check it out!
+
 

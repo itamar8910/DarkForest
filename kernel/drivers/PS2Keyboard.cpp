@@ -160,6 +160,7 @@ void PS2Keyboard::on_scan_byte(u8 val) {
             break;
             }
         case 2:
+            m_current_keycode_byte_idx = 0;
             break;
         default:
             ASSERT_NOT_REACHED();

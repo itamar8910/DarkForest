@@ -13,3 +13,5 @@ init_files/kernel_lineinfo.txt
 init_files/kernel_symbols.txt
 disk_img.bin
 mnt
+
+tags
