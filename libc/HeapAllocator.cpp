@@ -24,6 +24,7 @@ HeapAllocator::HeapAllocator(void* addr, u32 size) {
                                     size - sizeof(MemBlock)
                                     );
     m_current_heap_end = (void*) ((u32)addr + size);
+    m_heap_start = addr;
 }
 
 void* HeapAllocator::allocate(u32 size) {
@@ -149,4 +150,10 @@ MemBlock* MemBlock::initialize(void* struct_addr,
     block->addr = addr;
     block->size = size;
     return block;
+}
+
+void HeapAllocator::heap_statistics(u32& free_space, u32& num_blocks, u32& allocated_pages)
+{
+    free_space = current_free_space(num_blocks);
+    allocated_pages = ((u32)m_current_heap_end - (u32)m_heap_start) / PAGE_SIZE;
 }

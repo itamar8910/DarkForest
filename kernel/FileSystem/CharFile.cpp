@@ -4,7 +4,7 @@
 
 
 int CharFile::read(size_t count, void* buf) {
-    kprintf("charfile read: count: %d", count);
+    kprintf("charfile read: count: %d\n", count);
     // NOTE: we reading the entire file even though
     // the request could be for only a small chunk of it
     auto res = m_fs.read_file(m_dir_entry);

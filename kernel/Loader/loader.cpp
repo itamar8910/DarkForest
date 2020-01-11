@@ -12,7 +12,7 @@
 
 #define USERSPACE_STACK 0xb0000000
 
-static int read_elf_from_path(const String& path, u8*& elf_data, size_t& elf_size)
+static int read_elf_from_path(const String& path, shared_ptr<Vector<u8>>& elf_data, size_t& elf_size)
 {
 	File* f = VFS::the().open(Path(path));
    if(f == nullptr) {
@@ -20,33 +20,32 @@ static int read_elf_from_path(const String& path, u8*& elf_data, size_t& elf_siz
       return E_NOTFOUND;
    }
 	elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
-   if(elf_data == nullptr) {
+   if(elf_data.get() == nullptr) {
       return E_INVALID;
    }
+   elf_data->set_size(elf_size);
    return 0;
 }
 
 void load_and_jump_userspace(const String& path) {
    kprintf("load_and_jump_userspace: %s\n", path.c_str());
 	size_t elf_size = 0;
-   u8* elf_data = nullptr;
+   shared_ptr<Vector<u8>> elf_data;
    int rc = read_elf_from_path(path, elf_data, elf_size);
    kprintf("rc: %d\n", rc);
    ASSERT(rc == 0);
-   ASSERT(elf_data != nullptr);
+   ASSERT(elf_data.get() != nullptr);
    kprintf("a1\n");
-   print_hexdump(elf_data, 0x100);
+   print_hexdump(elf_data->data(), 0x100);
 	load_and_jump_userspace(elf_data, elf_size);
-	delete elf_data; // control won't reach here
 }
 
 void load_and_jump_userspace(UserspaceLoaderData& data) {
 	size_t elf_size = 0;
-   u8* elf_data;
+   shared_ptr<Vector<u8>> elf_data;
    int rc = read_elf_from_path(data.glob_load_path, elf_data, elf_size);
    ASSERT(rc == 0);
    load_and_jump_userspace(elf_data, elf_size, data.argv, data.argc);
-	delete elf_data; // control won't reach here
 }
 
 static void* allocate_from_buffer(size_t len, void*& current_alloc_buff) {
@@ -71,11 +70,13 @@ static void clone_args_into_userspace(char**& argv_dst, size_t& argc_dst, char**
     }
 }
 
-void load_and_jump_userspace(void* elf_data,
+void load_and_jump_userspace(shared_ptr<Vector<u8>> elf_data_ptr,
                                 u32 size,
                                 char** argv,
                                 size_t argc)
 {
+   u8* elf_data = elf_data_ptr->data();
+   ASSERT(elf_data != nullptr);
    Elf::Header* header = (Elf::Header*) elf_data;
    Elf::ParseInfo elf_parse_info = Elf::from(elf_data, size);
    for(auto& offset : elf_parse_info.program_header_offsets) {
@@ -102,6 +103,11 @@ void load_and_jump_userspace(void* elf_data,
          // zero leftover
          memset((void*)((u32)segment_virtual_address + program_header->size_in_file), 0, (page_index*PAGE_SIZE) - program_header->size_in_file);
    }
+
+   // NOTE: we have to call force_free
+   // becuase we jump to userspace, control call destructor of shared_ptr
+   elf_data_ptr.force_free();
+
    // allocate stack
 	u32 user_stack_bottom = USERSPACE_STACK;
 	u32 user_stack_top = user_stack_bottom - PAGE_SIZE;

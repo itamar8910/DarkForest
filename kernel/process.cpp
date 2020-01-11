@@ -106,28 +106,19 @@ static void auxiliary_loader() {
 
 void copy_into_loader_data(UserspaceLoaderData& data, const char* path, char** argv, size_t argc)
 {
-    // TODO: copy
     // we need to do this because that data is in one process' userspace memory
     // and needs to be accesses from another
     // so we copy it to a temp location in kernel space
     strncpy(userspace_loader_data.glob_load_path, path, MAX_PATH_LEN);
     clone_args(data.argv, data.argc, argv, argc);
-    // if(argc == 0) {
-    //     data.argv = nullptr;
-    //     data.argc = 0;
-    // } else {
-    //     data.argv = new char*[argc];
-    //     for(size_t i = 0; i < argc; ++i) {
-    //         data.argv[i] = new char[strlen(argv[i]) + 1];
-    //         strcpy(data.argv[i], argv[i]);
-    //     }
-    //     data.argc = argc;
-    // }
 }
 
 // int Process::syscall_ForkAndExec(char* path, char* name, char** argv)
 int Process::syscall_ForkAndExec(ForkArgs* args)
 {
+    u32 free_space, num_blocks, num_pages;
+    KernelHeapAllocator::the().heap_statistics(free_space, num_blocks, num_pages);
+    kprintf("Heap: free: %d, #blocks: %d, #pages: %d\n", free_space, num_blocks, num_pages);
     // not realy atomic
     // TODO: use a mutex here
     ASSERT(!glob_userspace_loader_locked);

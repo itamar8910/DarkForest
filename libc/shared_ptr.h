@@ -55,6 +55,15 @@ public:
         return m_counter->count();
     }
 
+    void force_free()
+    {
+        kprintf("WARNING: shared_ptr::force_free\n");
+        if(m_counter==nullptr)
+            return;
+        while(m_counter->count() != 1)
+            m_counter->decrement();
+        reset();
+    }
 
     void reset() {
         if(m_counter==nullptr)

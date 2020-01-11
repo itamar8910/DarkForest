@@ -5,14 +5,12 @@
 #include "errs.h"
 #include "logging.h"
 
-u8* FileUtils::read_all(CharFile& f, size_t& size) {
-    // TODO: return a shared_ptr
+shared_ptr<Vector<u8>> FileUtils::read_all(CharFile& f, size_t& size) {
     size = f.size();
-    u8* buff = new u8[size];
-    int res = f.read(size, buff);
+    shared_ptr<Vector<u8>> buff(new Vector<u8>(size));
+    int res = f.read(size, buff->data());
     kprintf("res: %d, size: %d\n", res, size);
     if(res != (int)size) {
-        delete[] buff;
         return nullptr;
     }
     return buff;

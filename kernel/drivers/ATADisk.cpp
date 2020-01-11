@@ -46,14 +46,14 @@ namespace ATADisk{
     ISR_HANDLER(ata_primary);
     void isr_ata_primary_handler(RegisterDump& regs) {
         (void)regs;
-        kprintf("isr_ata_primary\n");
+        // kprintf("isr_ata_primary\n");
         PIC::eoi(IRQ_ATA_PRIMARY);
     }
 
     ISR_HANDLER(ata_secondary);
     void isr_ata_secondary_handler(RegisterDump& regs) {
         (void)regs;
-        kprintf("isr_ata_secondary\n");
+        // kprintf("isr_ata_secondary\n");
         PIC::eoi(IRQ_ATA_SECONDARY);
     }
 

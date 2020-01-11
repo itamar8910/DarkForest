@@ -34,6 +34,7 @@ public:
 
     u32 current_free_space(u32& num_blocks);
     u32 current_free_space() {u32 x = 0; return current_free_space(x);}
+    void heap_statistics(u32& free_space, u32& num_blocks, u32& allocated_pages);
 
 protected:
     HeapAllocator(void* addr, u32 size);
@@ -44,4 +45,5 @@ protected:
 
     MemBlock* m_first_free;
     void* m_current_heap_end;
+    void* m_heap_start;
 };
