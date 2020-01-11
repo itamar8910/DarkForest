@@ -70,4 +70,9 @@ int list_dir(const String& path, void* dest, size_t* size)
     return Syscall::invoke(Syscall::ListDir, (u32) path.c_str(), (u32) dest, (u32) size);
 }
 
+int set_current_directory(const String& path)
+{
+    return Syscall::invoke(Syscall::SetCurrentDirectory, (u32) path.c_str());
+}
+
 }

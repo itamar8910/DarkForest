@@ -76,6 +76,12 @@ void do_echo(const Vector<String>& cmd_parts)
     }
 }
 
+void do_change_directory(const Vector<String>& cmd_parts)
+{
+    String path = cmd_parts[1];
+    std::set_current_directory(path);
+}
+
 void process_command(const String& command) {
     auto parts = command.split(' ');
     printf("\n");
@@ -92,6 +98,10 @@ void process_command(const String& command) {
         }
         else if(program == "echo") { // TODO: extract to separate userspace exectuable
             do_echo(parts);
+            printf("\n");
+        }
+        else if(program == "cd") {
+            do_change_directory(parts);
             printf("\n");
         }
         else {

@@ -9,9 +9,10 @@ class Process {
 public:
     static Process* create(void (*main)(), 
                         String name="[Unnamed]",
+                        String current_directory="/",
                         File** descriptors = nullptr);
 
-    Process(u32 pid, ThreadControlBlock* task, String name, File** descriptors=nullptr);
+    Process(u32 pid, ThreadControlBlock* task, String name, String current_directory, File** descriptors=nullptr);
 
     ThreadControlBlock& task() {return *m_task;}
     u32 pid(){return m_pid;}
@@ -28,11 +29,18 @@ public:
     int syscall_ForkAndExec(ForkArgs*);
     int syscall_wait(size_t pid);
     int syscall_listdir(const String& path, void* dest, size_t* size);
+    int syscall_set_current_directory(const String& path);
+
+private:
+    String get_full_path(const String& path);
+    void set_current_directory(const String& path);
 
 private:
     u32 m_pid;
     ThreadControlBlock* m_task;
     String m_name;
+    String m_current_directory;
+
     File* m_file_descriptors[NUM_FILE_DESCRIPTORS] {0};
     WaitBlocker* m_waiter {nullptr};
 };
