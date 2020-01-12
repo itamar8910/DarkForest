@@ -5,6 +5,7 @@
 
 shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
 {
+    kprintf("BigBuffer::allocate %d\n", size);
     size_t n_pages_required = Math::div_ceil(size, PAGE_SIZE);
     size_t total_pages = (ADDR_END-ADDR_START)/PAGE_SIZE;
     u32* bitmap = get_bitmap();
@@ -26,12 +27,12 @@ shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
             for(size_t j = i; j < i + n_pages_required; ++j)
             {
                 set_bit(bitmap[j/32], j%32, 1);
-                MemoryManager::the().allocate(ADDR_START + (i*PAGE_SIZE), PageWritable::YES, UserAllowed::NO);
+                MemoryManager::the().allocate(ADDR_START + (j*PAGE_SIZE), PageWritable::YES, UserAllowed::NO);
             }
             return shared_ptr<BigBuffer>(new BigBuffer(
                 size,
                 ADDR_START + (i*PAGE_SIZE),
-                ADDR_END + ((i+n_pages_required)*PAGE_SIZE)
+                ADDR_START + ((i+n_pages_required-1)*PAGE_SIZE)
             ));
         }
     }

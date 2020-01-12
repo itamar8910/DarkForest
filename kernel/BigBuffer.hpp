@@ -13,6 +13,9 @@ public:
     u8* data();
     const u8* data() const;
 
+    BigBuffer(const BigBuffer& other) = delete;
+    BigBuffer& operator=(const BigBuffer& other) = delete;
+
 private:
     static constexpr u32 ADDR_START = BIG_BUFFER_START;
     static constexpr u32 ADDR_END = BIG_BUFFER_END;
