@@ -197,7 +197,13 @@ int Process::syscall_listdir(const String& path, void* dest, size_t* size)
 
 int Process::syscall_set_current_directory(const String& path)
 {
-    set_current_directory(path);
+    if (!VFS::the().does_directory_exist(Path(get_full_path(path))))
+    {
+        kprintf("Not setting current directory of %s since it doesn't exist\n", path.c_str());
+        return E_NOTFOUND;
+    }
+
+    set_current_directory(get_full_path(path));
 
     kprintf("Setting current directory of %s\n", path.c_str());
 
@@ -206,6 +212,12 @@ int Process::syscall_set_current_directory(const String& path)
 
 String Process::get_full_path(const String& path)
 {
+    // TODO: Do this better, perhaps add a get_current_directory call, or that every directory will have a "." file that will represent the directory
+    if (path == String("."))
+    {
+        return m_current_directory;
+    }
+
     if (path[0] == '/')
     {
         return path;

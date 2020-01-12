@@ -49,7 +49,7 @@ void ShellManager::do_ls(const Vector<String>& cmd_parts)
         return;
     }
 
-    String directory = m_current_directory;
+    String directory = ".";
 
     if(cmd_parts.size() == 2)
     {
@@ -116,7 +116,12 @@ void ShellManager::do_echo(const Vector<String>& cmd_parts)
 void ShellManager::do_cd(const Vector<String>& cmd_parts)
 {
     String path = cmd_parts[1];
-    std::set_current_directory(path);
+    if (std::set_current_directory(path) != 0)
+    {
+        printf("%s is an invalid path\n", path.c_str());
+        return;
+    }
+
     m_current_directory = path;
 }
 
