@@ -78,11 +78,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_write(arg1, (char*) arg2, arg3);
         case Syscall::ForkAndExec:
             {
-            kprintf("before ForkAndExec\n");
-            // *(char*)0 = 0;
-            int rc = Scheduler::the().current().syscall_ForkAndExec((ForkArgs*)arg1);
-            kprintf("after ForkAndExec\n");
-            return rc;
+            return Scheduler::the().current().syscall_ForkAndExec((ForkArgs*)arg1);
             }
         case Syscall::WAIT:
             return Scheduler::the().current().syscall_wait(arg1);

@@ -7,6 +7,7 @@
 
 shared_ptr<Vector<u8>> FileUtils::read_all(CharFile& f, size_t& size) {
     size = f.size();
+    // TODO: use a BigBuffer here
     shared_ptr<Vector<u8>> buff(new Vector<u8>(size));
     int res = f.read(size, buff->data());
     kprintf("res: %d, size: %d\n", res, size);

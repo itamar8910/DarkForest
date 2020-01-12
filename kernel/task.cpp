@@ -26,20 +26,38 @@ void switch_to_task(ThreadControlBlock* next) {
     #ifdef DBG_TASKSWITCH
     kprintf("Switching to Task: %d (%s)\n", next->id, next->meta_data->name.c_str());
     #endif
+    // RegisterDump* regs = (RegisterDump*) next->ESP0;
+    // void* addr = &(regs->eip);
+    // VirtualAddress temp_addr = MemoryManager::the().temp_map((u32)addr-(u32)addr%PAGE_SIZE);
+    // RegisterDump* temp_regs = (RegisterDump*) temp_addr;
+    // u32 val = temp_regs->eip;
+    // MemoryManager::the().un_temp_map();
+    // kprintf("returning to: 0x%x\n", val);
     asm_switch_to_task(next);
 }
 
 #define CLONE_PAGE_DIRECTORY
+
+constexpr size_t NUM_PAGES_PER_STACK = 10;
 
 ThreadControlBlock* create_kernel_task(void (*func)()) {
     ThreadControlBlock* tcb = new ThreadControlBlock();
     tcb->id = ++current_thread_id;
     // allocate stack space for new task
     kprintf("new CR3: 0x%x\n", (u32)tcb->CR3);
-    MemoryManager::the().allocate((u32)next_task_stack_virtual_addr,
-        PageWritable::YES,
-        UserAllowed::NO);
-    u32* new_stack = (u32*)((u32)next_task_stack_virtual_addr + PAGE_SIZE - 4);
+    for(size_t i = 0; i < NUM_PAGES_PER_STACK; ++i)
+    {
+        MemoryManager::the().allocate((u32)((u32)next_task_stack_virtual_addr + i*PAGE_SIZE),
+            PageWritable::YES,
+            UserAllowed::NO);
+
+    }
+    next_task_stack_virtual_addr = (void*)((u32)next_task_stack_virtual_addr + PAGE_SIZE*NUM_PAGES_PER_STACK);
+
+    u32* new_stack = (u32*)((u32)next_task_stack_virtual_addr - 4);
+
+    next_task_stack_virtual_addr = (void*)((u32)next_task_stack_virtual_addr + PAGE_SIZE); // leave a blank unmapped page to detect stack overflows
+
     // initialize value of stack (will be popped off at the end of switch_to_task)
     stack_push(&new_stack, u32(Scheduler::terminate_current)); // jumps here after func returns
     stack_push(&new_stack, (u32)func); // will be popped of as EIP
@@ -62,7 +80,6 @@ ThreadControlBlock* create_kernel_task(void (*func)()) {
     #else
     tcb->CR3 = (void*) (u32)get_cr3();
     #endif
-    next_task_stack_virtual_addr = (void*)((u32)next_task_stack_virtual_addr + PAGE_SIZE);
     tcb->ESP = new_stack;
     tcb->ESP0 = new_stack;
 
