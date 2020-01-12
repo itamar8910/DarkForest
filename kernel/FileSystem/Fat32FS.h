@@ -141,6 +141,8 @@ public:
     File* open(const Path& path) override;
     virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) override;
 
+    virtual bool does_directory_exist(const Path& path) override;
+
     shared_ptr<Vector<u8>> read_file(const Path& path) const;
     int write_file(const Path& path, const Vector<u8>& data);
 

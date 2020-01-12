@@ -380,6 +380,20 @@ bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
     return true;
 }
 
+bool Fat32FS::does_directory_exist(const Path& path)
+{
+    kprintf("does_directory_exist: path got %s\n", path.to_string().c_str());
+
+    if (path.num_parts() == 0)
+    {
+        // The root always exists
+        return true;
+    }
+
+    FatDirectoryEntry entry;
+    return find_directory(path, entry);
+}
+
 shared_ptr<Vector<u8>> Fat32FS::read_file(CharDirectoryEntry& entry) const
 {
     return read_whole_entry(entry.cluster_idx(), entry.file_size());

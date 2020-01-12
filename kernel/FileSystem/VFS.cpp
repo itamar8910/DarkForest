@@ -46,6 +46,25 @@ bool VFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
     return fs->list_directory(inside_path, res);
 }
 
+bool VFS::does_directory_exist(const Path& path)
+{
+    if(path.num_parts() == 0)
+    {
+        return true;
+    }
+    
+    kprintf("VFS::does_directory_exist %s\n", path.to_string().c_str());
+    Path inside_path("/");
+    FileSystem* fs = get_fs(path, inside_path);
+
+    if(fs == nullptr)
+    {
+        return false;
+    }
+
+    return fs->does_directory_exist(inside_path);
+}
+
 FileSystem* VFS::get_fs(const Path& path, Path& path_inside_fs)
 {
     for(auto* fs : mounted_filesystems) {

@@ -43,3 +43,10 @@ bool DevFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
     (void)res;
     return false;
 }
+
+bool DevFS::does_directory_exist(const Path& path)
+{
+    (void)path;
+    return false;
+}
+

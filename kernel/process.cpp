@@ -11,15 +11,17 @@ u32 g_next_pid;
 
 Process* Process::create(void (*main)(), 
                         String name,
+                        String current_directory,
                         File** descriptors) {
     auto* task = create_kernel_task(main);
-    return new Process(g_next_pid++, task, name, descriptors);
+    return new Process(g_next_pid++, task, name, current_directory, descriptors);
 }
 
-Process::Process(u32 pid, ThreadControlBlock* task, String name, File** descriptors)
+Process::Process(u32 pid, ThreadControlBlock* task, String name, String current_directory, File** descriptors)
     : m_pid(pid),
       m_task(task),
-      m_name(name)
+      m_name(name),
+      m_current_directory(current_directory)
 {
     if(descriptors) {
         for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
@@ -42,7 +44,9 @@ Process::~Process() {
 }
 
 int Process::syscall_open(const String& path) {
-    auto* file = VFS::the().open(Path(path));
+
+
+    auto* file = VFS::the().open(Path(get_full_path(path)));
     if(file == nullptr)
         return -E_NOTFOUND;
     for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
@@ -127,6 +131,7 @@ int Process::syscall_ForkAndExec(ForkArgs* args)
     copy_into_loader_data(userspace_loader_data, args->path, args->argv, args->argc);
     auto* p = Process::create(auxiliary_loader, 
                                 args->name,
+                                m_current_directory, /* child inherits current directory */
                                 m_file_descriptors);
     int pid = p->pid();
     Scheduler::the().add_process(p);
@@ -145,7 +150,6 @@ int Process::syscall_wait(size_t pid)
     return 0;
 }
 
-
 void Process::set_waiter(WaitBlocker* blocker)
 {
     ASSERT(m_waiter==nullptr);
@@ -160,7 +164,7 @@ int Process::syscall_listdir(const String& path, void* dest, size_t* size)
 
 
     Vector<DirectoryEntry> entries;
-    bool rc = VFS::the().list_directory(Path(path), entries);
+    bool rc = VFS::the().list_directory(Path(get_full_path(path)), entries);
     if(!rc)
     {
         kprintf("listdir: not found\n");
@@ -190,3 +194,45 @@ int Process::syscall_listdir(const String& path, void* dest, size_t* size)
     }
     return 0;
 }
+
+int Process::syscall_set_current_directory(const String& path)
+{
+    if (!VFS::the().does_directory_exist(Path(get_full_path(path))))
+    {
+        kprintf("Not setting current directory of %s since it doesn't exist\n", path.c_str());
+        return E_NOTFOUND;
+    }
+
+    set_current_directory(get_full_path(path));
+
+    kprintf("Setting current directory of %s\n", path.c_str());
+
+    return 0;
+}
+
+String Process::get_full_path(const String& path)
+{
+    // TODO: Do this better, perhaps add a get_current_directory call, or that every directory will have a "." file that will represent the directory
+    if (path == String("."))
+    {
+        return m_current_directory;
+    }
+
+    if (path[0] == '/')
+    {
+        return path;
+    }
+
+    if (m_current_directory[m_current_directory.len() - 1] == '/')
+    {
+        return m_current_directory + path;
+    }
+
+    return m_current_directory + String('/') + path;
+}
+
+void Process::set_current_directory(const String& path)
+{
+    m_current_directory = path;
+}
+
