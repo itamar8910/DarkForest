@@ -33,7 +33,7 @@ void Scheduler::tick(RegisterDump& regs) {
 
     #ifdef DBG_SCHEDULER_2
     kprintf("Scheduler::tick()\n");
-    kprintf("current task id: %d\n", m_current_task->id);
+    kprintf("current task id: %d\n", m_current_process->pid());
     #endif
     
     if(m_current_process == nullptr) {
@@ -105,7 +105,7 @@ void Scheduler::try_unblock_tasks() {
         ASSERT(blocker != nullptr);
         if(blocker->can_unblock()) {
             #ifdef DBG_SCHEDULER
-            kprintf("Scheduler: unblocking: %d\n", task->id);
+            kprintf("Scheduler: unblocking: %d\n", process->pid());
             #endif
              process->task().meta_data->state = TaskMetaData::State::Runnable;
             delete process->task().meta_data->blocker;
@@ -138,7 +138,7 @@ void Scheduler::block_current(TaskBlocker* blocker) {
 void Scheduler::print_scheduler_tasks() {
     kprintf("runnable tasks:\n");
     for(auto* process_node = m_runanble_list.head(); process_node != nullptr; process_node = process_node->next) {
-        kprintf("%d,", process_node->val->name());
+        kprintf("%s,", process_node->val->name().c_str());
     }
     kprintf("\nblocked processs:\n");
     for(auto* process_node = m_blocked_list.head(); process_node != nullptr; process_node = process_node->next) {

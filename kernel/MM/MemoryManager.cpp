@@ -104,6 +104,7 @@ bool MemoryManager::is_frame_available(const Frame frame) {
 
 
 VirtualAddress MemoryManager::temp_map(PhysicalAddress addr) {
+    // kprintf("MM:temp_map: 0x%x", addr);
     // kprintf("temp_map: 0x%x\n", (u32)addr);
     ASSERT(!m_tempmap_used);
     auto pte = ensure_pte(TEMPMAP_ADDR, false, false);
@@ -196,7 +197,7 @@ void MemoryManager::disable_page(Frame frame) {
 }
 
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
-    // kprintf("MM: allocate: 0x%x\n", virt_addr);
+    kprintf("MM: allocate: 0x%x\n", virt_addr);
     auto pte = ensure_pte(virt_addr);
     ASSERT(!pte.is_present());
     Err err;

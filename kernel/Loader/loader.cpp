@@ -104,6 +104,7 @@ void load_and_jump_userspace(shared_ptr<Vector<u8>> elf_data_ptr,
          memset((void*)((u32)segment_virtual_address + program_header->size_in_file), 0, (page_index*PAGE_SIZE) - program_header->size_in_file);
    }
 
+   u32 entry = header->entry;
    // NOTE: we have to call force_free
    // becuase we jump to userspace, control call destructor of shared_ptr
    elf_data_ptr.force_free();
@@ -121,8 +122,9 @@ void load_and_jump_userspace(shared_ptr<Vector<u8>> elf_data_ptr,
    size_t* dst_argc_ptr = (size_t*)(user_args_start+8);
    clone_args_into_userspace(*dst_argv, *dst_argc_ptr, argv, argc, (void*)(user_args_start+16));
 
+   kprintf("jump_to_usermode: entry: 0x%x\n", entry);
    // jumpp to entry
-   jump_to_usermode((void (*)())(header->entry), (u32) user_esp);
+   jump_to_usermode((void (*)())(entry), (u32) user_esp);
 }
 
 asm(

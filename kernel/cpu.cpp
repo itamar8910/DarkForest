@@ -209,6 +209,7 @@ void isr_14_handler(RegisterDumpWithErrCode& regs) {
       Scheduler::the().terminate_current();
    } else {
       kprintf("(From kernel)\n");
+      kprintf("process: %s\n", Scheduler::the().current().name().c_str());
       kernel_panic(regs);
    }
 }

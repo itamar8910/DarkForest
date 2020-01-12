@@ -120,6 +120,7 @@ void copy_into_loader_data(UserspaceLoaderData& data, const char* path, char** a
 // int Process::syscall_ForkAndExec(char* path, char* name, char** argv)
 int Process::syscall_ForkAndExec(ForkArgs* args)
 {
+    kprintf("ForkAndExec: %s\n", args->path);
     u32 free_space, num_blocks, num_pages;
     KernelHeapAllocator::the().heap_statistics(free_space, num_blocks, num_pages);
     kprintf("Heap: free: %d, #blocks: %d, #pages: %d\n", free_space, num_blocks, num_pages);
@@ -135,6 +136,7 @@ int Process::syscall_ForkAndExec(ForkArgs* args)
                                 m_file_descriptors);
     int pid = p->pid();
     Scheduler::the().add_process(p);
+    kprintf("################ returning from ForkAndExec");
     return pid;
     
 }
