@@ -10,6 +10,7 @@
 #include "kmalloc.h"
 // #include "string.h"
 
+// #define MM_DBG
 
 static MemoryManager* mm = nullptr;
 
@@ -197,7 +198,9 @@ void MemoryManager::disable_page(Frame frame) {
 }
 
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
+    #ifdef MM_DBG
     kprintf("MM: allocate: 0x%x\n", virt_addr);
+    #endif
     auto pte = ensure_pte(virt_addr);
     ASSERT(!pte.is_present());
     Err err;
@@ -212,7 +215,9 @@ void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, Us
 }
 
 void MemoryManager::deallocate(VirtualAddress virt_addr, bool free_page) {
+    #ifdef MM_DBG
     kprintf("MM: deallocate: 0x%x\n", virt_addr);
+    #endif
     auto pte = ensure_pte(virt_addr);
     ASSERT(pte.is_present());
     if(free_page) {
@@ -308,8 +313,6 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
         // don't copy page tables of kernel space
         // (kernel memory is shared among all tasks)
         if(address_in_kernel_space(pde_idx * PDE_MAP_SIZE)) {
-            kprintf("address in kernel sapce for pde_idx: %d\n", pde_idx);
-            // kprintf("page table addr: 0x%x\n", page_table_addr);
             new_page_tables_addresses[pde_idx] = page_table_addr;
             continue;
         }

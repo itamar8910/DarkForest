@@ -12,26 +12,28 @@
 
 #define USERSPACE_STACK 0xb0000000
 
-static int read_elf_from_path(const String& path, shared_ptr<Vector<u8>>& elf_data, size_t& elf_size)
+static int read_elf_from_path(const String& path, shared_ptr<BigBuffer>& elf_data, size_t& elf_size)
 {
 	File* f = VFS::the().open(Path(path));
    if(f == nullptr) {
       kprintf("elf at path: %s was not found!\n", path.c_str());
       return E_NOTFOUND;
    }
-	elf_data = FileUtils::read_all(*static_cast<CharFile*>(f), elf_size);
+	elf_data = FileUtils::read_all_big(*static_cast<CharFile*>(f), elf_size);
    if(elf_data.get() == nullptr) {
       return E_INVALID;
    }
-   elf_data->set_size(elf_size);
    return 0;
 }
 
 void load_and_jump_userspace(const String& path) {
    kprintf("load_and_jump_userspace: %s\n", path.c_str());
 	size_t elf_size = 0;
-   shared_ptr<Vector<u8>> elf_data;
+   shared_ptr<BigBuffer> elf_data = nullptr;
    int rc = read_elf_from_path(path, elf_data, elf_size);
+
+   // shared_ptr<Vector<u8>> elf_data;
+   // int rc = read_elf_from_path(path, elf_data, elf_size);
    kprintf("rc: %d\n", rc);
    ASSERT(rc == 0);
    ASSERT(elf_data.get() != nullptr);
@@ -42,17 +44,15 @@ void load_and_jump_userspace(const String& path) {
 
 void load_and_jump_userspace(UserspaceLoaderData& data) {
 	size_t elf_size = 0;
-   shared_ptr<Vector<u8>> elf_data;
+   shared_ptr<BigBuffer> elf_data;
    int rc = read_elf_from_path(data.glob_load_path, elf_data, elf_size);
    ASSERT(rc == 0);
    load_and_jump_userspace(elf_data, elf_size, data.argv, data.argc);
 }
 
 static void* allocate_from_buffer(size_t len, void*& current_alloc_buff) {
-   kprintf("allocate_from_buffer with len: %d\n", len);
    void* t = current_alloc_buff;
    current_alloc_buff = (void*)((u32)current_alloc_buff + len);
-   kprintf("current_alloc_buffer res: 0x%x\n", t);
    return t;
 }
 static void clone_args_into_userspace(char**& argv_dst, size_t& argc_dst, char** argv_src, size_t argc_src, void* argv_mem_start)
@@ -70,7 +70,7 @@ static void clone_args_into_userspace(char**& argv_dst, size_t& argc_dst, char**
     }
 }
 
-void load_and_jump_userspace(shared_ptr<Vector<u8>> elf_data_ptr,
+void load_and_jump_userspace(shared_ptr<BigBuffer> elf_data_ptr,
                                 u32 size,
                                 char** argv,
                                 size_t argc)

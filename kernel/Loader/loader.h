@@ -4,6 +4,7 @@
 #include "types/String.h"
 #include "FileSystem/VFS.h"
 #include "shared_ptr.h"
+#include "BigBuffer.h"
 
 struct UserspaceLoaderData
 {
@@ -14,7 +15,7 @@ struct UserspaceLoaderData
 
 void load_and_jump_userspace(UserspaceLoaderData&);
 void load_and_jump_userspace(const String& path);
-void load_and_jump_userspace(shared_ptr<Vector<u8>> elf_data_ptr,
+void load_and_jump_userspace(shared_ptr<BigBuffer> elf_data_ptr,
                                 u32 size,
                                 char** argv=nullptr,
                                 size_t argc=0);

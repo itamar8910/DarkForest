@@ -82,11 +82,9 @@ void HeapAllocator::exapnd_heap(u32 num_pages) {
     puts("Heap: expanding heap\n");
 #endif
     
-    kprintf("before alloacting heap pages\n");
     for(u32 i = 0; i < num_pages; i++) {
         this->allocate_page((void*)((u32)m_current_heap_end + i*PAGE_SIZE));
     }
-    kprintf("after alloacting heap pages\n");
 
     auto new_block = MemBlock::initialize(
         m_current_heap_end,

@@ -4,11 +4,22 @@
 #include "VFS.h"
 #include "errs.h"
 #include "logging.h"
+#include "BigBuffer.h"
 
 shared_ptr<Vector<u8>> FileUtils::read_all(CharFile& f, size_t& size) {
     size = f.size();
-    // TODO: use a BigBuffer here
     shared_ptr<Vector<u8>> buff(new Vector<u8>(size));
+    int res = f.read(size, buff->data());
+    kprintf("res: %d, size: %d\n", res, size);
+    if(res != (int)size) {
+        return nullptr;
+    }
+    return buff;
+}
+
+shared_ptr<BigBuffer> FileUtils::read_all_big(CharFile& f, size_t& size) {
+    size = f.size();
+    auto buff = BigBuffer::allocate(size);
     int res = f.read(size, buff->data());
     kprintf("res: %d, size: %d\n", res, size);
     if(res != (int)size) {
