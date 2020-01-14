@@ -19,7 +19,8 @@ namespace Syscall {
         ForkAndExec=14,
         WAIT=15,
         ListDir=16,
-        SetCurrentDirectory=17
+        SetCurrentDirectory=17,
+        GetCurrentDirectory=18
     };
 
     int invoke(SyscallIdx syscall, u32 arg1=0, u32 arg2=0, u32 arg3=0);

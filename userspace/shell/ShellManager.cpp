@@ -122,7 +122,10 @@ void ShellManager::do_cd(const Vector<String>& cmd_parts)
         return;
     }
 
-    m_current_directory = path;
+    if (std::get_current_directory(m_current_directory) != 0)
+    {
+        printf("GetCurrentDirectory syscall failed :(\n");
+    }
 }
 
 void ShellManager::print_prompt()
