@@ -28,4 +28,6 @@ int wait(size_t pid);
 int list_dir(const String& path, void* dest, size_t* size);
 
 int set_current_directory(const String& path);
+
+int get_current_directory(String& out_path);
 }

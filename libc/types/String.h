@@ -32,6 +32,7 @@ public:
     String substr(int start=0, int end=-1) const;
     int find(const String& pattern, size_t start=0) const;
     Vector<String> split(char delim, size_t capacity=0) const;
+    int find_last_of(char c) const;
 
     String lower() const;
 

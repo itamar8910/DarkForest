@@ -30,10 +30,10 @@ public:
     int syscall_wait(size_t pid);
     int syscall_listdir(const String& path, void* dest, size_t* size);
     int syscall_set_current_directory(const String& path);
+    int syscall_get_current_directory(char* buff, size_t* count);
 
 private:
     String get_full_path(const String& path);
-    void set_current_directory(const String& path);
 
 private:
     u32 m_pid;

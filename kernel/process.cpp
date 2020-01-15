@@ -204,9 +204,28 @@ int Process::syscall_set_current_directory(const String& path)
         return E_NOTFOUND;
     }
 
-    set_current_directory(get_full_path(path));
+    if (path.find_last_of('/') == (int)(path.len() - 1))
+    {
+        kprintf("Setting directory with path ending with / is not supported yet\n");
+        return E_INVALID;
+    }
 
-    kprintf("Setting current directory of %s\n", path.c_str());
+    m_current_directory = get_full_path(path);
+
+    kprintf("Set current directory of %s\n", m_current_directory.c_str());
+
+    return 0;
+}
+
+int Process::syscall_get_current_directory(char* buff, size_t* count)
+{
+    if (*count < m_current_directory.len())
+    {
+        *count = m_current_directory.len();
+        return E_TOO_SMALL;
+    }
+    
+    memcpy(buff, m_current_directory.c_str(), *count);
 
     return 0;
 }
@@ -217,6 +236,18 @@ String Process::get_full_path(const String& path)
     if (path == String("."))
     {
         return m_current_directory;
+    }
+
+    if (path == String(".."))
+    {
+        int last_delimiter_pos = m_current_directory.find_last_of('/');
+
+        if (last_delimiter_pos == 0)
+        {
+            return '/';
+        }
+
+        return m_current_directory.substr(0, last_delimiter_pos);
     }
 
     if (path[0] == '/')
@@ -230,10 +261,5 @@ String Process::get_full_path(const String& path)
     }
 
     return m_current_directory + String('/') + path;
-}
-
-void Process::set_current_directory(const String& path)
-{
-    m_current_directory = path;
 }
 

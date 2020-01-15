@@ -1,3 +1,5 @@
+#include "types/vector.h"
+#include "kernel/errs.h"
 #include "unistd.h"
 #include "syscalls.h"
 #include "shared_ptr.h"
@@ -73,6 +75,29 @@ int list_dir(const String& path, void* dest, size_t* size)
 int set_current_directory(const String& path)
 {
     return Syscall::invoke(Syscall::SetCurrentDirectory, (u32) path.c_str());
+}
+
+int get_current_directory(String& out_path)
+{
+    size_t required_count = 0;
+    int syscall_return_code = 0;
+
+    syscall_return_code = Syscall::invoke(Syscall::GetCurrentDirectory, (u32) nullptr, (u32) &required_count);
+    if (syscall_return_code != E_TOO_SMALL)
+    {
+        return syscall_return_code;
+    }
+
+    Vector<char> current_directory_vec(required_count);
+    syscall_return_code = Syscall::invoke(Syscall::GetCurrentDirectory, (u32) current_directory_vec.data(), (u32) &required_count);
+    if (syscall_return_code != 0)
+    {
+        return syscall_return_code;
+    }
+    
+    out_path = String(current_directory_vec.data(), required_count);
+
+    return syscall_return_code;
 }
 
 }

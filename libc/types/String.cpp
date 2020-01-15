@@ -137,6 +137,19 @@ Vector<String> String::split(char delim, size_t capacity) const {
     return ret;
 }
 
+int String::find_last_of(char c) const
+{
+    for (int i = len() - 1; i >= 0; --i)
+    {
+        if (m_chars[i] == c)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 String String::operator+(const String& other) const {
     Vector<char> ret(len() + other.len() + 1);
     ret.concat(m_chars, len());
