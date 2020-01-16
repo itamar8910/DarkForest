@@ -7,6 +7,7 @@
 #include "FileSystem/path.h"
 #include "FileSystem/CharFileSystem.h"
 #include "constants.h"
+#include "bits.h"
 
 struct [[gnu::packed]] Fat32Extension
 {
@@ -59,7 +60,7 @@ enum class FatDirAttr : u8
     ATTR_LONG_NAME = ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID,
 };
 
-struct [[gnu::packed]] FatDirectoryEntry
+struct [[gnu::packed]] FatRawDirectoryEntry
 {
     char name[11];
     u8 attr;
@@ -74,64 +75,45 @@ struct [[gnu::packed]] FatDirectoryEntry
     u16 ClusterIdxLow;
     u32 FileSize;
 
-    u32 cluster_idx() const
-    {
-        return (
-                static_cast<u32>(ClusterIdxHigh)<<16) 
-                | (static_cast<u32>(ClusterIdxLow) & 0xffff
-                );
-    }
-
-    String name_lower() const
-    {
-        String name_str(name, 11);
-        // name[0..7] = base name
-        // name[8..10] = extension
-        int space_idx = name_str.find(" ");
-        String basename = name_str.substr(0, (space_idx == -1) ? 8 : space_idx);
-        String extension = name_str.substr(8);
-        // String res = basename + String(".") + extension;
-        String res = basename;
-        if(extension[0] != ' ') // if extension is not empty
-        {
-            res = res + String(".") + extension;
-        }
-        res = res.lower();
-        return res;
-    }
-
-    bool is_long_name() {
-        return attr == static_cast<u8>(FatDirAttr::ATTR_LONG_NAME);
-    }
-
-    bool is_directory()
-    {
-        return attr == static_cast<u8>(FatDirAttr::ATTR_DIRECTORY);
-    }
-    
-    bool is_fake_direcotry()
-    {
-        return (name_lower() == ".") || (name_lower() == "..");
-    }
-
-    DirectoryEntry::Type get_dir_entry_type()
-    {
-        return is_directory() ? DirectoryEntry::Type::Directory : DirectoryEntry::Type::File;
-    }
-
-    CharDirectoryEntry to_char_directory_entry(const Path& path)
-    {
-        return CharDirectoryEntry(
-            path, 
-            get_dir_entry_type(),
-            FileSize,
-            cluster_idx()
-        );
-    }
+    u32 cluster_idx() const;
+    String name_lower() const;
+    bool is_long_name() const;
+    bool is_directory() const;
+    bool is_fake_direcotry() const;
+    DirectoryEntry::Type get_dir_entry_type() const;
 
 };
-static_assert(sizeof(FatDirectoryEntry)==32);
+static_assert(sizeof(FatRawDirectoryEntry)==32);
 
+struct [[gnu::packed]] FatLongDirectoryEntry
+{
+    u8 ord;
+    char name1[10];
+    u8 attrs;
+    u8 type;
+    u8 chksum;
+    char name2[12];
+    u16 _unused;
+    char name3[4];
+
+    String get_name() const;
+    bool is_last() const;
+
+};
+static_assert(sizeof(FatLongDirectoryEntry)==32);
+
+struct FatDirectoryEntry
+{
+    String name;
+    DirectoryEntry::Type type;
+    size_t size;
+    u32 cluster_idx; 
+
+    CharDirectoryEntry to_char_directory_entry(const Path& path) const;
+    explicit FatDirectoryEntry(const CharDirectoryEntry& cde);
+    FatDirectoryEntry();
+    explicit FatDirectoryEntry(String name, DirectoryEntry::Type type, size_t size, u32 cluster_idx);
+};
 
 class Fat32FS : public CharFileSystem
 {
@@ -147,7 +129,6 @@ public:
     bool read_file(const Path& path, u8* data, u32& size) const;
     int write_file(const Path& path, const Vector<u8>& data);
 
-    // virtual shared_ptr<Vector<u8>> read_file(CharDirectoryEntry& entry) const override;
     virtual bool read_file(CharDirectoryEntry& entry, u8* data) const override;
     virtual int write_file(CharDirectoryEntry& entry, const Vector<u8>& data) override;
 
@@ -172,15 +153,14 @@ private:
 
     bool read_whole_entry(const FatDirectoryEntry& entry, u8* data) const;
 
-    int write_to_existing_file(CharDirectoryEntry& entry, const Vector<u8>& data);
+    int write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data);
 
     bool find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type type) const;
     bool find_file(const Path& path, FatDirectoryEntry& res) const;
     bool find_directory(const Path& path, FatDirectoryEntry& res) const;
 
+    FatDirectoryEntry create_entry_from(u8* buff, const FatRawDirectoryEntry* raw_entry) const;
 
-
-    
     u32 FAT_sector {0}; // the sector in which the FAT resides
     u32 FAT_size_in_sectors {0};
     u32 data_start_sector {0};

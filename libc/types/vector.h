@@ -149,6 +149,12 @@ public:
         m_size = size;
     }
 
+    Vector operator+(const Vector& other) const
+    {
+        Vector copy(*this);
+        copy.concat(other.data(), other.size());
+        return copy;
+    }
 
     ~Vector() {
         #ifdef VECTOR_DBG

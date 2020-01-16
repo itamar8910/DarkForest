@@ -8,6 +8,8 @@ mkdir -p mnt/a
 echo "sometext" > mnt/a/myfile.txt
 mkdir -p mnt/a/subdir
 echo "akjlfhasjkrfhsakjlfhaslfa" > mnt/a/subdir/another.dat
+echo "1234" > mnt/a/averylongfilename123.blah
+echo "abcd" > mnt/a/NameWithCaps.blah
 mkdir -p mnt/dir2
 echo "123" > mnt/dir2/aa.txt
 

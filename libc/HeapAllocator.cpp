@@ -75,12 +75,7 @@ find_block:
 }
 
 void HeapAllocator::exapnd_heap(u32 num_pages) {
-#ifdef KERNEL
-    kprintf("KMalloc:: expanding heap by %d pages\n", num_pages);
-#endif
-#ifdef USERSPACE
-    puts("Heap: expanding heap\n");
-#endif
+    kprintf("Malloc:: expanding heap by %d pages\n", num_pages);
     
     for(u32 i = 0; i < num_pages; i++) {
         this->allocate_page((void*)((u32)m_current_heap_end + i*PAGE_SIZE));

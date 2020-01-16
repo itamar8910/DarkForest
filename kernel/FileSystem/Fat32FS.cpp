@@ -143,13 +143,14 @@ Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
     {
         u8 buff[sectors_per_cluster * SECTOR_SIZE_BYTES];
         read_cluster(current_cluster, buff);
-        // print_hexdump(cluster_data->data(), cluster_data->size());
-        FatDirectoryEntry* current = (FatDirectoryEntry*) buff;
+        FatRawDirectoryEntry* current = reinterpret_cast<FatRawDirectoryEntry*>(buff);
         while(!done)
         {
-            // skip long names for now
             if(current->is_long_name())
             {
+                // continue to the short directory entries
+                // and then traverse back to its (possibly multiple)
+                // long directory entries
                 current++;
                 continue;
             }
@@ -162,7 +163,7 @@ Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
                 done = true;
                 break;
             }
-            entries.append(*current);
+            entries.append(create_entry_from(buff, current));
             current++;
         }
         if(done)
@@ -205,7 +206,7 @@ bool Fat32FS::read_whole_entry(u32 start_cluster, u32 size, u8* data) const
 
 bool Fat32FS::read_whole_entry(const FatDirectoryEntry& entry, u8* data) const
 {
-    return read_whole_entry(entry.cluster_idx(), entry.FileSize, data);
+    return read_whole_entry(entry.cluster_idx, entry.size, data);
 }
 
 bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type target_type) const
@@ -225,19 +226,19 @@ bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Typ
             #ifdef FAT32_DBG
             kprintf("trying: %s\n", entry.name_lower().c_str());
             #endif
-            if(entry.name_lower() == part)
+            if(entry.name == part)
             {
                 #ifdef FAT32_DBG
                 kprintf("match!\n");
                 #endif
-                if(entry.is_directory())
+                if(entry.type == DirectoryEntry::Type::Directory)
                 {
                     if((target_type == DirectoryEntry::Type::File) && (i == path.num_parts() -1))
                     {
                         // can't read a directory
                         return false;
                     }
-                    dir_cluster = entry.cluster_idx();
+                    dir_cluster = entry.cluster_idx;
                     if((target_type == DirectoryEntry::Type::Directory) && (i == path.num_parts() -1))
                     {
                         res = entry;
@@ -275,7 +276,7 @@ bool Fat32FS::find_file(const Path& path, FatDirectoryEntry& res) const
     kprintf("Fat32: find_file: %s\n", path.to_string().c_str());
     bool rc = find(path, res, DirectoryEntry::Type::File);
     kprintf("rc: %d\n", rc);
-    kprintf("sector: %d\n", cluster_to_sector(res.cluster_idx()));
+    kprintf("sector: %d\n", cluster_to_sector(res.cluster_idx));
     return rc;
 }
 
@@ -292,7 +293,7 @@ bool Fat32FS::read_file(const Path& path, u8* data, u32& size) const
     {
         return false;
     }
-    size = res.FileSize;
+    size = res.size;
     return read_whole_entry(res, data);
 }
 
@@ -304,26 +305,24 @@ int Fat32FS::write_file(const Path& path, const Vector<u8>& data)
     kprintf("a1\n");
     if(!found)
     {
-        kprintf("a3\n");
         // TODO: see if parent directory exists
         // if it does, add a file to the directory
         NOT_IMPLEMENTED();
     }
     kprintf("a2\n");
-    auto char_dir_entry = res.to_char_directory_entry(path);
-    return write_to_existing_file(char_dir_entry, data);
+    // auto char_dir_entry = res.to_char_directory_entry(path);
+    return write_to_existing_file(res, data);
 }
 
-int Fat32FS::write_to_existing_file(CharDirectoryEntry& entry, const Vector<u8>& data)
+int Fat32FS::write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data)
 {
     if((data.size() % ATADisk::SECTOR_SIZE_BYTES) != 0)
     {
         kprintf("Fat32::write data size is not a multiple of sector size\n");
         return E_INVALID_SIZE;
     }
-    u32 current_cluster = entry.cluster_idx();
+    u32 current_cluster = entry.cluster_idx;
     const size_t num_clusters = Math::div_ceil(data.size(), (sectors_per_cluster * ATADisk::SECTOR_SIZE_BYTES));
-    kprintf("b1\n");
     for(size_t cluster_i = 0; cluster_i < num_clusters; ++cluster_i)
     {
         if(current_cluster == FAT_ENTRY_EOF)
@@ -354,7 +353,7 @@ File* Fat32FS::open(const Path& path) {
         path,
         Fat32FS::the(),
         res.to_char_directory_entry(path),
-        res.FileSize
+        res.size
     );
 }
 
@@ -372,12 +371,12 @@ bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
         {
             return false;
         }
-        cluster = entry.cluster_idx();
+        cluster = entry.cluster_idx;
     }
     auto dir_entries = read_directory(cluster);
     for(auto& e : dir_entries)
     {
-        res.append(DirectoryEntry(Path(e.name_lower()), (e.is_directory() ? DirectoryEntry::Type::Directory : DirectoryEntry::Type::File)));
+        res.append(DirectoryEntry(Path(e.name), e.type));
     }
     return true;
 }
@@ -404,6 +403,142 @@ bool Fat32FS::read_file(CharDirectoryEntry& entry, u8* data) const
 
 int Fat32FS::write_file(CharDirectoryEntry& entry, const Vector<u8>& data)
 {
-    return write_to_existing_file(entry, data);
+    auto fat_dirent = FatDirectoryEntry(entry);
+    return write_to_existing_file(fat_dirent, data);
 }
 
+
+String FatLongDirectoryEntry::get_name() const
+{
+    auto unicode_to_ascii = [](const char* arr, size_t len)
+    {
+        Vector<char> chars;
+        ASSERT(len%2 == 0);
+        for(size_t i = 0; i < len; i+=2)
+        {
+            if(
+                ((u8)arr[i] == 0xff)
+                && ((u8)arr[i+1] == 0xff)
+            ){
+                continue;
+            }
+            ASSERT(get_bit(arr[i], 7)==0); // assert ASCII
+            ASSERT(arr[i+1] == 0); // assert ASCII
+            chars.append(arr[i]);
+        }
+        return chars;
+
+    };
+
+    Vector<char> chars = unicode_to_ascii(name1, sizeof(name1))
+                            + unicode_to_ascii(name2, sizeof(name2)) 
+                            + unicode_to_ascii(name3, sizeof(name3));
+    chars.append(0);
+    return String(chars.data());
+}
+
+String FatRawDirectoryEntry::name_lower() const
+{
+    String name_str(name, 11);
+    // name[0..7] = base name
+    // name[8..10] = extension
+    int space_idx = name_str.find(" ");
+    String basename = name_str.substr(0, (space_idx == -1) ? 8 : space_idx);
+    String extension = name_str.substr(8);
+    // String res = basename + String(".") + extension;
+    String res = basename;
+    if(extension[0] != ' ') // if extension is not empty
+    {
+        res = res + String(".") + extension;
+    }
+    res = res.lower();
+    return res;
+}
+
+u32 FatRawDirectoryEntry::cluster_idx() const
+{
+    return (
+            static_cast<u32>(ClusterIdxHigh)<<16) 
+            | (static_cast<u32>(ClusterIdxLow) & 0xffff
+            );
+}
+
+bool FatRawDirectoryEntry::is_long_name() const
+{
+    return attr == static_cast<u8>(FatDirAttr::ATTR_LONG_NAME);
+}
+
+bool FatRawDirectoryEntry::is_directory() const
+{
+    return attr == static_cast<u8>(FatDirAttr::ATTR_DIRECTORY);
+}
+
+bool FatRawDirectoryEntry::is_fake_direcotry() const
+{
+    return (name_lower() == ".") || (name_lower() == "..");
+} 
+DirectoryEntry::Type FatRawDirectoryEntry::get_dir_entry_type() const
+{
+    return is_directory() ? DirectoryEntry::Type::Directory : DirectoryEntry::Type::File;
+}
+
+CharDirectoryEntry FatDirectoryEntry::to_char_directory_entry(const Path& path) const
+{
+    return CharDirectoryEntry(
+        path, 
+        type,
+        size,
+        cluster_idx
+    );
+}
+
+FatDirectoryEntry Fat32FS::create_entry_from(u8* buff, const FatRawDirectoryEntry* raw_entry) const
+{
+    const FatLongDirectoryEntry* current = reinterpret_cast<const FatLongDirectoryEntry*>(raw_entry - 1);
+    String name;
+    for(;  ;current -= 1)
+    {
+        ASSERT((void*)current >= (void*)buff);
+        kprintf("a1\n");
+        name = name + current->get_name(); 
+        if(current->is_last())
+            break;
+    }
+    kprintf("full dirent name: %s\n", name.c_str());
+    return FatDirectoryEntry
+    {
+        name,
+        raw_entry->get_dir_entry_type(),
+        raw_entry->FileSize,
+        raw_entry->cluster_idx()
+    };
+}
+
+FatDirectoryEntry::FatDirectoryEntry(const CharDirectoryEntry& cde)
+: name(cde.path().base_name()),
+  type(cde.type()),
+  size(cde.file_size()),
+  cluster_idx(cde.cluster_idx())
+{
+}
+
+FatDirectoryEntry::FatDirectoryEntry()
+: name(""),
+  type(DirectoryEntry::Type::File),
+  size(0),
+  cluster_idx(0)
+  {}
+
+ FatDirectoryEntry::FatDirectoryEntry(String name, DirectoryEntry::Type type, size_t size, u32 cluster_idx)
+    : name(name),
+      type(type),
+      size(size),
+      cluster_idx(cluster_idx)
+{
+}
+
+bool FatLongDirectoryEntry::is_last() const
+{
+    constexpr u8 LAST_LONG_ENTRY = 0x40;
+    return (ord & LAST_LONG_ENTRY) != 0;
+}

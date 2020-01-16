@@ -88,3 +88,9 @@ String Path::to_string() const
     }
     return res;
 }
+
+String Path::base_name() const
+{
+    ASSERT(num_parts() != 0);
+    return m_parts[m_parts.size()-1];
+}

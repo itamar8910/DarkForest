@@ -31,6 +31,7 @@ public:
     PathType type_from_string(const String& path) const;
 
     String to_string() const;
+    String base_name() const;
 
 private:
     Vector<String> m_parts;
