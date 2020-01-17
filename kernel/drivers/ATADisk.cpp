@@ -8,6 +8,8 @@
 #include "bits.h"
 #include "types/vector.h"
 
+// #define ATA_DISK_DBG
+
 namespace ATADisk{
     // static struct ata_device ata_primary_master   = {.io_base = 0x1F0, .control = 0x3F6, .slave = 0};
     constexpr u16 IO_BASE_PRIMARY = 0x1f0;
@@ -176,9 +178,19 @@ namespace ATADisk{
         IO::outb(IO_BASE_PRIMARY + REG_LBA_HIGH, (u8)(start_sector>>16));
     }
 
+    static void sanity_sector_idx(u32 start, u32 count)
+    {
+        constexpr u32 MAX_SECTOR = 200000;
+        ASSERT(start + count < MAX_SECTOR);
+    }
+
     void read_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, u8* buff)
     {
+        #ifdef ATA_DISK_DBG
+        kprintf("read sector: %d\n", start_sector);
+        #endif
         ASSERT(drive_type==DriveType::Primary);
+        sanity_sector_idx(start_sector, num_sectors);
         select_io_target(start_sector, num_sectors, drive_type);
 
         IO::outb(IO_BASE_PRIMARY + REG_COMMAND, COMMAND_READ_SECTORS);
@@ -198,7 +210,11 @@ namespace ATADisk{
 
     void write_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, const u8* buff)
     {
+        #ifdef ATA_DISK_DBG
+        kprintf("write sector: %d\n", start_sector);
+        #endif
         ASSERT(drive_type==DriveType::Primary);
+        sanity_sector_idx(start_sector, num_sectors);
         select_io_target(start_sector, num_sectors, drive_type);
 
         IO::outb(IO_BASE_PRIMARY + REG_COMMAND, COMMAND_WRITE_SECTORS);
