@@ -90,7 +90,7 @@ bool String::startswith(const String& other) const {
 }
 
 String String::substr(int start, int end) const {
-    if(end == -1) {
+    if((end == -1) || (static_cast<size_t>(end)>len())) {
         end = len();
     }
     ASSERT(start>=0);

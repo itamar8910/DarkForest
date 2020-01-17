@@ -31,7 +31,8 @@ public:
     PathType type_from_string(const String& path) const;
 
     String to_string() const;
-    String base_name() const;
+    String base_name() const; // returns last part
+    Path dirname() const; // returns all but last part
 
 private:
     Vector<String> m_parts;

@@ -88,17 +88,25 @@ static_assert(sizeof(FatRawDirectoryEntry)==32);
 
 struct [[gnu::packed]] FatLongDirectoryEntry
 {
+    static constexpr u8 LAST_LONG_ENTRY = 0x40;
+    static constexpr u8 NAME_LEN_IN_ENTRY = 13;
+    static constexpr size_t NAME1_NUM_CHARS = 5;
+    static constexpr size_t NAME2_NUM_CHARS = 6;
+    static constexpr size_t NAME3_NUM_CHARS = 2;
+
     u8 ord;
-    char name1[10];
+    char name1[NAME1_NUM_CHARS*2];
     u8 attrs;
     u8 type;
     u8 chksum;
-    char name2[12];
+    char name2[NAME2_NUM_CHARS*2];
     u16 _unused;
-    char name3[4];
+    char name3[NAME3_NUM_CHARS*2];
 
     String get_name() const;
     bool is_last() const;
+
+
 
 };
 static_assert(sizeof(FatLongDirectoryEntry)==32);
@@ -133,9 +141,10 @@ public:
     virtual bool read_file(CharDirectoryEntry& entry, u8* data) const override;
     virtual int write_file(CharDirectoryEntry& entry, const Vector<u8>& data) override;
 
-    // virtual bool create_file(const Path& path) override;
+    virtual bool create_file(const Path& path) override;
 
     virtual u32 cluster_size() const override;
+    
 
 private:
     Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension);
@@ -160,6 +169,9 @@ private:
     bool find_directory(const Path& path, FatDirectoryEntry& res) const;
 
     FatDirectoryEntry create_entry_from(u8* buff, const FatRawDirectoryEntry* raw_entry) const;
+
+    u32 find_free_cluster() const;
+    void update_FAT(u32 cluster_idx, u32 value);
 
 
     u32 FAT_sector {0}; // the sector in which the FAT resides

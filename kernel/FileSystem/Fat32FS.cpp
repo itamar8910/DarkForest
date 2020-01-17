@@ -20,6 +20,16 @@ void Fat32FS::initialize()
     Fat32Extension* extension = (Fat32Extension*) boot_sector->extended_section;
     s_the = new Fat32FS(*boot_sector, *extension);
 
+    // test file creation
+    the().create_file(Path("/a/newfile2.txt"));
+    kprintf("added file\n");
+    Vector<DirectoryEntry> entries;
+    the().list_directory(Path("/a"), entries);
+    for(auto& e  : entries)
+    {
+        kprintf("%s\n", e.path().to_string().c_str());
+    }
+
     // test writing
     // Vector<u8> buff2(ATADisk::SECTOR_SIZE_BYTES);
     // buff2.set_size(ATADisk::SECTOR_SIZE_BYTES);
@@ -49,6 +59,7 @@ Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
     data_start_sector = FAT_sector + FAT_size_in_sectors*2;
     sectors_per_cluster = boot_sector.sectors_per_cluster;
     root_cluster = extension.root_cluster;
+    kprintf("FAT size in sectors: %d\n", FAT_size_in_sectors);
 
     #ifdef FAT32_DBG
     kprintf("OEM: %s\n", boot_sector.oem_name);
@@ -100,12 +111,13 @@ u32 Fat32FS::entry_in_fat(u32 cluster) const
 {
     u8 buff[ATADisk::SECTOR_SIZE_BYTES] = {0};
     u32 sector_idx = cluster / (bytes_per_sector / sizeof(u32));
-    u32 entry_idx_in_sector = cluster % (bytes_per_sector / sizeof(u32));
+    ASSERT(sector_idx < FAT_size_in_sectors);
+
     ATADisk::read_sectors(FAT_sector + sector_idx, 1, ATADisk::DriveType::Primary, buff);
+
     u32* entries = (u32*) buff;
+    u32 entry_idx_in_sector = cluster % (bytes_per_sector / sizeof(u32));
     u32 val = entries[entry_idx_in_sector];
-    // kprintf("FAT:\n");
-    // print_hexdump(buff, ATADisk::SECTOR_SIZE_BYTES);
     return val;
 }
 
@@ -175,7 +187,7 @@ bool Fat32FS::read_whole_entry(u32 start_cluster, u8* data) const
     #ifdef FAT32_DBG
     kprintf("read cluster: %d\n", start_cluster);
     #endif
-    kprintf("read whole entry: %d\n", start_cluster);
+    // kprintf("read whole entry: %d\n", start_cluster);
     // round size up to sector size
     u32 cluster_size = this->cluster_size();
     u32 current_cluster = start_cluster;
@@ -556,11 +568,167 @@ FatDirectoryEntry::FatDirectoryEntry()
 
 bool FatLongDirectoryEntry::is_last() const
 {
-    constexpr u8 LAST_LONG_ENTRY = 0x40;
     return (ord & LAST_LONG_ENTRY) != 0;
 }
 
 u32 Fat32FS::cluster_size() const
 {
     return SECTOR_SIZE_BYTES * sectors_per_cluster;
+}
+
+bool Fat32FS::create_file(const Path& path) 
+{
+    kprintf("Fat32::create file: %s\n", path.to_string().c_str());
+    Path dirname = path.dirname();
+    kprintf("create_file: parent directory: %s", dirname.to_string().c_str());
+    FatDirectoryEntry res;
+    bool rc = find_directory(dirname, res);
+    if(!rc)
+    {
+        kprintf("create_file: parent directory not found\n");
+        return false;
+    }
+    
+    kprintf("directory cluster idx: %d\n", res.cluster_idx);
+    
+    // traverse directory to find empty spot
+
+    u32 cluster_with_free_space = 0;
+    u32 offset_in_cluster = 0;
+
+    u32 current_cluster = res.cluster_idx;
+    while(true)
+    {
+        shared_ptr<BigBuffer> buff = BigBuffer::allocate(cluster_size());
+        read_cluster(current_cluster, buff->data());
+        FatRawDirectoryEntry* current = reinterpret_cast<FatRawDirectoryEntry*>(buff->data());
+        bool found = false;
+        while(
+            reinterpret_cast<u8*>(current) < (reinterpret_cast<u8*>(buff->data()) + buff->size())
+        )
+        {
+            if(current->name[0] == 0)
+            {
+                found = true;
+                cluster_with_free_space = current_cluster;
+                offset_in_cluster = reinterpret_cast<u32>(current) - reinterpret_cast<u32>(buff->data());
+                break;
+            }
+            current++;
+        }
+        if(found)
+            break;
+
+        u32 next_cluster = entry_in_fat(current_cluster);
+        if(next_cluster >= FAT_ENTRY_EOF)
+        {
+            // TODO: we need to add a cluster to the directory
+            NOT_IMPLEMENTED();
+            break;
+        }
+        current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
+    }
+    ASSERT(cluster_with_free_space != 0);
+
+    u32 first_cluster_of_file = find_free_cluster();
+    ASSERT(first_cluster_of_file != 0);
+
+    const String basename = path.base_name();
+    size_t num_long_entries = Math::div_ceil(basename.len(), FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
+    size_t num_entries_left_in_cluster = (cluster_size() - offset_in_cluster) / sizeof(u32);
+    if(num_long_entries + 1 > num_entries_left_in_cluster)
+    {
+        // TODO: we need to allocate an additional cluster in this case
+        NOT_IMPLEMENTED();
+    }
+    shared_ptr<BigBuffer> buff = BigBuffer::allocate(cluster_size());
+    read_cluster(cluster_with_free_space, buff->data());
+    for(size_t long_entry_i = 0; long_entry_i < num_long_entries; ++long_entry_i)
+    {
+        FatLongDirectoryEntry long_entry = {};
+        // TODO: extract into method FatLongDirectoryEntry::from_name
+        long_entry.ord = num_long_entries - long_entry_i;
+        if(long_entry_i == num_long_entries-1)
+            long_entry.ord |= FatLongDirectoryEntry::LAST_LONG_ENTRY;
+        
+        String current_part_str = basename.substr(long_entry_i*FatLongDirectoryEntry::NAME_LEN_IN_ENTRY, (long_entry_i+1)*FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
+        Vector<char> current_part(current_part_str.c_str(), current_part_str.len());
+        print_hexdump(reinterpret_cast<u8*>(current_part.data()), FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
+        for(size_t i = current_part_str.len(); i < FatLongDirectoryEntry::NAME_LEN_IN_ENTRY; ++i)
+        {
+            current_part.append(0);
+        }
+        print_hexdump(reinterpret_cast<u8*>(current_part.data()), FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
+        ASSERT(current_part.size() == FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
+
+        ascii_to_unicode(long_entry.name1, current_part.data(), FatLongDirectoryEntry::NAME1_NUM_CHARS); 
+        ascii_to_unicode(long_entry.name2, current_part.data()+FatLongDirectoryEntry::NAME1_NUM_CHARS, FatLongDirectoryEntry::NAME2_NUM_CHARS); 
+        ascii_to_unicode(long_entry.name3, current_part.data()+FatLongDirectoryEntry::NAME1_NUM_CHARS + FatLongDirectoryEntry::NAME2_NUM_CHARS, FatLongDirectoryEntry::NAME3_NUM_CHARS); 
+        long_entry.attrs = static_cast<u8>(FatDirAttr::ATTR_LONG_NAME);
+        long_entry.type = 0;
+        long_entry.chksum = 0; // TODO
+        long_entry._unused = 0;
+
+        print_hexdump(reinterpret_cast<const u8*>(long_entry.name1), FatLongDirectoryEntry::NAME1_NUM_CHARS);
+
+        memcpy(buff->data() + offset_in_cluster + (num_long_entries-1-long_entry_i)*sizeof(FatLongDirectoryEntry), reinterpret_cast<void*>(&long_entry), sizeof(FatLongDirectoryEntry));
+    }
+    FatRawDirectoryEntry raw_entry = {};
+    memcpy(raw_entry.name, basename.c_str(), Math::min(basename.len(), FatLongDirectoryEntry::NAME_LEN_IN_ENTRY));
+    raw_entry.attr = 0;
+    raw_entry.NTRes = 0;
+    raw_entry.CreateTimeTenth = 0;
+    raw_entry.CreateTime = 0;
+    raw_entry.CreateDate = 0;
+    raw_entry.LastAccessDate = 0;
+    raw_entry.ClusterIdxHigh = (first_cluster_of_file >> 16) & 0xffff;
+    raw_entry.WriteTime = 0;
+    raw_entry.WriteDate = 0;
+    raw_entry.ClusterIdxLow = first_cluster_of_file & 0xffff;
+    raw_entry.FileSize = 0;
+
+    memcpy(buff->data() + offset_in_cluster + num_long_entries*sizeof(FatLongDirectoryEntry), reinterpret_cast<void*>(&raw_entry), sizeof(FatRawDirectoryEntry));
+
+    // update parent directory
+    write_cluster(cluster_with_free_space, buff->data());
+    // updae FAT
+    update_FAT(cluster_with_free_space, FAT_ENTRY_EOF);
+
+    return true; 
+}
+
+u32 Fat32FS::find_free_cluster() const
+{
+    u8 buff[ATADisk::SECTOR_SIZE_BYTES] = {0};
+    const size_t entries_per_fat_sector = SECTOR_SIZE_BYTES/sizeof(u32);
+    for(size_t i = 0; i < FAT_size_in_sectors; ++i)
+    {
+        ATADisk::read_sectors(FAT_sector + i, 1, ATADisk::DriveType::Primary, buff);
+        u32* entries = (u32*) buff;
+        for(size_t j = 0; j < entries_per_fat_sector; ++j)
+        {
+            if(entries[j] == 0)
+            {
+                return (i*entries_per_fat_sector) + j;
+            }
+        }
+
+    }
+    // we ran out of space in the FAT
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+void Fat32FS::update_FAT(u32 cluster_idx, u32 value)
+{
+    const size_t entries_per_fat_sector = SECTOR_SIZE_BYTES/sizeof(u32);
+    size_t fat_sector_i = cluster_idx / entries_per_fat_sector;
+    size_t entry_index_in_sector = cluster_idx % entries_per_fat_sector;
+
+    u8 buff[ATADisk::SECTOR_SIZE_BYTES] = {0};
+    ATADisk::read_sectors(FAT_sector + fat_sector_i, 1, ATADisk::DriveType::Primary, buff);
+    u32* entries = (u32*) buff;
+
+    entries[entry_index_in_sector] = value;
+    ATADisk::write_sectors(FAT_sector + fat_sector_i, 1, ATADisk::DriveType::Primary, buff);
 }

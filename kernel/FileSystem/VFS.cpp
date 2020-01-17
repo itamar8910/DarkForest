@@ -79,3 +79,10 @@ FileSystem* VFS::get_fs(const Path& path, Path& path_inside_fs)
     }
     return nullptr;
 }
+
+
+bool VFS::create_file(const Path& path)
+{
+    (void)path;
+    NOT_IMPLEMENTED();
+}

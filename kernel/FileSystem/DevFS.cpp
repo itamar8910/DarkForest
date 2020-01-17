@@ -50,3 +50,9 @@ bool DevFS::does_directory_exist(const Path& path)
     return false;
 }
 
+bool DevFS::create_file(const Path& path) 
+{
+    (void)path;
+    NOT_IMPLEMENTED();
+}
+

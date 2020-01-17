@@ -94,3 +94,9 @@ String Path::base_name() const
     ASSERT(num_parts() != 0);
     return m_parts[m_parts.size()-1];
 }
+
+Path Path::dirname() const
+{
+    ASSERT(num_parts() >= 2);
+    return Path(m_parts.range(0, m_parts.size() - 1), m_type);
+}

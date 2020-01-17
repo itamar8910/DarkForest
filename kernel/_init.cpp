@@ -88,6 +88,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	VgaTTY::the().write("Initializing File Systems...\n");
 	DevFS::initiailize();
 	Fat32FS::initialize();
+	// cpu_hang();
 
 
 	init_VFS();

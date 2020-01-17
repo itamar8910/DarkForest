@@ -7,6 +7,8 @@
 
 int CharFile::read(size_t count, void* buf) {
     kprintf("charfile read: count: %d\n", count);
+    if(count == 0)
+        return 0;
     // NOTE: we reading the entire file even though
     // the request could be for only a small chunk of it
     auto buffer = BigBuffer::allocate(Math::round_up(m_size, m_fs.cluster_size()));

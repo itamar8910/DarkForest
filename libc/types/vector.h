@@ -130,7 +130,7 @@ public:
 
     }
 
-    Vector<T> range(size_t start, size_t end)
+    Vector<T> range(size_t start, size_t end) const
     {
         Vector<T> vec;
         for(size_t i = start; i < end; ++i) {

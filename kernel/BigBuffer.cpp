@@ -5,6 +5,7 @@
 
 shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
 {
+    ASSERT(size>0);
     kprintf("BigBuffer::allocate %d\n", size);
     size_t n_pages_required = Math::div_ceil(size, PAGE_SIZE);
     size_t total_pages = (ADDR_END-ADDR_START)/PAGE_SIZE;

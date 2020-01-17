@@ -81,3 +81,12 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 	return *p1 - *p2;
 
 }
+
+void ascii_to_unicode(char* dst, const char* src, size_t num_chars)
+{
+	for(size_t i = 0; i < num_chars; ++i)
+	{
+		dst[i*2] = src[i];
+		dst[(i*2)+1] = 0;
+	}
+}
