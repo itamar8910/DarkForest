@@ -12,6 +12,7 @@ public:
 
     u8* data();
     const u8* data() const;
+    u32 size() const;
 
     BigBuffer(const BigBuffer& other) = delete;
     BigBuffer& operator=(const BigBuffer& other) = delete;

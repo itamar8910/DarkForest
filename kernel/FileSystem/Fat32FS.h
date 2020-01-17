@@ -8,6 +8,7 @@
 #include "FileSystem/CharFileSystem.h"
 #include "constants.h"
 #include "bits.h"
+#include "BigBuffer.h"
 
 struct [[gnu::packed]] Fat32Extension
 {
@@ -132,11 +133,9 @@ public:
     virtual bool read_file(CharDirectoryEntry& entry, u8* data) const override;
     virtual int write_file(CharDirectoryEntry& entry, const Vector<u8>& data) override;
 
-    virtual u32 cluster_size() const override
-    {
-        return SECTOR_SIZE_BYTES * sectors_per_cluster;
-    }
+    // virtual bool create_file(const Path& path) override;
 
+    virtual u32 cluster_size() const override;
 
 private:
     Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension);
@@ -149,9 +148,10 @@ private:
 
     void write_cluster(u32 cluster, u8* buff) const;
 
-    bool read_whole_entry(u32 start_cluster, u32 size, u8* data) const;
-
+    bool read_whole_entry(u32 start_cluster, u8* data) const;
     bool read_whole_entry(const FatDirectoryEntry& entry, u8* data) const;
+    shared_ptr<BigBuffer> read_whole_entry(u32 start_cluster) const;
+    size_t num_clusters_in_entry(u32 start_cluster) const;
 
     int write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data);
 
@@ -160,6 +160,7 @@ private:
     bool find_directory(const Path& path, FatDirectoryEntry& res) const;
 
     FatDirectoryEntry create_entry_from(u8* buff, const FatRawDirectoryEntry* raw_entry) const;
+
 
     u32 FAT_sector {0}; // the sector in which the FAT resides
     u32 FAT_size_in_sectors {0};

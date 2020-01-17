@@ -109,17 +109,6 @@ u32 Fat32FS::entry_in_fat(u32 cluster) const
     return val;
 }
 
-// bool Fat32FS::read_cluster(u32 cluster, u8* data) const
-// {
-//     #ifdef FAT32_DBG
-//     kprintf("read cluster: %d\n", cluster);
-//     #endif
-//     // auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(sectors_per_cluster * bytes_per_sector));
-//     read_cluster(cluster, data);
-//     // data_vec->set_size(sectors_per_cluster * bytes_per_sector);
-//     return data_vec;
-// }
-
 void Fat32FS::read_cluster(u32 cluster, u8* buff) const
 {
     u32 start_sector = cluster_to_sector(cluster);
@@ -137,59 +126,97 @@ constexpr u32 FAT_ENTRY_EOF = 0x0FFFFFFF;
 Vector<FatDirectoryEntry> Fat32FS::read_directory(u32 cluster) const
 {
     Vector<FatDirectoryEntry> entries;
-    u32 current_cluster = cluster;
-    bool done = false;
-    while(!done)
+    shared_ptr<BigBuffer> data = read_whole_entry(cluster);
+    FatRawDirectoryEntry* current = reinterpret_cast<FatRawDirectoryEntry*>(data->data());
+    while(true)
     {
-        u8 buff[sectors_per_cluster * SECTOR_SIZE_BYTES];
-        read_cluster(current_cluster, buff);
-        FatRawDirectoryEntry* current = reinterpret_cast<FatRawDirectoryEntry*>(buff);
-        while(!done)
+        if(
+            reinterpret_cast<u8*>(current) >= (reinterpret_cast<u8*>(data->data()) + data->size())
+        )
         {
-            if(current->is_long_name())
-            {
-                // continue to the short directory entries
-                // and then traverse back to its (possibly multiple)
-                // long directory entries
-                current++;
-                continue;
-            }
-            if(current->is_fake_direcotry()){
-                current++;
-                continue;
-            }
-            // TODO: handle "free" directory entry (name[0] == 0xE5)
-            if(current->name[0] == 0){
-                done = true;
-                break;
-            }
-            entries.append(create_entry_from(buff, current));
+            // reached end of directory entries without encountering an empty directory entry
+            // TODO: is this a legal state?
+            ASSERT_NOT_REACHED();
+        }
+        if(current->is_long_name())
+        {
+            // continue to the short directory entries
+            // and then traverse back to its (possibly multiple)
+            // long directory entries
             current++;
+            continue;
         }
-        if(done)
-            break;
-        u32 cluster_entry = entry_in_fat(current_cluster);
-        if(cluster_entry == FAT_ENTRY_EOF)
+        if(current->is_fake_direcotry()){ // skip '.', '..'
+            current++;
+            continue;
+        }
+        // TODO: handle "free" directory entry (name[0] == 0xE5)
+        constexpr u8 FREE_DIRECTORY_ENTRY = 0xE5;
+        if(static_cast<u8>(current->name[0]) == FREE_DIRECTORY_ENTRY)
         {
-            done = true;
+            current++;
+            continue;
+        }
+        // reached end of directory entries
+        if(current->name[0] == 0){
             break;
         }
-        u32 next_cluster = (cluster_entry & 0x0fffffff); // take lower 28 bits
-        current_cluster = next_cluster;
+        entries.append(create_entry_from(data->data(), current));
+        current++;
     }
     return entries;
+
+    // u32 current_cluster = cluster;
+    // bool done = false;
+    // while(!done)
+    // {
+    //     u8 buff[sectors_per_cluster * SECTOR_SIZE_BYTES];
+    //     read_cluster(current_cluster, buff);
+    //     FatRawDirectoryEntry* current = reinterpret_cast<FatRawDirectoryEntry*>(buff);
+    //     while(!done)
+    //     {
+    //         if(current->is_long_name())
+    //         {
+    //             // continue to the short directory entries
+    //             // and then traverse back to its (possibly multiple)
+    //             // long directory entries
+    //             current++;
+    //             continue;
+    //         }
+    //         if(current->is_fake_direcotry()){
+    //             current++;
+    //             continue;
+    //         }
+    //         // TODO: handle "free" directory entry (name[0] == 0xE5)
+    //         if(current->name[0] == 0){
+    //             done = true;
+    //             break;
+    //         }
+    //         entries.append(create_entry_from(buff, current));
+    //         current++;
+    //     }
+    //     if(done)
+    //         break;
+    //     u32 cluster_entry = entry_in_fat(current_cluster);
+    //     if(cluster_entry == FAT_ENTRY_EOF)
+    //     {
+    //         done = true;
+    //         break;
+    //     }
+    //     u32 next_cluster = (cluster_entry & 0x0fffffff); // take lower 28 bits
+    //     current_cluster = next_cluster;
+    // }
+    // return entries;
 }
 
 
-bool Fat32FS::read_whole_entry(u32 start_cluster, u32 size, u8* data) const
+bool Fat32FS::read_whole_entry(u32 start_cluster, u8* data) const
 {
     #ifdef FAT32_DBG
     kprintf("read cluster: %d\n", start_cluster);
     #endif
-    (void) size;
     // round size up to sector size
-    u32 cluster_size = bytes_per_sector * sectors_per_cluster;
-    // auto data_vec = shared_ptr<Vector<u8>>(new Vector<u8>(size + (cluster_size-(size%cluster_size))));
+    u32 cluster_size = this->cluster_size();
     u32 current_cluster = start_cluster;
     for(size_t cluster_i = 0; ; cluster_i++)
     {
@@ -204,9 +231,39 @@ bool Fat32FS::read_whole_entry(u32 start_cluster, u32 size, u8* data) const
     return true;
 }
 
+
+shared_ptr<BigBuffer> Fat32FS::read_whole_entry(u32 start_cluster) const
+{
+    size_t num_clusters = num_clusters_in_entry(start_cluster);
+    shared_ptr<BigBuffer> buff = BigBuffer::allocate(num_clusters * cluster_size());
+
+    bool rc = read_whole_entry(start_cluster, buff->data());
+
+    if(rc == false)
+        return nullptr;
+        
+    return buff;
+}
+
+size_t Fat32FS::num_clusters_in_entry(u32 start_cluster) const
+{
+    size_t num_clusters = 0;
+    u32 current_cluster = start_cluster;
+    for(; ; ++num_clusters)
+    {
+        u32 next_cluster = entry_in_fat(current_cluster);
+        if(next_cluster == FAT_ENTRY_EOF)
+        {
+            break;
+        }
+        current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
+    }
+    return num_clusters;
+}
+
 bool Fat32FS::read_whole_entry(const FatDirectoryEntry& entry, u8* data) const
 {
-    return read_whole_entry(entry.cluster_idx, entry.size, data);
+    return read_whole_entry(entry.cluster_idx,  data);
 }
 
 bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type target_type) const
@@ -397,7 +454,7 @@ bool Fat32FS::does_directory_exist(const Path& path)
 
 bool Fat32FS::read_file(CharDirectoryEntry& entry, u8* data) const
 {
-    return read_whole_entry(entry.cluster_idx(), entry.file_size(), data);
+    return read_whole_entry(entry.cluster_idx(), data);
 
 }
 
@@ -541,4 +598,9 @@ bool FatLongDirectoryEntry::is_last() const
 {
     constexpr u8 LAST_LONG_ENTRY = 0x40;
     return (ord & LAST_LONG_ENTRY) != 0;
+}
+
+u32 Fat32FS::cluster_size() const
+{
+    return SECTOR_SIZE_BYTES * sectors_per_cluster;
 }

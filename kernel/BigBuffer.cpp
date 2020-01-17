@@ -71,3 +71,8 @@ const u8* BigBuffer::data() const
 {
     return reinterpret_cast<const u8*>(m_first_page);
 }
+
+u32 BigBuffer::size() const
+{
+    return m_size;
+}
