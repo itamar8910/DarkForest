@@ -18,7 +18,7 @@ int CharFile::read(size_t count, void* buf) {
         return 0;
     }
     if(count > (m_size - m_idx)) {
-        kprintf("too big: count: %d. size: %d, m_idx: %d\n", count, m_size, m_idx);
+        kprintf("CharFile::Read too big: count: %d. size: %d, m_idx: %d\n", count, m_size, m_idx);
         return -E_TOO_BIG;
     }
     memcpy(buf, buffer->data()+m_idx, count);
@@ -27,9 +27,10 @@ int CharFile::read(size_t count, void* buf) {
 }
 
 int CharFile::write(char* data, size_t count) {
-    if(count > (m_size - m_idx)) {
-        return E_TOO_BIG;
-    }
+    kprintf("CharFile::write with size: %d\n", count);
+    // if(count > (m_size - m_idx)) {
+    //     return E_TOO_BIG;
+    // }
 
     Vector<u8> to_write(reinterpret_cast<u8*>(data), count);
     kprintf("to_write size before pad: %d\n", to_write.size());

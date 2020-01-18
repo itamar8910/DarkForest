@@ -162,7 +162,7 @@ private:
     shared_ptr<BigBuffer> read_whole_entry(u32 start_cluster) const;
     size_t num_clusters_in_entry(u32 start_cluster) const;
 
-    int write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data);
+    int write_to_existing_file(FatDirectoryEntry& entry, const Vector<u8>& data, u32 parent_dir_cluster);
 
     bool find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Type type) const;
     bool find_file(const Path& path, FatDirectoryEntry& res) const;
@@ -173,6 +173,12 @@ private:
     u32 find_free_cluster() const;
     void update_FAT(u32 cluster_idx, u32 value);
 
+    bool update_file_size(u32 dir_cluster, const FatDirectoryEntry& file, size_t size);
+
+    template<typename F>
+    bool find_in_diretory(u32 dir_cluster, F lambda, u32& res_cluster, u32& res_cluster_offset);
+
+    static constexpr u32 FAT_ENTRY_EOF = 0xFFFFFF8;
 
     u32 FAT_sector {0}; // the sector in which the FAT resides
     u32 FAT_size_in_sectors {0};
@@ -181,3 +187,34 @@ private:
     u32 bytes_per_sector {0};
     u32 root_cluster {0};
 };
+
+template<typename F>
+bool Fat32FS::find_in_diretory(u32 dir_cluster, F lambda, u32& res_cluster, u32& res_cluster_offset)
+{
+    u32 current_cluster = dir_cluster;
+    while(true)
+    {
+        shared_ptr<BigBuffer> buff = BigBuffer::allocate(cluster_size());
+        read_cluster(current_cluster, buff->data());
+        FatRawDirectoryEntry* current = reinterpret_cast<FatRawDirectoryEntry*>(buff->data());
+        while(
+            reinterpret_cast<u8*>(current) < (reinterpret_cast<u8*>(buff->data()) + buff->size())
+        )
+        {
+            if(lambda(*current) == true)
+            {
+                res_cluster = current_cluster;
+                res_cluster_offset = reinterpret_cast<u32>(current) - reinterpret_cast<u32>(buff->data());
+                return true;
+            }
+            current++;
+        }
+
+        u32 next_cluster = entry_in_fat(current_cluster);
+        if(next_cluster >= FAT_ENTRY_EOF)
+        {
+            return false;
+        }
+        current_cluster = (next_cluster & 0x0fffffff); // take lower 28 bits
+    }
+}

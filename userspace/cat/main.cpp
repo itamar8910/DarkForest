@@ -15,6 +15,7 @@ void print_file(const String& path) {
         printf("error getting file size: %s\n", path.c_str());
         return;
     }
+    kprintf("cat: file size: %d\n", size);
     Vector<char> buff(size+1);
     int rc = std::read(fd, buff.data(), size);
     if(rc != size) {

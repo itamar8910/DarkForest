@@ -95,7 +95,9 @@ int Process::syscall_write(size_t fd, char* buff, size_t count) {
         return -E_NOTFOUND;
     auto* file = m_file_descriptors[fd];
     if(file == nullptr)
+    {
         return -E_NOTFOUND;
+    }
     return file->write(buff, count);
 
 }

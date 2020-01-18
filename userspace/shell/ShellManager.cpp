@@ -110,6 +110,7 @@ void ShellManager::do_echo(const Vector<String>& cmd_parts)
     if(rc < 0)
     {
         printf("error in write: %d\n", rc);
+        return;
     }
 }
 
