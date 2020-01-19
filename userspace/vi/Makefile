@@ -2,12 +2,13 @@
 LIBC_DIR := ../../libc
 INCLUDE += -I$(LIBC_DIR)
 
-TARGET := cat.o
+TARGET := vi.o
 
 OBJS := \
 	main.o \
 
 all: $(TARGET)
+
 
 $(TARGET): $(OBJS)
 	$(LD) --relocatable $^ -o $@

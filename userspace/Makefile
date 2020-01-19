@@ -8,6 +8,7 @@ APPS := \
 	shell.app \
 	terminal.app \
 	cat.app \
+	vi.app \
 
 LIBC_DIR := ../libc
 LIBC_OBJ := $(LIBC_DIR)/libc.o
@@ -44,4 +45,5 @@ clean:
 	make -C HelloWorld/ clean
 	make -C terminal/ clean
 	make -C cat/ clean
+	make -C vi/ clean
 	rm -f *.o *.ao *.app
