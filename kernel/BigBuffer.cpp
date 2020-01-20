@@ -30,6 +30,7 @@ shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
                 set_bit(bitmap[j/32], j%32, 1);
                 MemoryManager::the().allocate(ADDR_START + (j*PAGE_SIZE), PageWritable::YES, UserAllowed::NO);
             }
+            kprintf("BigBuffer: allocated base addr: 0x%x\n", ADDR_START + (i*PAGE_SIZE));
             return shared_ptr<BigBuffer>(new BigBuffer(
                 size,
                 ADDR_START + (i*PAGE_SIZE),

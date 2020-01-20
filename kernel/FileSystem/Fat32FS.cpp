@@ -30,13 +30,6 @@ void Fat32FS::initialize()
         kprintf("%s\n", e.path().to_string().c_str());
     }
 
-    // test writing
-    // Vector<u8> buff2(ATADisk::SECTOR_SIZE_BYTES);
-    // buff2.set_size(ATADisk::SECTOR_SIZE_BYTES);
-    // buff2.data()[0] = 'a';
-    // buff2.data()[1] = '!';
-    // buff2.data()[2] = 0;
-    // the().write_file(Path("a.txt"), buff2);
 }
 
 Fat32FS& Fat32FS::the(){
@@ -681,8 +674,9 @@ bool Fat32FS::create_file(const Path& path)
 
     // update parent directory
     write_cluster(cluster_with_free_space, buff->data());
+
     // updae FAT
-    update_FAT(cluster_with_free_space, FAT_ENTRY_EOF);
+    update_FAT(first_cluster_of_file, FAT_ENTRY_EOF);
 
     return true; 
 }
