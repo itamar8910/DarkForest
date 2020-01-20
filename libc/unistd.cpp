@@ -100,4 +100,9 @@ int get_current_directory(String& out_path)
     return syscall_return_code;
 }
 
+int create_file(String& path)
+{
+    return Syscall::invoke(Syscall::CreateFile, (u32) path.c_str());
+}
+
 }

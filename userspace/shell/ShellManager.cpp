@@ -32,6 +32,10 @@ void ShellManager::process_command(const String& command) {
             do_cd(parts);
             printf("\n");
         }
+        else if(program == "touch") {
+            do_touch(parts);
+            printf("\n");
+        }
         else {
             printf("program: %s not found\n", program.c_str());
         }
@@ -126,6 +130,21 @@ void ShellManager::do_cd(const Vector<String>& cmd_parts)
     if (std::get_current_directory(m_current_directory) != 0)
     {
         printf("GetCurrentDirectory syscall failed :(\n");
+    }
+}
+
+void ShellManager::do_touch(const Vector<String>& cmd_parts)
+{
+    if(cmd_parts.size() != 2)
+    {
+        printf("usage: touch [path]\n");
+        return;
+    }
+    String path = cmd_parts[1];
+    int rc = std::create_file(path);
+    if(rc < 0)
+    {
+        printf("error when creating file: %d\n", rc);
     }
 }
 

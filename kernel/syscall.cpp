@@ -88,6 +88,8 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_set_current_directory(String((char*) arg1));
         case Syscall::GetCurrentDirectory:
             return Scheduler::the().current().syscall_get_current_directory((char*) arg1, (size_t*) arg2);
+        case Syscall::CreateFile:
+            return Scheduler::the().current().syscall_creste_file((char*)arg1);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

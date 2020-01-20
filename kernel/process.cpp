@@ -265,3 +265,15 @@ String Process::get_full_path(const String& path)
     return m_current_directory + String('/') + path;
 }
 
+
+int Process::syscall_creste_file(const String& path)
+{
+    Path fullpath = Path(get_full_path(path));
+    const bool rc = VFS::the().create_file(fullpath);
+    if(rc == false)
+    {
+        return -E_INVALID;
+    }
+    return 0;
+
+}

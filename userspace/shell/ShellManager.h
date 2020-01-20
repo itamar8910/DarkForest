@@ -15,6 +15,7 @@ private:
     void do_ls(const Vector<String>& cmd_parts);
     void do_echo(const Vector<String>& cmd_parts);
     void do_cd(const Vector<String>& cmd_parts);
+    void do_touch(const Vector<String>& cmd_parts);
     void print_prompt();
 
 private:

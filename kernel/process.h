@@ -31,6 +31,7 @@ public:
     int syscall_listdir(const String& path, void* dest, size_t* size);
     int syscall_set_current_directory(const String& path);
     int syscall_get_current_directory(char* buff, size_t* count);
+    int syscall_creste_file(const String& path);
 
 private:
     String get_full_path(const String& path);

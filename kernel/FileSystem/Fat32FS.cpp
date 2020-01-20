@@ -236,6 +236,10 @@ bool Fat32FS::find(const Path& path, FatDirectoryEntry& res, DirectoryEntry::Typ
     #ifdef FAT32_DBG
     kprintf("Fat32: find: %s\n", path.to_string().c_str());
     #endif
+
+    if(path.num_parts() == 0)
+        return root_cluster;
+
     u32 dir_cluster = root_cluster;
     for(size_t i = 0; i < path.num_parts(); ++i)
     {
@@ -610,7 +614,6 @@ bool Fat32FS::create_file(const Path& path)
     }, cluster_with_free_space, offset_in_cluster);
 
     ASSERT(rc == true);
-    ASSERT(cluster_with_free_space != 0);
 
 
     u32 first_cluster_of_file = find_free_cluster();
