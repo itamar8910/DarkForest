@@ -105,4 +105,9 @@ int create_file(String& path)
     return Syscall::invoke(Syscall::CreateFile, (u32) path.c_str());
 }
 
+int create_directory(String& path)
+{
+    return Syscall::invoke(Syscall::CreateDirectory, (u32) path.c_str());
+}
+
 }

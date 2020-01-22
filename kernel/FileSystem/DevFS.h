@@ -14,7 +14,7 @@ public:
 
     virtual bool does_directory_exist(const Path& path) override;
 
-    virtual bool create_file(const Path& path) override;
+    virtual bool create_entry(const Path& path, DirectoryEntry::Type type) override;
 
     void add_device(Device* device);
 

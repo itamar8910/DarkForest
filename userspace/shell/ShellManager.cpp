@@ -36,6 +36,10 @@ void ShellManager::process_command(const String& command) {
             do_touch(parts);
             printf("\n");
         }
+        else if(program == "mkdir") {
+            do_mkdir(parts);
+            printf("\n");
+        }
         else {
             printf("program: %s not found\n", program.c_str());
         }
@@ -145,6 +149,21 @@ void ShellManager::do_touch(const Vector<String>& cmd_parts)
     if(rc < 0)
     {
         printf("error when creating file: %d\n", rc);
+    }
+}
+
+void ShellManager::do_mkdir(const Vector<String>& cmd_parts)
+{
+    if(cmd_parts.size() != 2)
+    {
+        printf("usage: mkdir [path]\n");
+        return;
+    }
+    String path = cmd_parts[1];
+    int rc = std::create_directory(path);
+    if(rc < 0)
+    {
+        printf("error when creating directory: %d\n", rc);
     }
 }
 

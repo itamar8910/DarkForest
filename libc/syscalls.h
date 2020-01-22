@@ -21,7 +21,8 @@ namespace Syscall {
         ListDir=16,
         SetCurrentDirectory=17,
         GetCurrentDirectory=18,
-        CreateFile=19
+        CreateFile=19,
+        CreateDirectory=20,
     };
 
     int invoke(SyscallIdx syscall, u32 arg1=0, u32 arg2=0, u32 arg3=0);

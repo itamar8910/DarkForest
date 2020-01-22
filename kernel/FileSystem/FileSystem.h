@@ -17,7 +17,7 @@ public:
 
     Path mountpoint() const {return m_mount_point;}
 
-    virtual bool create_file(const Path& path) = 0;
+    virtual bool create_entry(const Path& path, DirectoryEntry::Type type) = 0;
 
 protected:
     FileSystem(Path mount_point): m_mount_point(mount_point) {}

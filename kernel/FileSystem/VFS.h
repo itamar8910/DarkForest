@@ -21,7 +21,7 @@ public:
 
     void mount(FileSystem* fs);
 
-    virtual bool create_file(const Path& path) override;
+    virtual bool create_entry(const Path& path, DirectoryEntry::Type type) override;
 
 private:
     VFS() : FileSystem(Path("/")) {}
