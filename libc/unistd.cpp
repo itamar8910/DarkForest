@@ -123,4 +123,14 @@ int update_cursor(u8 col, u8 row)
     return ioctl(open("/dev/vgatext"), request, &data);
 }
 
+int clear_screen(u8 color)
+{
+    u32 request = static_cast<u32>(IOCTL::VgaText::Code::CLEAR);
+
+    IOCTL::VgaText::Data data = {};
+    data.value = color;
+
+    return ioctl(open("/dev/vgatext"), request, &data);
+}
+
 }

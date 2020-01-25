@@ -36,4 +36,6 @@ int create_file(String& path);
 int create_directory(String& path);
 
 int update_cursor(u8 col, u8 row);
+
+int clear_screen(u8 color);
 }
