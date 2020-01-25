@@ -1,3 +1,4 @@
+#include "unistd.h"
 #include "stdio.h"
 
 int main(char* argv[], int argc) {
@@ -7,6 +8,11 @@ int main(char* argv[], int argc) {
     }
 
     printf("Welcome to DarkForest's vi!\n");
+
+
+    std::update_cursor(12, 12);
+
+    std::sleep_ms(10000);
 
     return 0;
 }
