@@ -198,9 +198,8 @@ private:
         if(cap <= m_capacity) {
             return;
         }
-        dbgprintf("Vector::ensure_capacity: growing: %d->%d\n", m_capacity, m_capacity*2);
         #ifdef VECTOR_DBG
-        kprintf("Vector::ensure_capacity: need to re-allocate\n");
+        dbgprintf("Vector::ensure_capacity: growing: %d->%d\n", m_capacity, m_capacity*2);
         #endif
         if(check_capacity) {
             ASSERT(m_capacity * 2 >= cap);

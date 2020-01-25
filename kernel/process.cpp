@@ -180,14 +180,11 @@ int Process::syscall_listdir(const String& path, void* dest, size_t* size)
     {
         required_size += entry.serialize(nullptr);
     }
-    if(*size < required_size)
+    if((*size < required_size) || (dest == nullptr))
     {
         *size = required_size;
         return E_TOO_SMALL;
     }
-
-    if(dest==nullptr)
-        return E_INVALID;
 
     size_t offset = 0;
     for(auto& entry : entries)
@@ -265,3 +262,14 @@ String Process::get_full_path(const String& path)
     return m_current_directory + String('/') + path;
 }
 
+int Process::syscall_creste_entry(const String& path, DirectoryEntry::Type type)
+{
+    Path fullpath = Path(get_full_path(path));
+    const bool rc = VFS::the().create_entry(fullpath, type);
+    if(rc == false)
+    {
+        return -E_INVALID;
+    }
+    return 0;
+
+}

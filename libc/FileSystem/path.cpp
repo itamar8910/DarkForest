@@ -97,6 +97,9 @@ String Path::base_name() const
 
 Path Path::dirname() const
 {
-    ASSERT(num_parts() >= 2);
+    if(num_parts() < 2)
+    {
+        return Path("/");
+    }
     return Path(m_parts.range(0, m_parts.size() - 1), m_type);
 }

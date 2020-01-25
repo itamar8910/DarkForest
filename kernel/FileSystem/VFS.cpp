@@ -81,8 +81,11 @@ FileSystem* VFS::get_fs(const Path& path, Path& path_inside_fs)
 }
 
 
-bool VFS::create_file(const Path& path)
+bool VFS::create_entry(const Path& path, DirectoryEntry::Type type)
 {
-    (void)path;
-    NOT_IMPLEMENTED();
+    Path inside_path("/");
+    FileSystem* fs = get_fs(path, inside_path);
+    if(fs == nullptr)
+        return false;
+    return fs->create_entry(inside_path, type);
 }

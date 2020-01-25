@@ -50,9 +50,10 @@ bool DevFS::does_directory_exist(const Path& path)
     return false;
 }
 
-bool DevFS::create_file(const Path& path) 
+bool DevFS::create_entry(const Path& path, DirectoryEntry::Type type)
 {
     (void)path;
+    (void)type;
     NOT_IMPLEMENTED();
 }
 

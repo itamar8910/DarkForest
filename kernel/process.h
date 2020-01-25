@@ -2,6 +2,7 @@
 #include "task.h"
 #include "file.h"
 #include "fork_args.h"
+#include "FileSystem/DirectoryEntry.h"
 
 #define NUM_FILE_DESCRIPTORS 256
 
@@ -31,6 +32,7 @@ public:
     int syscall_listdir(const String& path, void* dest, size_t* size);
     int syscall_set_current_directory(const String& path);
     int syscall_get_current_directory(char* buff, size_t* count);
+    int syscall_creste_entry(const String& path, DirectoryEntry::Type type);
 
 private:
     String get_full_path(const String& path);

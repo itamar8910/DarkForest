@@ -141,7 +141,7 @@ public:
     virtual bool read_file(CharDirectoryEntry& entry, u8* data) const override;
     virtual int write_file(CharDirectoryEntry& entry, const Vector<u8>& data) override;
 
-    virtual bool create_file(const Path& path) override;
+    virtual bool create_entry(const Path& path, DirectoryEntry::Type type) override;
 
     virtual u32 cluster_size() const override;
     
