@@ -9,6 +9,7 @@
 #include "FileSystem/FileUtils.h"
 #include "FileSystem/VFS.h"
 #include "errs.h"
+#include "lock.h"
 
 #define USERSPACE_STACK 0xb0000000
 
@@ -26,7 +27,14 @@ static int read_elf_from_path(const String& path, shared_ptr<BigBuffer>& elf_dat
    return 0;
 }
 
+// Lock& load_userspace_lock()
+// {
+//    static Lock lock;
+//    return lock;
+// }
+
 void load_and_jump_userspace(const String& path) {
+   // LOCKER(load_userspace_lock());
    kprintf("load_and_jump_userspace: %s\n", path.c_str());
 	size_t elf_size = 0;
    shared_ptr<BigBuffer> elf_data = nullptr;

@@ -7,6 +7,7 @@
 #include "asserts.h"
 #include "bits.h"
 #include "types/vector.h"
+#include "lock.h"
 
 // #define ATA_DISK_DBG
 
@@ -168,7 +169,9 @@ namespace ATADisk{
         ASSERT(num_sectors>0);
         u8 type = IO_SELECT_PRIAMRY;
 
-        while((IO::inb(IO_BASE_PRIMARY + REG_STATUS) & (1<<STATUS_BIT_BUSY))!=0);
+        while((IO::inb(IO_BASE_PRIMARY + REG_STATUS) & (1<<STATUS_BIT_BUSY))!=0){
+            // kprintf("loop3\n");
+        }
 
         IO::outb(IO_BASE_PRIMARY + REG_DRIVE_SELECT, type | ((start_sector>>24)& 0x0F));
         IO::outb(IO_BASE_PRIMARY + 1, 0x00);
@@ -184,11 +187,18 @@ namespace ATADisk{
         ASSERT(start + count < MAX_SECTOR);
     }
 
+    Lock& get_ata_disk_lock()
+    {
+        static Lock lock("AtaDisk");
+        return lock;
+    }    
+
     void read_sectors(u32 start_sector, u16 num_sectors, DriveType drive_type, u8* buff)
     {
         #ifdef ATA_DISK_DBG
         kprintf("read sector: %d\n", start_sector);
         #endif
+        LOCKER(get_ata_disk_lock());
         ASSERT(drive_type==DriveType::Primary);
         sanity_sector_idx(start_sector, num_sectors);
         select_io_target(start_sector, num_sectors, drive_type);
@@ -213,6 +223,7 @@ namespace ATADisk{
         #ifdef ATA_DISK_DBG
         kprintf("write sector: %d\n", start_sector);
         #endif
+        LOCKER(get_ata_disk_lock());
         ASSERT(drive_type==DriveType::Primary);
         sanity_sector_idx(start_sector, num_sectors);
         select_io_target(start_sector, num_sectors, drive_type);

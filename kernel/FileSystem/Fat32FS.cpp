@@ -555,7 +555,6 @@ FatDirectoryEntry Fat32FS::create_entry_from(u8* buff, const FatRawDirectoryEntr
         if(current->is_last())
             break;
     }
-    kprintf("full dirent name: %s\n", name.c_str());
     return FatDirectoryEntry
     {
         name,

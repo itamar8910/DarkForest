@@ -8,17 +8,27 @@
 #include "PageDirectory.h"
 #include "cpu.h"
 #include "kmalloc.h"
+// #include "lock.h"
+#include "InterruptDisabler.h"
 // #include "string.h"
 
 // #define MM_DBG
 
 static MemoryManager* mm = nullptr;
 
+// Lock& get_memory_manager_lock()
+// {
+//     static Lock lock("MemoryManager");
+//     return lock;
+// }    
+
 // TODO: use a bitmap for page directories instead of just advancing next_page_directory_allocation
 static u32 next_page_directory_allocation = 2 * MB;
 const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB;
 
 void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::initialize()\n");
+    // LOCKER(get_memory_manager_lock());
+    InterruptDisabler dis();
     mm = new MemoryManager();
     mm->init(mbt);
 }
@@ -197,10 +207,13 @@ void MemoryManager::disable_page(Frame frame) {
     flush_tlb(frame);
 }
 
+
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
+    InterruptDisabler dis;
     #ifdef MM_DBG
     kprintf("MM: allocate: 0x%x\n", virt_addr);
     #endif
+    // LOCKER(get_memory_manager_lock());
     auto pte = ensure_pte(virt_addr);
     ASSERT(!pte.is_present());
     Err err;
@@ -218,6 +231,8 @@ void MemoryManager::deallocate(VirtualAddress virt_addr, bool free_page) {
     #ifdef MM_DBG
     kprintf("MM: deallocate: 0x%x\n", virt_addr);
     #endif
+    // LOCKER(get_memory_manager_lock());
+    InterruptDisabler dis();
     auto pte = ensure_pte(virt_addr);
     ASSERT(pte.is_present());
     if(free_page) {
@@ -272,6 +287,8 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
     #ifdef DBG_CLONE_PAGE_DIRECTORY
     kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory->get_base());
     #endif
+    // LOCKER(get_memory_manager_lock());
+    InterruptDisabler dis();
 
     Err err;
     auto new_PD_addr = next_page_directory_allocation;
@@ -356,6 +373,8 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
 
 MemoryManager& MemoryManager::the(u32 cr3) {
     ASSERT(mm != nullptr);
+    // LOCKER(get_memory_manager_lock());
+    InterruptDisabler dis();
     // update page table address to CR3 value
     if(cr3 == 0) {
         cr3 = get_cr3();
