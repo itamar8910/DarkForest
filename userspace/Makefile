@@ -2,12 +2,15 @@
 OBJS := \
 	start.ao \
 
-# NOTE: remember to add line in make clean target (or make it automatic)
 APPS := \
 	HelloWorld.app \
 	shell.app \
 	terminal.app \
 	cat.app \
+	ls.app \
+	echo.app \
+	touch.app \
+	mkdir.app \
 
 LIBC_DIR := ../libc
 LIBC_OBJ := $(LIBC_DIR)/libc.o
@@ -30,18 +33,15 @@ apps: $(APPS)
 
 FORCE:
 
-# main: main.o start.ao
-# 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJS_TO_LINK) -lgcc
-
-# main.o: main.cpp start.S
-# 	$(CC) $(INCLUDE) -DUSERSPACE -c $< -o $@ $(CFLAGS)
-
 %.ao: %.S
 	$(ASM) -felf32 $< -o $@
 
-clean:
-	make -C shell/ clean
-	make -C HelloWorld/ clean
-	make -C terminal/ clean
-	make -C cat/ clean
+CLEAN_SUBDIRS := $(wildcard */.)
+
+.PHONY: $(CLEAN_SUBDIRS)
+
+clean: $(CLEAN_SUBDIRS)
 	rm -f *.o *.ao *.app
+
+$(CLEAN_SUBDIRS):
+	$(MAKE) -C $@ clean
