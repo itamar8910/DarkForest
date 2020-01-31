@@ -66,7 +66,6 @@ void ShellManager::do_ls(const Vector<String>& cmd_parts)
 
     size_t size = 0;
     int rc = std::list_dir(directory, nullptr, &size);
-    kprintf("rc1:%d\n", rc);
     if(rc == E_NOTFOUND)
     {
         printf("directory not found\n");
@@ -76,12 +75,10 @@ void ShellManager::do_ls(const Vector<String>& cmd_parts)
     Vector<u8> buff(size);
     rc = std::list_dir(directory, buff.data(), &size);
     ASSERT(rc == 0);
-    print_hexdump(buff.data(), size);
     size_t offset = 0;
     Vector<DirectoryEntry> entries;
     while(offset < size)
     {
-        kprintf("offset: %d\n", offset);
         size_t entry_size = 0;
         entries.append(DirectoryEntry::deserialize(buff.data() + offset, entry_size));
         offset += entry_size;
@@ -95,7 +92,6 @@ void ShellManager::do_ls(const Vector<String>& cmd_parts)
 
 void ShellManager::do_echo(const Vector<String>& cmd_parts)
 {
-    // echo hello > a.txt
     if(
         (cmd_parts.size() != 4)
         || (cmd_parts[2] != ">")

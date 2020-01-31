@@ -1,41 +1,31 @@
 #include "lock.h"
 #include "logging.h"
 #include "kernel/Scheduler.h"
+#include "InterruptDisabler.h"
+#include "sleep.h"
+
+//reference: https://idea.popcount.org/2012-09-12-reinventing-spinlocks/
 
 #define DO_LOCK
 
-Lock::Lock(const char* name, int)
-    : m_name(name)
-{
-
-}
-
-static inline u32 CAS(volatile u32* mem, u32 newval, u32 oldval)
-{
-    u32 ret;
-    asm volatile(
-        "cmpxchgl %2, %1"
-        :"=a"(ret), "+m"(*mem)
-        :"r"(newval), "0"(oldval)
-        :"cc", "memory");
-    return ret;
-}
 
 void Lock::lock()
 {
+    // kprintf("lock: %s\n", m_name);
     #ifdef DO_LOCK
-    kprintf("waiting for %s lock\n", m_name);
-    while(CAS(&m_locked, 1, 0) != 0) {}
-    __asm__ ("mfence");
-    kprintf("acuired lock\n");
+    while (__sync_bool_compare_and_swap(&m_locked, 0, 1) == 0)
+    {
+        sleep_ms(1);
+        // kprintf("spin\n");
+    }
     #endif
 }
 
 void Lock::unlock()
 {
+    // kprintf("unlock: %s\n", m_name);
     #ifdef DO_LOCK
-    kprintf("released %s lock\n", m_name);
-    __asm__ ("mfence");
+    __asm__ __volatile__ ("" ::: "memory");
     m_locked = 0;
     #endif
 }
@@ -50,3 +40,4 @@ Locker::~Locker()
 {
     m_lock.unlock();
 }
+

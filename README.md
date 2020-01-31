@@ -13,8 +13,8 @@ A work in progress x86 operating system
 - Tar RamDisk filesystem
 - Partial elf parser
 - Userspace
-- ATA Disk driver (currently read only)
-- Fat32 (currently read only)
+- ATA Disk driver
+- Fat32 (missing some features)
 
 ## Coming up
 - userspace shell

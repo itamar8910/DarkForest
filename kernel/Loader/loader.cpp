@@ -9,6 +9,7 @@
 #include "FileSystem/FileUtils.h"
 #include "FileSystem/VFS.h"
 #include "errs.h"
+#include "lock.h"
 
 #define USERSPACE_STACK 0xb0000000
 
@@ -32,13 +33,8 @@ void load_and_jump_userspace(const String& path) {
    shared_ptr<BigBuffer> elf_data = nullptr;
    int rc = read_elf_from_path(path, elf_data, elf_size);
 
-   // shared_ptr<Vector<u8>> elf_data;
-   // int rc = read_elf_from_path(path, elf_data, elf_size);
-   kprintf("rc: %d\n", rc);
    ASSERT(rc == 0);
    ASSERT(elf_data.get() != nullptr);
-   kprintf("a1\n");
-   print_hexdump(elf_data->data(), 0x100);
 	load_and_jump_userspace(elf_data, elf_size);
 }
 

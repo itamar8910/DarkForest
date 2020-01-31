@@ -8,7 +8,7 @@
 #include "PageDirectory.h"
 #include "cpu.h"
 #include "kmalloc.h"
-// #include "string.h"
+#include "InterruptDisabler.h"
 
 // #define MM_DBG
 
@@ -19,6 +19,7 @@ static u32 next_page_directory_allocation = 2 * MB;
 const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB;
 
 void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::initialize()\n");
+    InterruptDisabler dis();
     mm = new MemoryManager();
     mm->init(mbt);
 }
@@ -32,13 +33,15 @@ void MemoryManager::init(multiboot_info_t* mbt) {
         ; (u32) mmap < mbt->mmap_addr + mbt->mmap_length
         ; mmap = (MultibootMemMapEntry*) ( (unsigned int)mmap + mmap->size + sizeof(mmap->size) )
          ) {
-        kprintf("base: 0x%x%08x, len: 0x%x%08x, type: %d\n",
+#ifdef MM_DBG
+    kprintf("base: 0x%x%08x, len: 0x%x%08x, type: %d\n",
             u32((mmap->base >> 32) & 0xffffffff),
             u32(mmap->base & 0xffffffff),
             u32((mmap->len >> 32) & 0xffffffff),
             u32(mmap->len & 0xffffffff),
             u32(mmap->type)
         );
+#endif
         if(mmap->type != MULTIBOOT_MEMORY_AVAILABLE)
             continue;
         ASSERT(
@@ -47,7 +50,6 @@ void MemoryManager::init(multiboot_info_t* mbt) {
         );
         u32 region_base = u32(mmap->base & 0xffffffff);
         u32 region_len = u32(mmap->len & 0xffffffff);
-        kprintf("region base:%x\n", region_base);
         for(u32 frame_base = region_base; frame_base <= region_base+region_len-PAGE_SIZE; frame_base += PAGE_SIZE ) {
             // we don't want to allocate frames with base addr bellow 5MB
             if(frame_base < 5 * MB)
@@ -197,7 +199,9 @@ void MemoryManager::disable_page(Frame frame) {
     flush_tlb(frame);
 }
 
+
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
+    InterruptDisabler dis;
     #ifdef MM_DBG
     kprintf("MM: allocate: 0x%x\n", virt_addr);
     #endif
@@ -218,6 +222,7 @@ void MemoryManager::deallocate(VirtualAddress virt_addr, bool free_page) {
     #ifdef MM_DBG
     kprintf("MM: deallocate: 0x%x\n", virt_addr);
     #endif
+    InterruptDisabler dis();
     auto pte = ensure_pte(virt_addr);
     ASSERT(pte.is_present());
     if(free_page) {
@@ -272,6 +277,7 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
     #ifdef DBG_CLONE_PAGE_DIRECTORY
     kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory->get_base());
     #endif
+    InterruptDisabler dis();
 
     Err err;
     auto new_PD_addr = next_page_directory_allocation;
@@ -356,6 +362,7 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
 
 MemoryManager& MemoryManager::the(u32 cr3) {
     ASSERT(mm != nullptr);
+    InterruptDisabler dis();
     // update page table address to CR3 value
     if(cr3 == 0) {
         cr3 = get_cr3();

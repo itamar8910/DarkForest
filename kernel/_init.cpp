@@ -29,6 +29,7 @@
 #include "HAL/VgaTTY.h"
 #include "drivers/ATADisk.h"
 #include "FileSystem/Fat32FS.h"
+#include "lock.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -67,6 +68,54 @@ void init_kernel_symbols() {
 	#endif
 }
 
+volatile int glob_a = 0;
+
+Lock& get_test_lock()
+{
+	static Lock lock("TestLock");
+	return lock;
+}    
+
+void task1()
+{
+	int N = 10;
+	for(int i = 0; i < N; ++i)
+	{
+		// kprintf("task1\n");
+		for(int i = 0; i < N; ++i)
+		{
+		// for(int i = 0; i < N; ++i)
+		// {
+		LOCKER(get_test_lock());
+			glob_a+=1;
+			sleep_ms(1);
+			glob_a -= 1;
+		// }
+		}
+	}
+	kprintf("task1: %d\n", glob_a);
+}
+
+void task2()
+{
+	int N = 10;
+	for(int i = 0; i < N; ++i)
+	{
+		// kprintf("task1\n");
+		for(int i = 0; i < N; ++i)
+		{
+		// for(int i = 0; i < N; ++i)
+		// {
+		LOCKER(get_test_lock());
+			glob_a+=1;
+			sleep_ms(1);
+			glob_a -= 1;
+		// }
+		}
+	}
+	kprintf("task2: %d\n", glob_a);
+}
+
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	kprint("*******\nkernel_main\n*******\n\n");
 	VgaTTY::the().write("DarKForest booting...\n");
@@ -90,17 +139,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Fat32FS::initialize();
 	// cpu_hang();
 
-
 	init_VFS();
-
-	// Vector<DirectoryEntry> res;
-	// ASSERT(VFS::the().list_directory(Path("/root/a"), res));
-	// for(auto& entry : res)
-	// {
-	// 	kprintf("%s\n", entry.path.to_string().c_str());
-	// }
-	// kprintf("# entries: %d\n", res.size());
-	// cpu_hang();
 
 	VgaTTY::the().write("Loading kernel symbols...\n");
 	init_kernel_symbols();
@@ -115,13 +154,11 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
 
-	// can't have them run concurrently becuase of FAT races
-	// TODO: add locks to FAT
-	// Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
+	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
 	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
 
-	// VFS::the().open("/inird/helllo.txt");
-	// XASSERT(false);
+	// Scheduler::the().add_process(Process::create(task1, "task1"));
+	// Scheduler::the().add_process(Process::create(task2, "task2"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");
