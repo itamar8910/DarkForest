@@ -197,7 +197,7 @@ int Process::syscall_listdir(const String& path, void* dest, size_t* size)
 
 int Process::syscall_set_current_directory(const String& path)
 {
-    if (!VFS::the().does_directory_exist(Path(get_full_path(path))))
+    if (!VFS::the().is_directory(Path(get_full_path(path))))
     {
         kprintf("Not setting current directory of %s since it doesn't exist\n", path.c_str());
         return E_NOTFOUND;

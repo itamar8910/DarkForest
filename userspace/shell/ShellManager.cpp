@@ -12,9 +12,19 @@ ShellManager::ShellManager() :
 
 bool ShellManager::find_app(const String& name, String& app_path)
 {
-    // TODO: actually search /bin
-    app_path = String("/bin/") + String(name) + String(".app");
-    return true;
+    Vector<Path> PATH;
+    PATH.append(Path("/bin"));
+    for(auto& path : PATH)
+    {
+        Path temp_path = path;
+        temp_path.add_part(name + ".app");
+        if(std::is_file(temp_path.to_string()))
+        {
+            app_path = temp_path.to_string();
+            return true;
+        }
+    }
+    return false;
 }
 
 void ShellManager::process_command(const String& command) {
@@ -33,7 +43,7 @@ void ShellManager::process_command(const String& command) {
             bool rc = find_app(program, app_path);
             if(!rc)
             {
-                printf("program: %s not found", program.c_str());
+                printf("program: %s not found\n", program.c_str());
             }
             else
             {

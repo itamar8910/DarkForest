@@ -124,3 +124,8 @@ bool Path::is_parent_of(const Path& other) const
 {
     return is_prefix_of(other) && (num_parts() + 1 == other.num_parts());
 }
+
+void Path::add_part(const String& part)
+{
+    m_parts.append(part);
+}

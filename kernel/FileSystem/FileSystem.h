@@ -13,7 +13,8 @@ public:
 
     virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) = 0;
     
-    virtual bool does_directory_exist(const Path& path) = 0;
+    virtual bool is_directory(const Path& path) = 0;
+    virtual bool is_file(const Path& path) = 0;
 
     Path mountpoint() const {return m_mount_point;}
 

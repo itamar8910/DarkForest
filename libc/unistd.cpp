@@ -110,4 +110,15 @@ int create_directory(const String& path)
     return Syscall::invoke(Syscall::CreateDirectory, (u32) path.c_str());
 }
 
+int is_file(const String& path)
+{
+    return Syscall::invoke(Syscall::IsFile, (u32) path.c_str());
+}
+
+int is_directory(const String& path)
+{
+    return Syscall::invoke(Syscall::IsDirectory, (u32) path.c_str());
+}
+
+
 }

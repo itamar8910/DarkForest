@@ -410,9 +410,9 @@ bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
     return true;
 }
 
-bool Fat32FS::does_directory_exist(const Path& path)
+bool Fat32FS::is_directory(const Path& path)
 {
-    kprintf("does_directory_exist: path got %s\n", path.to_string().c_str());
+    kprintf("is_directory: path got %s\n", path.to_string().c_str());
 
     if (path.num_parts() == 0)
     {
@@ -422,6 +422,12 @@ bool Fat32FS::does_directory_exist(const Path& path)
 
     FatDirectoryEntry entry;
     return find_directory(path, entry);
+}
+
+bool Fat32FS::is_file(const Path& path)
+{
+    FatDirectoryEntry entry;
+    return find_file(path, entry);
 }
 
 bool Fat32FS::read_file(CharDirectoryEntry& entry, u8* data) const

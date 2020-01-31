@@ -34,4 +34,8 @@ int get_current_directory(String& out_path);
 int create_file(const String& path);
 
 int create_directory(const String& path);
+
+int is_file(const String& path);
+
+int is_directory(const String& path);
 }

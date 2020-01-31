@@ -51,14 +51,14 @@ bool VFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
     return fs->list_directory(inside_path, res);
 }
 
-bool VFS::does_directory_exist(const Path& path)
+bool VFS::is_directory(const Path& path)
 {
     if(path.num_parts() == 0)
     {
         return true;
     }
     
-    kprintf("VFS::does_directory_exist %s\n", path.to_string().c_str());
+    kprintf("VFS::is_directory %s\n", path.to_string().c_str());
     Path inside_path("/");
     FileSystem* fs = get_fs(path, inside_path);
 
@@ -67,7 +67,21 @@ bool VFS::does_directory_exist(const Path& path)
         return false;
     }
 
-    return fs->does_directory_exist(inside_path);
+    return fs->is_directory(inside_path);
+}
+
+bool VFS::is_file(const Path& path)
+{
+    Path inside_path("/");
+    FileSystem* fs = get_fs(path, inside_path);
+
+    if(fs == nullptr)
+    {
+        return false;
+    }
+
+    return fs->is_file(inside_path);
+
 }
 
 FileSystem* VFS::get_fs(const Path& path, Path& path_inside_fs)

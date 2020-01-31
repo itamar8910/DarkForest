@@ -7,6 +7,7 @@
 #include "MM/MemoryManager.h"
 #include "FileSystem/FileUtils.h"
 #include "fork_args.h"
+#include "FileSystem/VFS.h"
 
 // #define DBG_SYSCALL
 // #define DBG_SYSCALL2
@@ -77,9 +78,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::Write:
             return Scheduler::the().current().syscall_write(arg1, (char*) arg2, arg3);
         case Syscall::ForkAndExec:
-            {
             return Scheduler::the().current().syscall_ForkAndExec((ForkArgs*)arg1);
-            }
         case Syscall::Wait:
             return Scheduler::the().current().syscall_wait(arg1);
         case Syscall::ListDir:
@@ -92,6 +91,10 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_creste_entry((char*)arg1, DirectoryEntry::Type::File);
         case Syscall::CreateDirectory:
             return Scheduler::the().current().syscall_creste_entry((char*)arg1, DirectoryEntry::Type::Directory);
+        case Syscall::IsFile:
+            return VFS::the().is_file(Path(String((char*)arg1)));
+        case Syscall::IsDirectory:
+            return VFS::the().is_directory(Path(String((char*)arg1)));
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

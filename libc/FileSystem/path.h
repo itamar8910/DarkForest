@@ -36,6 +36,8 @@ public:
     String base_name() const; // returns last part
     Path dirname() const; // returns all but last part
 
+    void add_part(const String& part);
+
 private:
     Vector<String> m_parts;
     PathType m_type;
