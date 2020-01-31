@@ -4,15 +4,15 @@
 #include "bits.h"
 #include "lock.h"
 
-Lock& big_buffer_lock()
+RealLock& big_buffer_lock()
 {
-    static Lock lock("BigBuffer");
+    static RealLock lock("BigBuffer");
     return lock;
 }
 
 shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
 {
-    LOCKER(big_buffer_lock());
+    REAL_LOCKER(big_buffer_lock());
     ASSERT(size>0);
     kprintf("BigBuffer::allocate %d\n", size);
     size_t n_pages_required = Math::div_ceil(size, PAGE_SIZE);
@@ -63,7 +63,7 @@ BigBuffer::BigBuffer(u32 size, u32 first_page, u32 last_page)
       {}
 
 BigBuffer::~BigBuffer(){
-    LOCKER(big_buffer_lock());
+    REAL_LOCKER(big_buffer_lock());
     u32* bitmap = get_bitmap();
     for(u32 page = m_first_page; page <= m_last_page; page += PAGE_SIZE)
     {

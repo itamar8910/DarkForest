@@ -29,6 +29,7 @@
 #include "HAL/VgaTTY.h"
 #include "drivers/ATADisk.h"
 #include "FileSystem/Fat32FS.h"
+#include "lock.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -67,30 +68,52 @@ void init_kernel_symbols() {
 	#endif
 }
 
+volatile int glob_a = 0;
+
+RealLock& get_test_lock()
+{
+	static RealLock lock("TestLock");
+	return lock;
+}    
+
 void task1()
 {
-	for(;;)
+	int N = 10;
+	for(int i = 0; i < N; ++i)
 	{
-		kprintf("task1\n");
-		File* f = VFS::the().open(Path("/root/a.txt"));
-		ASSERT(f != nullptr);
-		char buff[1024];
-		f->read(7, buff);
-		sleep_ms(10);
+		// kprintf("task1\n");
+		for(int i = 0; i < N; ++i)
+		{
+		// for(int i = 0; i < N; ++i)
+		// {
+		REAL_LOCKER(get_test_lock());
+			glob_a+=1;
+			sleep_ms(1);
+			glob_a -= 1;
+		// }
+		}
 	}
+	kprintf("task1: %d\n", glob_a);
 }
 
 void task2()
 {
-	for(;;)
+	int N = 10;
+	for(int i = 0; i < N; ++i)
 	{
-		kprintf("task2\n");
-		File* f = VFS::the().open(Path("/root/b.txt"));
-		ASSERT(f != nullptr);
-		char buff[1024];
-		f->read(7, buff);
-		sleep_ms(10);
+		// kprintf("task1\n");
+		for(int i = 0; i < N; ++i)
+		{
+		// for(int i = 0; i < N; ++i)
+		// {
+		REAL_LOCKER(get_test_lock());
+			glob_a+=1;
+			sleep_ms(1);
+			glob_a -= 1;
+		// }
+		}
 	}
+	kprintf("task2: %d\n", glob_a);
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
