@@ -44,7 +44,6 @@ ThreadControlBlock* create_kernel_task(void (*func)()) {
     ThreadControlBlock* tcb = new ThreadControlBlock();
     tcb->id = ++current_thread_id;
     // allocate stack space for new task
-    kprintf("new CR3: 0x%x\n", (u32)tcb->CR3);
     for(size_t i = 0; i < NUM_PAGES_PER_STACK; ++i)
     {
         MemoryManager::the().allocate((u32)((u32)next_task_stack_virtual_addr + i*PAGE_SIZE),
@@ -65,15 +64,6 @@ ThreadControlBlock* create_kernel_task(void (*func)()) {
     stack_push(&new_stack, 0); // edi
     stack_push(&new_stack, 0); // esi
     stack_push(&new_stack, 0); // ebx
-
-    kprintf("new task stack: stack: 0x%x, content: 0x%x,0x%x,0x%x,0x%x,0x%x\n",
-            new_stack,
-            new_stack[0],
-            new_stack[1],
-            new_stack[2],
-            new_stack[3],
-            new_stack[4]
-            );
 
     #ifdef CLONE_PAGE_DIRECTORY
     tcb->CR3 = (void*) (u32)MemoryManager::the().clone_page_directory(CopyUserPages::NO).get_base();

@@ -187,9 +187,9 @@ namespace ATADisk{
         ASSERT(start + count < MAX_SECTOR);
     }
 
-    RealLock& get_ata_disk_lock()
+    Lock& get_ata_disk_lock()
     {
-        static RealLock lock("AtaDisk");
+        static Lock lock("AtaDisk");
         return lock;
     }    
 
@@ -198,7 +198,7 @@ namespace ATADisk{
         #ifdef ATA_DISK_DBG
         kprintf("read sector: %d\n", start_sector);
         #endif
-        REAL_LOCKER(get_ata_disk_lock());
+        LOCKER(get_ata_disk_lock());
         ASSERT(drive_type==DriveType::Primary);
         sanity_sector_idx(start_sector, num_sectors);
         select_io_target(start_sector, num_sectors, drive_type);
@@ -223,7 +223,7 @@ namespace ATADisk{
         #ifdef ATA_DISK_DBG
         kprintf("write sector: %d\n", start_sector);
         #endif
-        REAL_LOCKER(get_ata_disk_lock());
+        LOCKER(get_ata_disk_lock());
         ASSERT(drive_type==DriveType::Primary);
         sanity_sector_idx(start_sector, num_sectors);
         select_io_target(start_sector, num_sectors, drive_type);
@@ -255,7 +255,6 @@ namespace ATADisk{
         // test read/write
         u8 buff[SECTOR_SIZE_BYTES] = {0};
         read_sectors(2, 1, DriveType::Primary, buff);
-        kprintf("1:\n");
         u8 orig_value = buff[5];
         buff[5] = 0x1;
         write_sectors(2, 1, DriveType::Primary, buff);

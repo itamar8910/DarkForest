@@ -5,16 +5,9 @@
 #include "logging.h"
 
 #ifdef KERNEL
-#include "kernel/lock.h"
 #include "kernel/InterruptDisabler.h"
 #endif
 
-#ifdef KERNEL
-#include "logging.h"
-#endif
-#ifdef USERSPACE
-#include "stdio.h"
-#endif
 
 void MemBlock::assert_valid_magic() {
     if(magic != MAGIC_FREE &&  magic != MAGIC_USED) {
@@ -33,14 +26,6 @@ HeapAllocator::HeapAllocator(void* addr, u32 size) {
     m_heap_start = addr;
 }
 
-#ifdef KERNEL
-// Lock& get_heap_lock()
-// {
-//     static Lock lock("Heap");
-//     return lock;
-// }
-#endif
-
 void* HeapAllocator::allocate(u32 size) {
     // loop over free list
     // find a block with size` >=  size+sizeof(FreeBlock)
@@ -53,7 +38,6 @@ void* HeapAllocator::allocate(u32 size) {
                     
     */
    #ifdef KERNEL
-//    LOCKER(get_heap_lock());
     InterruptDisabler dis;
    #endif
    ASSERT(size < 10000 * PAGE_SIZE);
@@ -143,7 +127,6 @@ u32 HeapAllocator::current_free_space(u32& num_blocks) {
 
 void HeapAllocator::free(void* addr) {
    #ifdef KERNEL
-//    LOCKER(get_heap_lock());
     InterruptDisabler dis;
    #endif
     // MemBlock should be stored before address

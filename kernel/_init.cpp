@@ -70,9 +70,9 @@ void init_kernel_symbols() {
 
 volatile int glob_a = 0;
 
-RealLock& get_test_lock()
+Lock& get_test_lock()
 {
-	static RealLock lock("TestLock");
+	static Lock lock("TestLock");
 	return lock;
 }    
 
@@ -86,7 +86,7 @@ void task1()
 		{
 		// for(int i = 0; i < N; ++i)
 		// {
-		REAL_LOCKER(get_test_lock());
+		LOCKER(get_test_lock());
 			glob_a+=1;
 			sleep_ms(1);
 			glob_a -= 1;
@@ -106,7 +106,7 @@ void task2()
 		{
 		// for(int i = 0; i < N; ++i)
 		// {
-		REAL_LOCKER(get_test_lock());
+		LOCKER(get_test_lock());
 			glob_a+=1;
 			sleep_ms(1);
 			glob_a -= 1;

@@ -4,17 +4,21 @@
 #include "bits.h"
 #include "lock.h"
 
-RealLock& big_buffer_lock()
+// #define BIGBUFFER_DBG
+
+Lock& big_buffer_lock()
 {
-    static RealLock lock("BigBuffer");
+    static Lock lock("BigBuffer");
     return lock;
 }
 
 shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
 {
-    REAL_LOCKER(big_buffer_lock());
+    LOCKER(big_buffer_lock());
     ASSERT(size>0);
+#ifdef BIGBUFFER_DBG
     kprintf("BigBuffer::allocate %d\n", size);
+#endif
     size_t n_pages_required = Math::div_ceil(size, PAGE_SIZE);
     size_t total_pages = (ADDR_END-ADDR_START)/PAGE_SIZE;
     u32* bitmap = get_bitmap();
@@ -38,7 +42,9 @@ shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
                 set_bit(bitmap[j/32], j%32, 1);
                 MemoryManager::the().allocate(ADDR_START + (j*PAGE_SIZE), PageWritable::YES, UserAllowed::NO);
             }
+#ifdef BIGBUFFER_DBG
             kprintf("BigBuffer: allocated base addr: 0x%x\n", ADDR_START + (i*PAGE_SIZE));
+#endif
             return shared_ptr<BigBuffer>(new BigBuffer(
                 size,
                 ADDR_START + (i*PAGE_SIZE),
@@ -46,7 +52,7 @@ shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
             ));
         }
     }
-    kprintf("couldn't allocate BigBuffer with size: %d\n", size);
+    kprintf("WARNING: Couldn't allocate BigBuffer with size: %d\n", size);
     return nullptr;
 }
 
@@ -63,7 +69,7 @@ BigBuffer::BigBuffer(u32 size, u32 first_page, u32 last_page)
       {}
 
 BigBuffer::~BigBuffer(){
-    REAL_LOCKER(big_buffer_lock());
+    LOCKER(big_buffer_lock());
     u32* bitmap = get_bitmap();
     for(u32 page = m_first_page; page <= m_last_page; page += PAGE_SIZE)
     {

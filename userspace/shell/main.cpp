@@ -14,7 +14,6 @@
 #include "ShellManager.h"
 
 int main() {
-    kprintf("a1\n"); // WTF HeapAllocator crashes without this
     ShellManager shell;
     Vector<char> command(50);
 
