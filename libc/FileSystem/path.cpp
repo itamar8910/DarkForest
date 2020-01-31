@@ -103,3 +103,24 @@ Path Path::dirname() const
     }
     return Path(m_parts.range(0, m_parts.size() - 1), m_type);
 }
+
+bool Path::is_prefix_of(const Path& other) const
+{
+    if(num_parts() > other.num_parts())
+        return false;
+
+    for(size_t i = 0; i < num_parts(); ++i)
+    {
+        if(get_part(i) != other.get_part(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Path::is_parent_of(const Path& other) const
+{
+    return is_prefix_of(other) && (num_parts() + 1 == other.num_parts());
+}

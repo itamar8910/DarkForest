@@ -19,17 +19,6 @@ void Fat32FS::initialize()
     FatBootSector* boot_sector = (FatBootSector*) buff;
     Fat32Extension* extension = (Fat32Extension*) boot_sector->extended_section;
     s_the = new Fat32FS(*boot_sector, *extension);
-
-    // test file creation
-    // the().create_file(Path("/rootfile2.txt"));
-    // kprintf("added file\n");
-    // Vector<DirectoryEntry> entries;
-    // the().list_directory(Path("/c"), entries);
-    // for(auto& e  : entries)
-    // {
-    //     kprintf("%s\n", e.path().to_string().c_str());
-    // }
-
 }
 
 Fat32FS& Fat32FS::the(){
@@ -38,7 +27,7 @@ Fat32FS& Fat32FS::the(){
 }
 
 Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
-    : CharFileSystem(Path("/root"))
+    : CharFileSystem(Path("/"))
 {
 
     ASSERT(boot_sector.table_count == 2);

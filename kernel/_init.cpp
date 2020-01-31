@@ -43,11 +43,11 @@
  
 
 void hello_world_userspace() {
-	load_and_jump_userspace("/root/bin/hello.app");
+	load_and_jump_userspace("/bin/hello.app");
 }
 
 void terminal_userspace() {
-	load_and_jump_userspace("/root/bin/terminal.app");
+	load_and_jump_userspace("/bin/terminal.app");
 }
 
 void idle() {

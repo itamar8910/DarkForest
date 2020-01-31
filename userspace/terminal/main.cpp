@@ -12,7 +12,7 @@ void initialize_descriptors() {
 }
 
 void print_hello_text() {
-    int fd = std::open("/root/init/hello.txt");
+    int fd = std::open("/init/hello.txt");
     ASSERT(fd>=0);
     int size = std::file_size(fd);
     ASSERT(size > 0);
@@ -26,7 +26,7 @@ void print_hello_text() {
 int main() {
     initialize_descriptors();
     print_hello_text();
-    int pid = std::fork_and_exec("/root/bin/shell.app");
+    int pid = std::fork_and_exec("/bin/shell.app");
     ASSERT(pid > 0);
     std::wait(pid);
     return 0;

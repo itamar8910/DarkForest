@@ -1,8 +1,8 @@
 #include "kernel_symbols.h"
 #include "logging.h"
 
-constexpr const char* kernel_lines_file = "/root/init/kernel_lineinfo.txt";
-constexpr const char* kernel_symbols = "/root/init/kernel_symbols.txt";
+constexpr const char* kernel_lines_file = "/init/kernel_lineinfo.txt";
+constexpr const char* kernel_symbols = "/init/kernel_symbols.txt";
 
 static KernelSymbols* s_the = nullptr;
 

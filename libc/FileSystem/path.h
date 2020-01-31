@@ -29,6 +29,8 @@ public:
 
     Vector<String> parts_from_string(const String& path) const;
     PathType type_from_string(const String& path) const;
+    bool is_prefix_of(const Path& other) const;
+    bool is_parent_of(const Path& other) const;
 
     String to_string() const;
     String base_name() const; // returns last part
