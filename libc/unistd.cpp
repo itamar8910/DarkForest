@@ -22,19 +22,19 @@ int open(const char* path) {
 }
 
 int ioctl(int fd, u32 code, void* data) {
-    return Syscall::invoke(Syscall::IOCTL, fd, code, (u32)data);
+    return Syscall::invoke(Syscall::IOctl, fd, code, (u32)data);
 }
 
 int file_size(int fd) {
-    return Syscall::invoke(Syscall::FILE_SIZE, fd);
+    return Syscall::invoke(Syscall::FileSize, fd);
 }
 
 int read(size_t fd, char* buff, size_t count) {
-    return Syscall::invoke(Syscall::READ, fd, (u32)buff, count);
+    return Syscall::invoke(Syscall::Read, fd, (u32)buff, count);
 }
 
 int write(size_t fd, const char* buff, size_t count) {
-    return Syscall::invoke(Syscall::WRITE, fd, (u32)buff, count);
+    return Syscall::invoke(Syscall::Write, fd, (u32)buff, count);
 }
 
 int fork_and_exec(const String& path, const String& name, const Vector<String>& args)
@@ -64,7 +64,7 @@ int fork_and_exec(const String& path, const String& name, const Vector<String>& 
 
 int wait(size_t pid)
 {
-    return Syscall::invoke(Syscall::WAIT, pid);
+    return Syscall::invoke(Syscall::Wait, pid);
 }
 
 int list_dir(const String& path, void* dest, size_t* size)

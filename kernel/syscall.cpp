@@ -55,7 +55,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::DbgPrint:
             kprint("DbgPrint\n");
             return 0;
-        case Syscall::getID:
+        case Syscall::GetID:
             return Scheduler::the().current().pid();
         case Syscall::Exit:
             syscall_exit((int)arg1);    
@@ -68,19 +68,19 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return 0;
         case Syscall::Open:
             return Scheduler::the().current().syscall_open(String((char*) arg1));
-        case Syscall::IOCTL:
+        case Syscall::IOctl:
             return Scheduler::the().current().syscall_ioctl(arg1, arg2, (void*) arg3);
-        case Syscall::FILE_SIZE:
+        case Syscall::FileSize:
             return Scheduler::the().current().syscall_file_size(arg1);
-        case Syscall::READ:
+        case Syscall::Read:
             return Scheduler::the().current().syscall_read(arg1, (char*) arg2, arg3);
-        case Syscall::WRITE:
+        case Syscall::Write:
             return Scheduler::the().current().syscall_write(arg1, (char*) arg2, arg3);
         case Syscall::ForkAndExec:
             {
             return Scheduler::the().current().syscall_ForkAndExec((ForkArgs*)arg1);
             }
-        case Syscall::WAIT:
+        case Syscall::Wait:
             return Scheduler::the().current().syscall_wait(arg1);
         case Syscall::ListDir:
             return Scheduler::the().current().syscall_listdir(String((char*) arg1), (char*) arg2, (size_t*) arg3);
