@@ -33,7 +33,20 @@ void do_ls(const String& directory) {
     }
 }
 
+void try_shared_mem()
+{
+    void* addr = 0;
+    u32 size = 0;
+    const int rc = std::open_shared_memory(1, addr, size);
+    kprintf("ls: shared mem: 0x%x, %d\n", addr, size);
+    ASSERT(rc == E_OK);
+    const char c = reinterpret_cast<char*>(addr)[0];
+    kprintf("ls: shared mem char: %d\n", c);
+    reinterpret_cast<char*>(addr)[0] = 'b';
+}
+
 int main(char** argv, size_t argc) {
+    try_shared_mem();
     if(argc < 1) {
         printf("expected argc >= 1\n");
         return 1;

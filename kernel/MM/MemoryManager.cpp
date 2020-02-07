@@ -214,6 +214,20 @@ void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, Us
     ASSERT(!rc);
 }
 
+int MemoryManager::allocate_range(VirtualAddress virt_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
+{
+    InterruptDisabler dis;
+    if(size % PAGE_SIZE != 0) 
+    {
+        return E_INVALID_SIZE;
+    }
+    for(size_t page = virt_addr; page < virt_addr + size; page += PAGE_SIZE)
+    {
+        allocate(page, writable, user_allowed);
+    }
+    return E_OK;
+}
+
 int MemoryManager::map(VirtualAddress virt_addr, PhysicalAddress phys_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
 {
     InterruptDisabler dis;
@@ -430,4 +444,30 @@ bool address_in_user_space(VirtualAddress addr) {
 }
 bool address_in_kernel_space(VirtualAddress addr) {
     return addr < USERSPACE_START || addr >= KERNELSPACE_START;
+}
+
+
+int MemoryManager::duplicate(void* other_cr3, VirtualAddress src_addr, size_t size, VirtualAddress dst_addr)
+{
+    if(((src_addr%PAGE_SIZE) != 0) || ((size%PAGE_SIZE) != 0))
+    {
+        return E_INVALID;
+    }
+    PageDirectory other_pd((u32)other_cr3);
+    for(u32 virt_addr = src_addr; virt_addr < src_addr + size; virt_addr += PAGE_SIZE)
+    {
+        PDE other_pde = other_pd.get_pde(virt_addr);
+        ASSERT(other_pde.is_present());
+        VirtualAddress temp_pt_addr = temp_map(other_pde.addr());
+        PageTable other_pt(temp_pt_addr);
+        PTE pte = other_pt.get_pte(virt_addr);
+        // FIXME: instead of asserting we should fail gracefully & restore the previous state
+        ASSERT(pte.is_present());
+        ASSERT(pte.is_user_allowed()); // shared memory is for userspace
+        PhysicalAddress frame = pte.addr();
+        un_temp_map();
+        int rc = map_page(dst_addr + (virt_addr-src_addr), frame, PageWritable::YES, UserAllowed::YES);
+        ASSERT(!rc);
+    }
+    return E_OK;
 }

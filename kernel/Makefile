@@ -35,6 +35,7 @@ MM_OBJS := \
 	$(MM_DIR)/MemoryManager.o \
 	$(MM_DIR)/PageDirectory.o \
 	$(MM_DIR)/PageTable.o \
+	$(MM_DIR)/SharedMemoryManager.o \
 
 FS_DIR := FileSystem
 FS_OBJS := \

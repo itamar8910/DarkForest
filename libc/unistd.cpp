@@ -120,5 +120,30 @@ int is_directory(const String& path)
     return Syscall::invoke(Syscall::IsDirectory, (u32) path.c_str());
 }
 
+int create_shared_memory(u32 guid, u32 size, void*& addr)
+{
+    void* tmp_addr = 0;
+    const int rc = Syscall::invoke(Syscall::CreateSharedMemory, guid, size, reinterpret_cast<u32>(&tmp_addr));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+    addr = tmp_addr;
+    return E_OK;
+}
+
+int open_shared_memory(u32 guid, void*& addr, u32& size)
+{
+    void* tmp_addr = 0;
+    u32 tmp_size = 0;
+    const int rc = Syscall::invoke(Syscall::OpenSharedMemory, guid, reinterpret_cast<u32>(&tmp_addr), reinterpret_cast<u32>(&tmp_size));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+    addr = tmp_addr;
+    size = tmp_size;
+    return E_OK;
+}
 
 }
