@@ -146,4 +146,36 @@ int open_shared_memory(u32 guid, void*& addr, u32& size)
     return E_OK;
 }
 
+int send_message(u32 pid, u32 msg)
+{
+    return Syscall::invoke(Syscall::SendMessage, pid, msg);
+}
+
+int get_message(u32& msg)
+{
+    u32 tmp_msg = 0;
+    const int rc = Syscall::invoke(Syscall::GetMessage, reinterpret_cast<u32>(&tmp_msg));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+
+    msg = tmp_msg;
+    return E_OK;
+}
+
+int get_pid_by_name(const String& name, u32& pid)
+{
+    u32 tmp_pid = 0;
+    const int rc = Syscall::invoke(Syscall::GetPidByName, reinterpret_cast<u32>(name.c_str()), reinterpret_cast<u32>(&tmp_pid));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+
+    pid = tmp_pid;
+    return E_OK;
+
+}
+
 }

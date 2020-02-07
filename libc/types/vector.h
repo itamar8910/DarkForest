@@ -82,7 +82,7 @@ public:
     T& operator[] (size_t pos) {return access(pos);}
     const T& operator[] (size_t pos) const {return access(pos);}
 
-    bool empty() const { return m_size != 0; }
+    bool empty() const { return m_size == 0; }
 
     /// like push_back
     void append(const T& value) {

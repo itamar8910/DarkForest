@@ -34,6 +34,15 @@ void query_shared_mem()
     kprintf("shell: shared mem char: %d\n", reinterpret_cast<char*>(addr)[0]);
 }
 
+void try_messages()
+{
+    u32 msg;
+    kprintf("getting message...\n");
+    const int rc = std::get_message(msg);
+    ASSERT(rc == E_OK);
+    kprintf("shell: msg: 0x%x\n", msg);
+}
+
 int main() {
 
     try_shared_mem();
@@ -45,7 +54,10 @@ int main() {
         char c = getchar();
         if(c == '\n') {
             shell.process_command(String(command.data(), command.size()));
+
             query_shared_mem();
+            try_messages();
+
             command.clear();
         }
 		else {

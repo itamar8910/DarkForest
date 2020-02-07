@@ -42,3 +42,14 @@ private:
     size_t m_waitee_finished {false};
 
 };
+
+class PendingMessageBlocker : public TaskBlocker{
+public:
+    PendingMessageBlocker(u32 pid);
+    virtual bool can_unblock() override;
+    virtual ~PendingMessageBlocker() override = default;
+    
+private:
+    u32 m_pid;
+
+};

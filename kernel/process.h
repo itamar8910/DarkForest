@@ -3,6 +3,7 @@
 #include "file.h"
 #include "fork_args.h"
 #include "FileSystem/DirectoryEntry.h"
+#include "types/list.h"
 
 #define NUM_FILE_DESCRIPTORS 256
 
@@ -20,6 +21,10 @@ public:
     String name(){return m_name;}
     void set_waiter(WaitBlocker*);
 
+    bool has_pending_message();
+    bool get_message(u32& msg);
+    void put_message(u32 msg);
+
     ~Process();
 
     int syscall_open(const String& path);
@@ -35,6 +40,9 @@ public:
     int syscall_creste_entry(const String& path, DirectoryEntry::Type type);
     int syscall_create_shared_memory(const u32 guid, const u32 size, void** addr);
     int syscall_open_shared_memory(const u32 guid, void** addr, u32* size);
+    int syscall_send_message(const u32 pid, const u32 msg);
+    int syscall_get_message(u32* msg);
+    int syscall_get_pid_by_name(char* name, u32* pid);
 
 private:
     String get_full_path(const String& path);
@@ -48,4 +56,6 @@ private:
 
     File* m_file_descriptors[NUM_FILE_DESCRIPTORS] {0};
     WaitBlocker* m_waiter {nullptr};
+
+    List<u32> m_messages {};
 };

@@ -95,10 +95,16 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return VFS::the().is_file(Path(String((char*)arg1)));
         case Syscall::IsDirectory:
             return VFS::the().is_directory(Path(String((char*)arg1)));
-        case Syscall::CreateSharedMemory:;
+        case Syscall::CreateSharedMemory:
             return Scheduler::the().current().syscall_create_shared_memory(arg1, arg2, (void**)arg3);
-        case Syscall::OpenSharedMemory:;
+        case Syscall::OpenSharedMemory:
             return Scheduler::the().current().syscall_open_shared_memory(arg1, (void**)arg2, (u32*)arg3);
+        case Syscall::SendMessage:
+            return Scheduler::the().current().syscall_send_message(arg1, arg2);
+        case Syscall::GetMessage:
+            return Scheduler::the().current().syscall_get_message((u32*)arg1);
+        case Syscall::GetPidByName:
+            return Scheduler::the().current().syscall_get_pid_by_name((char*)arg1, (u32*)arg2);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

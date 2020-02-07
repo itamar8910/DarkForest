@@ -22,6 +22,7 @@ public:
     static void terminate_current();
     Process& current();
     Process* get_process(size_t pid);
+    Process* get_process_by_name(const String& name);
 
 private:
     Scheduler() 

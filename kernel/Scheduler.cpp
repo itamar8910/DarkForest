@@ -180,3 +180,16 @@ Process* Scheduler::get_process(size_t pid)
     }
     return nullptr;
 }
+
+Process* Scheduler::get_process_by_name(const String& name)
+{
+    auto i1 = m_runanble_list.find([&](Process* other){return other->name() == name;});
+    if(i1 != m_runanble_list.end()) {
+        return *i1;
+    }
+    auto i2 = m_blocked_list.find([&](Process* other){return other->name() == name;});
+    if(i2 != m_blocked_list.end()) {
+        return *i2;
+    }
+    return nullptr;
+}

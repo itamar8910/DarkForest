@@ -20,7 +20,7 @@ int write(size_t fd, const char* buff, size_t count);
 // executes a new process from executable at 'path',
 // with a copy of the calling process's file descriptor table
 int fork_and_exec(const String& path,
-                    const String& name="Unnamed",
+                    const String& name,
                     const Vector<String>& args = Vector<String>()
                     );
 int wait(size_t pid);
@@ -38,4 +38,10 @@ int is_directory(const String& path);
 
 int create_shared_memory(u32 guid, u32 size, void*& addr);
 int open_shared_memory(u32 guid, void*& addr, u32& size);
+
+int send_message(u32 pid, u32 msg);
+int get_message(u32& msg);
+
+int get_pid_by_name(const String& name, u32& pid);
+
 }

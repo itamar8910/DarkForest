@@ -316,6 +316,11 @@ int Process::syscall_open_shared_memory(const u32 guid, void** addr, u32* size)
     }
 
     Process* owner = Scheduler::the().get_process(entry.pid);
+    if(!owner)
+    {
+        kprintf("shared memory owner not found\n");
+        return E_NOTFOUND;
+    }
     const int dup_rc = MemoryManager::the().duplicate(owner->m_task->CR3, (u32)entry.virt_addr, entry.size, (u32)m_next_shared_memory);
     if(dup_rc)
     {
@@ -326,5 +331,74 @@ int Process::syscall_open_shared_memory(const u32 guid, void** addr, u32* size)
 
     m_next_shared_memory = reinterpret_cast<void*>((u32)m_next_shared_memory + entry.size);
 
+    return E_OK;
+}
+
+int Process::syscall_send_message(const u32 pid, const u32 msg)
+{
+    Process* receiver = Scheduler::the().get_process(pid);
+    if(!receiver)
+    {
+        kprintf("notfound\n");
+        return E_NOTFOUND;
+    }
+
+    receiver->put_message(msg); 
+    return E_OK;
+}
+
+int Process::syscall_get_message(u32* msg)
+{
+    if(has_pending_message())
+    {
+        const bool rc  = get_message(*msg);
+        ASSERT(rc);
+        return E_OK;
+    }
+
+    kprintf("no messages, blocking..\n");
+
+    auto* blocker = new PendingMessageBlocker(m_pid);
+    Scheduler::the().block_current(blocker);
+
+    u32 tmp = 0;
+    const bool rc  = get_message(tmp);
+    ASSERT(rc);
+    *msg = tmp;
+    return E_OK;
+
+}
+
+bool Process::has_pending_message()
+{
+    return !m_messages.empty();
+}
+
+bool Process::get_message(u32& msg)
+{
+    if(m_messages.empty())
+    {
+        return false;
+    }
+    msg = m_messages.pop_front();
+    kprintf("get message: 0x%x\n", msg);
+    return true;
+}
+
+void Process::put_message(u32 msg)
+{
+    kprintf("put message: 0x%x\n", msg);
+    m_messages.append(msg);
+}
+
+
+int Process::syscall_get_pid_by_name(char* name, u32* pid)
+{
+    Process* p = Scheduler::the().get_process_by_name(name);
+    if(!p)
+    {
+        return E_NOTFOUND;
+    }
+    *pid = p->pid();
     return E_OK;
 }

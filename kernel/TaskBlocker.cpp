@@ -30,3 +30,16 @@ bool WaitBlocker::can_unblock()
 {
     return m_waitee_finished;
 }
+
+PendingMessageBlocker::PendingMessageBlocker(u32 pid)
+    : m_pid(pid)
+{
+}
+
+
+bool PendingMessageBlocker::can_unblock()
+{
+    Process* p = Scheduler::the().get_process(m_pid);
+    ASSERT(p != nullptr);
+    return p->has_pending_message();
+}

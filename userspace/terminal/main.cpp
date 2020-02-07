@@ -26,7 +26,7 @@ void print_hello_text() {
 int main() {
     initialize_descriptors();
     print_hello_text();
-    int pid = std::fork_and_exec("/bin/shell.app");
+    int pid = std::fork_and_exec("/bin/shell.app", "shell");
     ASSERT(pid > 0);
     std::wait(pid);
     return 0;
