@@ -275,13 +275,56 @@ int Process::syscall_creste_entry(const String& path, DirectoryEntry::Type type)
     return 0;
 }
 
-int Process::syscall_create_shared_memory(const u32 guid, const u32 size)
+int Process::syscall_create_shared_memory(const u32 guid, const u32 size, void** addr)
 {
     if(((size%PAGE_SIZE) != 0) || ((u32)m_next_shared_memory + size >= SHARED_MEMORY_END))
     {
         return E_INVALID_SIZE;
     }
-    MemoryManager::the().allocate_range((u32)m_next_shared_memory, size, PageWritable::YES, UserAllowed::YES);
+
+    const int rc = MemoryManager::the().allocate_range((u32)m_next_shared_memory, size, PageWritable::YES, UserAllowed::YES);
+    if(rc)
+    {
+        return rc;
+    }
+
+    const bool register_rc = SharedMemoryManager::the().register_shm(guid, m_pid, m_next_shared_memory, size);
+    if(!register_rc)
+    {
+        return E_TAKEN;
+    }
+
+    *addr = m_next_shared_memory;
     m_next_shared_memory = reinterpret_cast<void*>((u32)m_next_shared_memory + size);
-    return SharedMemoryManager::the().register_shared_memory(guid, m_pid);
+    return E_OK;
+}
+
+int Process::syscall_open_shared_memory(const u32 guid, void** addr, u32* size)
+{
+    SharedMemoryManager::SharedMemoryEntry entry;
+    const bool rc = SharedMemoryManager::the().get(guid, entry);
+    if(!rc)
+    {
+        return E_NOTFOUND;
+    }
+
+    if(entry.pid == m_pid)
+    {
+        *addr = entry.virt_addr;
+        *size = entry.size;
+        return E_OK;
+    }
+
+    Process* owner = Scheduler::the().get_process(entry.pid);
+    const int dup_rc = MemoryManager::the().duplicate(owner->m_task->CR3, (u32)entry.virt_addr, entry.size, (u32)m_next_shared_memory);
+    if(dup_rc)
+    {
+        return dup_rc;
+    }
+    *addr = m_next_shared_memory;
+    *size = entry.size;
+
+    m_next_shared_memory = reinterpret_cast<void*>((u32)m_next_shared_memory + entry.size);
+
+    return E_OK;
 }

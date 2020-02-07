@@ -133,6 +133,15 @@ public:
 	// we will need to implement a mechanism to sync kernel-space PDEs between tasks
 	void lock_kernel_PDEs() {m_kernel_PDEs_locked = true;}
 
+	/**
+	 * duplicates a virtual memory mapping of another process in a specified range, to the current process.
+	 * 
+	 * After calling this function,
+	 * dst_addr...dst_addr+size will point to the same frames that src_addr...src_addr+size point to in the other process
+	 * 
+	 * other_cr3 is the address of the page directory of the other process.
+	*/
+	int duplicate(void* other_cr3, VirtualAddress src_addr, size_t size, VirtualAddress dst_addr);
 
 private:
 	int map_page(VirtualAddress virt_addr, PhysicalAddress phys_addr, PageWritable writable, UserAllowed user_allowed);

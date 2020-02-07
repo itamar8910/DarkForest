@@ -11,28 +11,29 @@ SharedMemoryManager& SharedMemoryManager::the()
     return *s_the;
 }
 
-int SharedMemoryManager::register_shared_memory(u32 guid, u32 pid)
+bool SharedMemoryManager::register_shm(u32 guid, u32 pid, void* virt_addr, u32 size)
 {
     for(auto& entry : m_entries)
     {
         if(entry.guid == guid)
         {
-            return E_TAKEN;
+            return false;
         }
     }
-    m_entries.append({guid, pid});
-    return E_OK;
+    m_entries.append({guid, pid, virt_addr, size});
+    return true;
 }
 
 
-u32 SharedMemoryManager::get_pid_of_shared_memory(u32 guid)
+bool SharedMemoryManager::get(u32 guid, SharedMemoryManager::SharedMemoryEntry& res)
 {
     for(auto& entry : m_entries)
     {
         if(entry.guid == guid)
         {
-            return entry.pid;
+            res = entry;
+            return true;
         }
     }
-    return 0;
+    return false;
 }

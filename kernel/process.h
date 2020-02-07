@@ -33,7 +33,8 @@ public:
     int syscall_set_current_directory(const String& path);
     int syscall_get_current_directory(char* buff, size_t* count);
     int syscall_creste_entry(const String& path, DirectoryEntry::Type type);
-    int syscall_create_shared_memory(u32 guid, u32 size);
+    int syscall_create_shared_memory(const u32 guid, const u32 size, void** addr);
+    int syscall_open_shared_memory(const u32 guid, void** addr, u32* size);
 
 private:
     String get_full_path(const String& path);

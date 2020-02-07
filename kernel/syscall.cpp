@@ -96,7 +96,9 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::IsDirectory:
             return VFS::the().is_directory(Path(String((char*)arg1)));
         case Syscall::CreateSharedMemory:;
-            return Scheduler::the().current().syscall_create_shared_memory(arg1, arg2);
+            return Scheduler::the().current().syscall_create_shared_memory(arg1, arg2, (void**)arg3);
+        case Syscall::OpenSharedMemory:;
+            return Scheduler::the().current().syscall_open_shared_memory(arg1, (void**)arg2, (u32*)arg3);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();
