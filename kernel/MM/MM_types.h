@@ -37,7 +37,7 @@ class PhysicalAddress {
 		void assert_aligned() const {
 			ASSERT(is_frame_aligned());
 		}
-		operator int() const{return m_addr;} // cast to int
+		operator u32() const{return m_addr;} // cast to u32
 };
 
 // A frame is a page-aligned physical address
