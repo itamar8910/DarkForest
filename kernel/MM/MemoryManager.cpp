@@ -9,6 +9,7 @@
 #include "cpu.h"
 #include "kmalloc.h"
 #include "InterruptDisabler.h"
+#include "errs.h"
 
 // #define MM_DBG
 
@@ -205,17 +206,56 @@ void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, Us
     #ifdef MM_DBG
     kprintf("MM: allocate: 0x%x\n", virt_addr);
     #endif
-    auto pte = ensure_pte(virt_addr);
-    ASSERT(!pte.is_present());
     Err err;
     Frame pt_frame = get_free_frame(err);
     ASSERT(!err);
-    pte.set_addr(pt_frame);
+    const int rc = map_page(virt_addr, pt_frame, writable, user_allowed);
+    // NOTE: if map_page fails, we leak the allocated frame
+    ASSERT(!rc);
+}
+
+int MemoryManager::map(VirtualAddress virt_addr, PhysicalAddress phys_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
+{
+    InterruptDisabler dis;
+   if(size % PAGE_SIZE != 0) 
+   {
+       return E_INVALID_SIZE;
+   }
+   if((virt_addr % PAGE_SIZE != 0) | (phys_addr % PAGE_SIZE != 0))
+   {
+       return E_INVALID;
+   }
+
+   const size_t num_pages = size / PAGE_SIZE;
+
+   for(size_t page_idx = 0; page_idx < num_pages; ++page_idx)
+   {
+       kprintf("map: 0x%x->0x%x\n", virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE);
+       const int rc = map_page(virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE, writable, user_allowed);
+        // NOTE: if map_page fails, we leave the pages mapped so far
+       ASSERT(!rc);
+   }
+
+   return E_OK;
+
+   
+
+}
+
+int MemoryManager::map_page(VirtualAddress virt_addr, PhysicalAddress phys_addr, PageWritable writable, UserAllowed user_allowed)
+{
+    auto pte = ensure_pte(virt_addr);
+    if(pte.is_present())
+    {
+        return E_TAKEN;
+    }
+    pte.set_addr(phys_addr);
     pte.set_present(true);
     pte.set_writable(writable==PageWritable::YES);
     pte.set_user_allowed(user_allowed==UserAllowed::YES);
     un_temp_map(); // 'ensure_pte' temp_mapped the page table of PTE
     flush_tlb(virt_addr);
+    return E_OK;
 }
 
 void MemoryManager::deallocate(VirtualAddress virt_addr, bool free_page) {
