@@ -158,7 +158,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
 	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
 
-	VGA::init();
+	// VGA::init();
 
 	// Scheduler::the().add_process(Process::create(task1, "task1"));
 	// Scheduler::the().add_process(Process::create(task2, "task2"));

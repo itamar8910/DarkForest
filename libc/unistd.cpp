@@ -120,5 +120,9 @@ int is_directory(const String& path)
     return Syscall::invoke(Syscall::IsDirectory, (u32) path.c_str());
 }
 
+int create_shared_memory(u32 guid, u32 size)
+{
+    return Syscall::invoke(Syscall::CreateSharedMemory, guid, size);
+}
 
 }

@@ -25,6 +25,7 @@ namespace Syscall {
         CreateDirectory,
         IsFile,
         IsDirectory,
+        CreateSharedMemory,
     };
 
     int invoke(SyscallIdx syscall, u32 arg1=0, u32 arg2=0, u32 arg3=0);

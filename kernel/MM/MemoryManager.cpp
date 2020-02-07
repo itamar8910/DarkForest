@@ -214,6 +214,20 @@ void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, Us
     ASSERT(!rc);
 }
 
+int MemoryManager::allocate_range(VirtualAddress virt_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
+{
+    InterruptDisabler dis;
+    if(size % PAGE_SIZE != 0) 
+    {
+        return E_INVALID_SIZE;
+    }
+    for(size_t page = virt_addr; page < virt_addr + size; page += PAGE_SIZE)
+    {
+        allocate(page, writable, user_allowed);
+    }
+    return E_OK;
+}
+
 int MemoryManager::map(VirtualAddress virt_addr, PhysicalAddress phys_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
 {
     InterruptDisabler dis;

@@ -1,7 +1,7 @@
 #pragma once
 
 enum ERRS {
-    E_OK,
+    E_OK = 0,
     E_NOTFOUND,
     E_LIMIT,
     E_TOO_BIG,

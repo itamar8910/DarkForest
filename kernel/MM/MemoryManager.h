@@ -20,6 +20,9 @@
 	4MB - 0xc0000000 - User space
 	0xa00000(10MB) - userspace code start
 
+	0x40000000 - shared memory start
+	0x50000000 - shared memory end
+
 	0x70000000 - userspace heap start (grows up)
 
 	0xb0000000 - userspace stack bottom (grows down)
@@ -38,6 +41,9 @@ constexpr u32 KERNELSPACE_START = 0xc0000000;
 
 static constexpr u32 BIG_BUFFER_START = 0xca000000;
 static constexpr u32 BIG_BUFFER_END = 0xcfffe000;
+
+constexpr u32 SHARED_MEMORY_START = 0x40000000;
+constexpr u32 SHARED_MEMORY_END = 0x50000000;
 
 
 // each PDE entry is responsible for 4MB of memory
@@ -79,6 +85,7 @@ public:
 	VirtualAddress temp_map(PhysicalAddress addr);
 	void un_temp_map();
 	void allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed);
+	int allocate_range(VirtualAddress virt_addr, size_t size, PageWritable writable, UserAllowed user_allowed);
 	int map(VirtualAddress virt_addr, PhysicalAddress phys_addr, size_t size, PageWritable writable, UserAllowed user_allowed);
 
 	void disable_page(Frame frame);
@@ -125,6 +132,7 @@ public:
 	// if we want to disable this limitation in the future,
 	// we will need to implement a mechanism to sync kernel-space PDEs between tasks
 	void lock_kernel_PDEs() {m_kernel_PDEs_locked = true;}
+
 
 private:
 	int map_page(VirtualAddress virt_addr, PhysicalAddress phys_addr, PageWritable writable, UserAllowed user_allowed);

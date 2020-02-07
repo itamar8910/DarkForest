@@ -38,4 +38,6 @@ int create_directory(const String& path);
 int is_file(const String& path);
 
 int is_directory(const String& path);
+
+int create_shared_memory(u32 guid, u32 size);
 }

@@ -6,6 +6,7 @@
 #include "FileSystem/CharFile.h"
 #include "Loader/loader.h"
 #include "Scheduler.h"
+#include "MM/SharedMemoryManager.h"
 
 u32 g_next_pid;
 
@@ -21,7 +22,8 @@ Process::Process(u32 pid, ThreadControlBlock* task, String name, String current_
     : m_pid(pid),
       m_task(task),
       m_name(name),
-      m_current_directory(current_directory)
+      m_current_directory(current_directory),
+      m_next_shared_memory((void*)SHARED_MEMORY_START)
 {
     if(descriptors) {
         for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
@@ -271,5 +273,15 @@ int Process::syscall_creste_entry(const String& path, DirectoryEntry::Type type)
         return -E_INVALID;
     }
     return 0;
+}
 
+int Process::syscall_create_shared_memory(const u32 guid, const u32 size)
+{
+    if(((size%PAGE_SIZE) != 0) || ((u32)m_next_shared_memory + size >= SHARED_MEMORY_END))
+    {
+        return E_INVALID_SIZE;
+    }
+    MemoryManager::the().allocate_range((u32)m_next_shared_memory, size, PageWritable::YES, UserAllowed::YES);
+    m_next_shared_memory = reinterpret_cast<void*>((u32)m_next_shared_memory + size);
+    return SharedMemoryManager::the().register_shared_memory(guid, m_pid);
 }
