@@ -23,6 +23,8 @@
 	0x40000000 - shared memory start
 	0x50000000 - shared memory end
 
+	0x60000000 - framebuffer (only for gui processes)
+
 	0x70000000 - userspace heap start (grows up)
 
 	0xb0000000 - userspace stack bottom (grows down)

@@ -9,4 +9,5 @@ enum ERRS {
     E_TOO_SMALL,
     E_INVALID_SIZE,
     E_TAKEN,
+    E_NOT_SUPPORTED,
 };

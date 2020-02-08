@@ -402,3 +402,15 @@ int Process::syscall_get_pid_by_name(char* name, u32* pid)
     *pid = p->pid();
     return E_OK;
 }
+
+
+int Process::syscall_map_device(char* name, void* addr, u32 size)
+{
+    File* f = VFS::the().open(Path(String(name)));
+    if(f == nullptr)
+    {
+        return E_NOTFOUND;
+    }
+    Device* dev = static_cast<Device*>(f); // TODO dynamic cast
+    return dev->mmap(addr, size);
+}

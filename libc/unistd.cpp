@@ -178,4 +178,9 @@ int get_pid_by_name(const String& name, u32& pid)
 
 }
 
+int map_device(const String& path, void* addr, u32 size)
+{
+    return Syscall::invoke(Syscall::MapDevice, reinterpret_cast<u32>(path.c_str()), (u32)addr, size);
+}
+
 }

@@ -7,11 +7,6 @@
 #include "types/vector.h"
 #include "types/String.h"
 #include "kernel/errs.h"
-#include "libc/FileSystem/DirectoryEntry.h"
-
-#include "PS2KeyboardCommon.h"
-
-#include "ShellManager.h"
 
 constexpr u32 SHM_GUID = 1;
 
@@ -50,12 +45,36 @@ bool already_running()
     return (rc == E_OK);
 }
 
+constexpr char VGA_PATH[] = "/dev/vga";
+
+void* map_framebuffer()
+{
+    const u32 size = 1280*720*sizeof(u32)*2;
+    void* const addr = (void*) 0x60000000;
+    const int rc  = std::map_device(VGA_PATH, addr, size);
+    ASSERT(rc == E_OK);
+    return addr;
+}
+
 int main() {
     printf("WindowServer!\n");
     if(already_running())
     {
         printf("WindowServer is already running\n");
         return 1;
+    }
+    u32* frame_buffer = (u32*)map_framebuffer();
+    kprintf("lfb: 0x%x\n", frame_buffer);
+    u32 width = 1280;
+    u32 height = 720;
+    for(size_t row = 0; row < height; ++row)
+    {
+        for(size_t col = 0; col < width; ++col)
+        {
+            u32* pixel = frame_buffer + (row*width + col);
+            // kprintf("0x%x,", pixel);
+            *pixel = (col%10 < 5) ? 0xFF0000FF : 0xFF00FF00;
+        }
     }
     while(true)
     {

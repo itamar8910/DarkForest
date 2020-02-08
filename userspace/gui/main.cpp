@@ -7,11 +7,6 @@
 #include "types/vector.h"
 #include "types/String.h"
 #include "kernel/errs.h"
-#include "libc/FileSystem/DirectoryEntry.h"
-
-#include "PS2KeyboardCommon.h"
-
-#include "ShellManager.h"
 
 constexpr u32 SHM_GUID = 1;
 
