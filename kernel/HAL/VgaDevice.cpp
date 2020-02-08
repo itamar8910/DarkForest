@@ -1,6 +1,7 @@
 #include "VgaDevice.h"
 #include "IO.h"
 #include "MM/MemoryManager.h"
+#include "ioctl_common.h"
 
 #define MAX_RESOLUTION_WIDTH 4096
 #define MAX_RESOLUTION_HEIGHT 2160
@@ -66,8 +67,18 @@ int VgaDevice::mmap(void* virtual_addr, u32 size)
 
 int VgaDevice::ioctl(u32 request, void* buf)
 {
-    (void)request;
-    (void)buf;
-    // TODO: add get_dimensions code
-    return E_NOT_SUPPORTED;
+    IOCTL::VGA::Data* data = static_cast<IOCTL::VGA::Data*>(buf);
+    switch(static_cast<IOCTL::VGA::Code>(request))
+    {
+        case IOCTL::VGA::Code::GET_DIMENSIONS:
+        {
+            data->width = m_width;
+            data->height = m_height;
+            data->pitch = m_pitch;
+            break;
+        }
+        default:
+            return E_INVALID;
+    }
+    return E_OK;
 }
