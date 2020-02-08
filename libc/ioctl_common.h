@@ -14,7 +14,7 @@ namespace IOCTL {
             UPDATE_CURSOR=6,
         };
 
-        struct Data {
+        struct [[gnu::packed]] Data {
             u8 row {0};
             u8 col {0};
             u16 value {0};
@@ -22,6 +22,22 @@ namespace IOCTL {
 
         enum class Errs {
             E_OUT_OF_BOUNDS = 1,
+        };
+
+    };
+
+    namespace VGA {
+        enum class Code : u32{
+            GET_DIMENSIONS,
+        };
+
+        struct [[gnu::packed]] Data {
+            u16 width {0};
+            u16 height {0};
+            u16 pitch {0};
+        };
+
+        enum class Errs {
         };
 
     };

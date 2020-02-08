@@ -106,7 +106,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::GetPidByName:
             return Scheduler::the().current().syscall_get_pid_by_name((char*)arg1, (u32*)arg2);
         case Syscall::MapDevice:
-            return Scheduler::the().current().syscall_map_device((char*)arg1, (void*)arg2, (u32)arg3);
+            return Scheduler::the().current().syscall_map_device((int)arg1, (void*)arg2, (u32)arg3);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

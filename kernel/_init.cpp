@@ -30,7 +30,6 @@
 #include "drivers/ATADisk.h"
 #include "FileSystem/Fat32FS.h"
 #include "lock.h"
-#include "drivers/VGA.h"
 
 #ifdef TESTS
 #include "tests/tests.h"

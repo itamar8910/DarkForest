@@ -6,6 +6,7 @@ TARGET := WindowServer.o
 
 OBJS := \
 	main.o \
+	Vga.o \
 
 all: $(TARGET)
 

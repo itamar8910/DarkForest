@@ -404,13 +404,13 @@ int Process::syscall_get_pid_by_name(char* name, u32* pid)
 }
 
 
-int Process::syscall_map_device(char* name, void* addr, u32 size)
+int Process::syscall_map_device(int fd, void* addr, u32 size)
 {
-    File* f = VFS::the().open(Path(String(name)));
+    if(fd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+    auto* f = m_file_descriptors[fd];
     if(f == nullptr)
-    {
-        return E_NOTFOUND;
-    }
+        return -E_NOTFOUND;
     Device* dev = static_cast<Device*>(f); // TODO dynamic cast
     return dev->mmap(addr, size);
 }

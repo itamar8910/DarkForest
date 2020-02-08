@@ -44,6 +44,6 @@ int get_message(u32& msg);
 
 int get_pid_by_name(const String& name, u32& pid);
 
-int map_device(const String& path, void* addr, u32 size);
+int map_device(int fd, void* addr, u32 size);
 
 }

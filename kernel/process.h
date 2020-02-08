@@ -43,7 +43,7 @@ public:
     int syscall_send_message(const u32 pid, const u32 msg);
     int syscall_get_message(u32* msg);
     int syscall_get_pid_by_name(char* name, u32* pid);
-    int syscall_map_device(char* name, void* addr, u32 size);
+    int syscall_map_device(int fd, void* addr, u32 size);
 
 private:
     String get_full_path(const String& path);
