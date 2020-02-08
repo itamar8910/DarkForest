@@ -43,33 +43,26 @@ constexpr u32 SHM_GUID = 1;
 //     kprintf("shell: msg: 0x%x\n", msg);
 // }
 
+bool already_running()
+{
+    u32 pid = 0;
+    const int rc = std::get_pid_by_name("WindowServer", pid);
+    return (rc == E_OK);
+}
+
 int main() {
-
-    // try_shared_mem();
-
-    ShellManager shell;
-    Vector<char> command(50);
-
-    while(1) {
-        char c = getchar();
-        if(c == '\n') {
-            shell.process_command(String(command.data(), command.size()));
-
-            // query_shared_mem();
-            // try_messages();
-
-            command.clear();
-        }
-		else {
-            if(c == '\b') { // backspace
-                if(command.size() == 0)
-                    continue;
-                command.pop();
-            } else {
-                command.append(c);
-            }
-            putc(c);
-		}
+    printf("WindowServer!\n");
+    if(already_running())
+    {
+        printf("WindowServer is already running\n");
+        return 1;
+    }
+    while(true)
+    {
+        u32 msg;
+        const int rc = std::get_message(msg);
+        ASSERT(rc == E_OK);
+        kprintf("WindowServer got message: 0x%x\n", msg);
     }
     return 0;
 }

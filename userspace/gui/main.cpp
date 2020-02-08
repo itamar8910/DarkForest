@@ -44,32 +44,12 @@ constexpr u32 SHM_GUID = 1;
 // }
 
 int main() {
-
-    // try_shared_mem();
-
-    ShellManager shell;
-    Vector<char> command(50);
-
-    while(1) {
-        char c = getchar();
-        if(c == '\n') {
-            shell.process_command(String(command.data(), command.size()));
-
-            // query_shared_mem();
-            // try_messages();
-
-            command.clear();
-        }
-		else {
-            if(c == '\b') { // backspace
-                if(command.size() == 0)
-                    continue;
-                command.pop();
-            } else {
-                command.append(c);
-            }
-            putc(c);
-		}
-    }
+    printf("gui!\n");
+    u32 pid = 0;
+    const int rc = std::get_pid_by_name("WindowServer", pid);
+    ASSERT(rc == E_OK);
+    kprintf("WindowServer pid: %d\n", pid);
+    const int msg_rc = std::send_message(pid, 0xcafebabe);
+    ASSERT(msg_rc == E_OK);
     return 0;
 }

@@ -33,31 +33,31 @@ void do_ls(const String& directory) {
     }
 }
 
-void try_shared_mem()
-{
-    void* addr = 0;
-    u32 size = 0;
-    const int rc = std::open_shared_memory(1, addr, size);
-    kprintf("ls: shared mem: 0x%x, %d\n", addr, size);
-    ASSERT(rc == E_OK);
-    const char c = reinterpret_cast<char*>(addr)[0];
-    kprintf("ls: shared mem char: %d\n", c);
-    reinterpret_cast<char*>(addr)[0] = 'b';
-}
+// void try_shared_mem()
+// {
+//     void* addr = 0;
+//     u32 size = 0;
+//     const int rc = std::open_shared_memory(1, addr, size);
+//     kprintf("ls: shared mem: 0x%x, %d\n", addr, size);
+//     ASSERT(rc == E_OK);
+//     const char c = reinterpret_cast<char*>(addr)[0];
+//     kprintf("ls: shared mem char: %d\n", c);
+//     reinterpret_cast<char*>(addr)[0] = 'b';
+// }
 
-void try_messages()
-{
-    u32 pid = 0;
-    const int rc = std::get_pid_by_name("shell", pid);
-    ASSERT(rc == E_OK);
-    kprintf("shell pid: %d\n", pid);
-    const int msg_rc = std::send_message(pid, 0xdeadbeab);
-    ASSERT(msg_rc == E_OK);
-}
+// void try_messages()
+// {
+//     u32 pid = 0;
+//     const int rc = std::get_pid_by_name("shell", pid);
+//     ASSERT(rc == E_OK);
+//     kprintf("shell pid: %d\n", pid);
+//     const int msg_rc = std::send_message(pid, 0xdeadbeab);
+//     ASSERT(msg_rc == E_OK);
+// }
 
 int main(char** argv, size_t argc) {
-    try_shared_mem();
-    try_messages();
+    // try_shared_mem();
+    // try_messages();
 
     if(argc < 1) {
         printf("expected argc >= 1\n");

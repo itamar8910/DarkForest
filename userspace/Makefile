@@ -11,6 +11,8 @@ APPS := \
 	echo.app \
 	touch.app \
 	mkdir.app \
+	WindowServer.app \
+	gui.app \
 
 LIBC_DIR := ../libc
 LIBC_OBJ := $(LIBC_DIR)/libc.o
