@@ -13,7 +13,7 @@
 
 #include "ShellManager.h"
 
-constexpr u32 SHM_GUID = 1;
+// constexpr u32 SHM_GUID = 1;
 
 // void try_shared_mem()
 // {

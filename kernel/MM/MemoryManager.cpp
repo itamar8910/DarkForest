@@ -244,7 +244,7 @@ int MemoryManager::map(VirtualAddress virt_addr, PhysicalAddress phys_addr, size
 
    for(size_t page_idx = 0; page_idx < num_pages; ++page_idx)
    {
-       kprintf("map: 0x%x->0x%x\n", virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE);
+    //    kprintf("map: 0x%x->0x%x\n", virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE);
        const int rc = map_page(virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE, writable, user_allowed);
         // NOTE: if map_page fails, we leave the pages mapped so far
        ASSERT(!rc);
