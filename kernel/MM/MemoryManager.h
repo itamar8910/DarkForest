@@ -150,7 +150,7 @@ private:
 
 private:
 	u32 m_frames_avail_bitmap[N_FRAME_BITMAP_ENTRIES];
-	PageDirectory* m_page_directory;
+	PageDirectory m_page_directory;
 	bool m_tempmap_used;
 	bool m_kernel_PDEs_locked;
 

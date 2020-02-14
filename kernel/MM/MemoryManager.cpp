@@ -10,10 +10,12 @@
 #include "kmalloc.h"
 #include "InterruptDisabler.h"
 #include "errs.h"
+#include "new.h"
 
 // #define MM_DBG
 
 static MemoryManager* mm = nullptr;
+static u8 memory_manager_placeholder[sizeof(MemoryManager)];
 
 // TODO: use a bitmap for page directories instead of just advancing next_page_directory_allocation
 static u32 next_page_directory_allocation = 2 * MB;
@@ -21,12 +23,16 @@ const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB;
 
 void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::initialize()\n");
     InterruptDisabler dis();
-    mm = new MemoryManager();
+    new(memory_manager_placeholder) MemoryManager();
+    mm = (MemoryManager*) memory_manager_placeholder;
     mm->init(mbt);
 }
 
 void MemoryManager::init(multiboot_info_t* mbt) {
-    mm->m_page_directory = new PageDirectory(PhysicalAddress(get_cr3()));
+    mm->m_page_directory = PageDirectory(PhysicalAddress(get_cr3()));
+    // auto new_PD_addr = next_page_directory_allocation;
+    // next_page_directory_allocation += PAGE_SIZE;
+    // mm->m_page_directory = 
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
 	for(
@@ -145,7 +151,7 @@ void MemoryManager::flush_entire_tlb()
 
 PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bool tempMap_pageTable) {
     // kprintf("MemoryManager::ensure_pte: 0x%x\n", (u32)addr);
-    auto pde = m_page_directory->get_pde(addr);
+    auto pde = m_page_directory.get_pde(addr);
     bool new_pagetable = false;
     if(!pde.is_present() && create_new_PageTable) {
         kprintf("no PDE for virt addr: 0x%x, creating a new page table\n", addr);
@@ -329,7 +335,7 @@ void MemoryManager::memcpy_frames(PhysicalAddress dst, PhysicalAddress src) {
  */
 PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages) {
     #ifdef DBG_CLONE_PAGE_DIRECTORY
-    kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory->get_base());
+    kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory.get_base());
     #endif
     InterruptDisabler dis();
 
@@ -339,10 +345,10 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
     auto new_page_directory = PageDirectory(PhysicalAddress(new_PD_addr));
 
     // shallow copy of page directory
-    memcpy_frames(new_page_directory.get_base(), m_page_directory->get_base());
+    memcpy_frames(new_page_directory.get_base(), m_page_directory.get_base());
 
     u32* PD_entries = new u32[NUM_PAGE_DIRECTORY_ENTRIES];
-    copy_from_physical_frame((u32)m_page_directory->entries(), (u8*)PD_entries);
+    copy_from_physical_frame((u32)m_page_directory.entries(), (u8*)PD_entries);
 
     u32* new_page_tables_addresses = new u32[NUM_PAGE_DIRECTORY_ENTRIES]; // allocate on heap because kernel stack is small
     memset(new_page_tables_addresses, 0, NUM_PAGE_DIRECTORY_ENTRIES*sizeof(u32));
@@ -421,12 +427,12 @@ MemoryManager& MemoryManager::the(u32 cr3) {
     if(cr3 == 0) {
         cr3 = get_cr3();
     }
-    mm->m_page_directory->set_page_directoy_addr(PhysicalAddress(cr3));
+    mm->m_page_directory.set_page_directoy_addr(PhysicalAddress(cr3));
     return *mm;
 }
 
 MemoryManager::MemoryManager()
-    :  m_page_directory(nullptr),
+    :  m_page_directory(0),
      m_tempmap_used(false),
       m_kernel_PDEs_locked(false)
 {

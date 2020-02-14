@@ -7,27 +7,9 @@
 
 // #define KMALLOC_DBG
 
-KMallocMode kmalloc_mode = KMallocMode::KMALLOC_ETERNAL;
-
-void* KMALLOC_ETERNAL_START = (void*) (3 * MB);
-void* KMALLOC_ETERNAL_END = (void*) (4 * MB - PAGE_SIZE);
-void* KERNEL_HEAP_START = (void*) 0xc1000000;
+void* KERNEL_HEAP_START = (void*)   0xc1000000;
 void* KERNEL_HEAP_MAX_END = (void*) 0xc5000000;
-void* eternal_next_free = (void*) KMALLOC_ETERNAL_START; 
 
-
-
-void* kmalloc_eternal(size_t size) {
-    void* cur = eternal_next_free;
-    eternal_next_free = (void*)((size_t)eternal_next_free + size);
-    ASSERT(eternal_next_free < KMALLOC_ETERNAL_END);
-    return cur;
-}
-
-
-void kmalloc_set_mode(KMallocMode mode) {
-    kmalloc_mode = mode;
-}
 
 void KernelHeapAllocator::allocate_page(void* addr) {
     MemoryManager::the().allocate((u32)addr, PageWritable::YES, UserAllowed::NO);
@@ -35,13 +17,15 @@ void KernelHeapAllocator::allocate_page(void* addr) {
 
 static KernelHeapAllocator* s_the = nullptr;
 
+static u8 kernel_heap_allocator_memory[sizeof(KernelHeapAllocator)];
+
 void KernelHeapAllocator::initialize() {
     kprintf("KMalloc::initialize\n");
     // allocate first page of kernel heap
 
-    s_the = (KernelHeapAllocator*) kmalloc_eternal(sizeof(KernelHeapAllocator));
+    s_the = (KernelHeapAllocator*) kernel_heap_allocator_memory;
     MemoryManager::the().allocate((u32)KERNEL_HEAP_START, PageWritable::YES, UserAllowed::NO);
-    new(s_the) KernelHeapAllocator(KERNEL_HEAP_START, PAGE_SIZE);
+    new(kernel_heap_allocator_memory) KernelHeapAllocator(KERNEL_HEAP_START, PAGE_SIZE);
 }
 
 KernelHeapAllocator& KernelHeapAllocator::the() {
@@ -61,27 +45,13 @@ void kfree(void* addr) {
 
 
 void* new_wrapper(size_t size) {
-    switch(kmalloc_mode) {
-        case KMallocMode::KMALLOC_ETERNAL:
-            return kmalloc_eternal(size);
-        case KMallocMode::KMALLOC_NORMAL:
-            return kmalloc(size);
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+    ASSERT(s_the != nullptr);
+    return kmalloc(size);
 }
 
 void free_wrapper(void* addr) {
-    // kprintf("KMalloc::free: 0x%x\n", addr);
-    switch(kmalloc_mode) {
-        case KMallocMode::KMALLOC_ETERNAL:
-            ASSERT_NOT_REACHED();
-            return;
-        case KMallocMode::KMALLOC_NORMAL:
-            kfree(addr);
-            return;
-    }
-    ASSERT_NOT_REACHED();
+    ASSERT(s_the != nullptr);
+    kfree(addr);
 }
 
 void* operator new(size_t size) {

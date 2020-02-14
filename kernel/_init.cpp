@@ -134,10 +134,8 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	PIC::initialize();
 	init_descriptor_tables();
 	PIT::initialize();
-	kmalloc_set_mode(KMallocMode::KMALLOC_ETERNAL);
 	MemoryManager::initialize(mbt);
 	KernelHeapAllocator::initialize();
-	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
 	PS2Keyboard::initialize();
 	ATADisk::initialize();
