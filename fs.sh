@@ -2,6 +2,11 @@
 
 
 mkdir -p mnt/stuff
+if [[ $? -ne 0 ]]
+then
+    echo "failed to prepare fs, run fs_reset.sh & then fs_setup.sh"
+    exit 1
+fi
 echo "hello1" > mnt/stuff/a.txt
 echo "hello2" > mnt/stuff/b.txt
 mkdir -p mnt/stuff/a
