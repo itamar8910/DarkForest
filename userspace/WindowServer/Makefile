@@ -1,12 +1,11 @@
 
-LIBC_DIR := ../../libc
-INCLUDE += -I$(LIBC_DIR)
-
 TARGET := WindowServer.o
 
 OBJS := \
 	main.o \
 	Vga.o \
+	WindowServerHandler.o \
+	Window.o \
 
 all: $(TARGET)
 

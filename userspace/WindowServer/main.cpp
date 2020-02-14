@@ -8,6 +8,7 @@
 #include "types/String.h"
 #include "kernel/errs.h"
 #include "Vga.h"
+#include "WindowServerHandler.h"
 
 void* open_shared_memory(VGA& vga, u32 guid)
 {
@@ -28,6 +29,7 @@ bool already_running()
     return (rc == E_OK);
 }
 
+
 int main() {
     printf("WindowServer!\n");
     if(already_running())
@@ -37,23 +39,25 @@ int main() {
     }
 
     VGA vga;
-
-    while(true)
-    {
-        char msg_buff[sizeof(u32)];
-        u32 pid = 0;
-        kprintf("waiting for message..\n");
-        const int rc = std::get_message(msg_buff, sizeof(u32), pid);
-        ASSERT(rc == sizeof(u32));
-        u32 msg = *(u32*)(msg_buff);
-        kprintf("WindowServer got message: 0x%x\n", msg);
-
-        u32* window_framebuffer = (u32*) open_shared_memory(vga, msg);
-        kprintf("buffer[0]=0x%x\n", window_framebuffer[0]);
-        // continue;
-        vga.clear();
-        vga.draw(window_framebuffer);
-
-    }
+    WindowServerHandler window_server(vga);
+    window_server.run();
     return 0;
+
+    // while(true)
+    // {
+    //     u32 code = 0;
+    //     u32 pid = 0;
+    //     kprintf("waiting for message..\n");
+    //     const int rc = std::get_message((char*)&code, sizeof(u32), pid);
+    //     ASSERT(rc == sizeof(u32));
+    //     handle_message_code(code, pid);
+
+    //     u32* window_framebuffer = (u32*) open_shared_memory(vga, msg);
+    //     kprintf("buffer[0]=0x%x\n", window_framebuffer[0]);
+    //     // continue;
+    //     vga.clear();
+    //     vga.draw(window_framebuffer);
+
+    // }
+    // return 0;
 }

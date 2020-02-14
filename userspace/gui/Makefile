@@ -1,7 +1,4 @@
 
-LIBC_DIR := ../../libc
-INCLUDE += -I$(LIBC_DIR)
-
 TARGET := gui.o
 
 OBJS := \

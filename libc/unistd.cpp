@@ -146,7 +146,7 @@ int open_shared_memory(u32 guid, void*& addr, u32& size)
     return E_OK;
 }
 
-int send_message(u32 pid, char* msg, u32 size)
+int send_message(u32 pid, const char* msg, u32 size)
 {
     return Syscall::invoke(Syscall::SendMessage, pid, (u32)msg, (u32)size);
 }

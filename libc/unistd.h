@@ -39,7 +39,7 @@ int is_directory(const String& path);
 int create_shared_memory(u32 guid, u32 size, void*& addr);
 int open_shared_memory(u32 guid, void*& addr, u32& size);
 
-int send_message(u32 pid, char* msg, u32 size);
+int send_message(u32 pid, const char* msg, u32 size);
 int get_message(char* msg, u32 size, u32& pid);
 
 int get_pid_by_name(const String& name, u32& pid);

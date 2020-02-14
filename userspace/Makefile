@@ -14,12 +14,14 @@ APPS := \
 	WindowServer.app \
 	gui.app \
 
-LIBC_DIR := ../libc
+CURRENT_DIR := $(realpath ./)
+GLOBAL_DIR := $(realpath ../)
+LIBC_DIR := $(realpath ../libc)
 LIBC_OBJ := $(LIBC_DIR)/libc.o
 
 OBJS_TO_LINK := $(OBJS) $(LIBC_OBJ)
 
-export INCLUDE := -I$(LIBC_DIR) -I../../
+export INCLUDE := -I$(LIBC_DIR) -I$(CURRENT_DIR) -I$(GLOBAL_DIR)
 
 all: libc start.ao apps
 

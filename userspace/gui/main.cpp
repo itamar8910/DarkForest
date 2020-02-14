@@ -68,7 +68,7 @@ int main() {
             }
         }
 
-        const int msg_rc = std::send_message(pid, (char*)&shared_mem_guid, sizeof(shared_mem_guid));
+        const int msg_rc = std::send_message(pid, (const char*)&shared_mem_guid, sizeof(shared_mem_guid));
         ASSERT(msg_rc == E_OK);
         std::sleep_ms(500);
     }
