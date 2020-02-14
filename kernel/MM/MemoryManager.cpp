@@ -18,8 +18,8 @@ static MemoryManager* mm = nullptr;
 static u8 memory_manager_placeholder[sizeof(MemoryManager)];
 
 // TODO: use a bitmap for page directories instead of just advancing next_page_directory_allocation
-static u32 next_page_directory_allocation = 2 * MB;
-const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB;
+static u32 next_page_directory_allocation = 3 * MB;
+const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB - PAGE_SIZE;
 
 void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::initialize()\n");
     InterruptDisabler dis();
@@ -30,9 +30,6 @@ void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::
 
 void MemoryManager::init(multiboot_info_t* mbt) {
     mm->m_page_directory = PageDirectory(PhysicalAddress(get_cr3()));
-    // auto new_PD_addr = next_page_directory_allocation;
-    // next_page_directory_allocation += PAGE_SIZE;
-    // mm->m_page_directory = 
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
 	for(
@@ -342,6 +339,7 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
     Err err;
     auto new_PD_addr = next_page_directory_allocation;
     next_page_directory_allocation += PAGE_SIZE;
+    ASSERT(next_page_directory_allocation < PAGE_DIRECTORY_ALLOCATION_END);
     auto new_page_directory = PageDirectory(PhysicalAddress(new_PD_addr));
 
     // shallow copy of page directory

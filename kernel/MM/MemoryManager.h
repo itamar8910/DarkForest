@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "multiboot.h"
 #include "types.h"
 #include "stdlib.h"
@@ -13,8 +12,8 @@
 /*
     Virtual Memory map:
     (0MB-4MB - identity mapped)
-	2MB - 3MB: page directories for tasks
-    3MB - 4MB: kmalloc_eternal // TODO: we can probably get rid of this, we setup the kernel heap very early
+	1MB - Kernel image physical memory base
+	3MB - 4MB-PAGE_SIZE: page directories for tasks
 	4MB-PAGE_SIZE...4MB - TempMap page (for a way to access a physical address)
 
 	4MB - 0xc0000000 - User space
@@ -29,9 +28,8 @@
 
 	0xb0000000 - userspace stack bottom (grows down)
 
-
     0xc0000000 - 0xffffffff : kernel address space
-    0xc0000000 - 0xc0ffffff : kernel image (code + data)
+    0xc0100000 - 0xc0ffffff : kernel image (code + data)
     0xc1000000 - 0xc5000000 : kernel heap
     0xca000000 - 0xcfffe000 : big buffers area
 	0xd0000000 - 0xe0000000 - kernel stacks (a kernel stack per task)
@@ -48,7 +46,7 @@ constexpr u32 SHARED_MEMORY_START = 0x40000000;
 constexpr u32 SHARED_MEMORY_END = 0x50000000;
 
 
-// each PDE entry is responsible for 4MB of memory
+// each Page Diorectory entry is responsible for 4MB of memory
 constexpr u32 PDE_MAP_SIZE = 4 * MB;
 
 
