@@ -2,6 +2,11 @@
 #include "unistd.h"
 #include "asserts.h"
 #include "kernel/errs.h"
+#include "Math.h"
+#include "constants.h"
+
+constexpr u32 DEFAULT_X = 100;
+constexpr u32 DEFAULT_Y = 100;
 
 Window::Window(const WindowServerIPC::CreateWindowRequest& request)
 {
@@ -11,15 +16,18 @@ Window::Window(const WindowServerIPC::CreateWindowRequest& request)
     void* buff_addr = nullptr;
     const int rc = std::create_shared_memory(
                             buff_guid,
-                            buff_size,
+                            Math::round_up(buff_size, PAGE_SIZE),
                             buff_addr);
+    kprintf("size: %d\n", buff_size);
+    kprintf("shared mem rc: %d\n", rc);
     ASSERT(rc == E_OK);
 
     m_id = window_guid;
     m_buff_guid =  buff_guid;
-    m_buff_addr = {nullptr};
-    m_x = 50;
-    m_y = 100;
+    m_buff_addr = buff_addr;
+    m_buff_size = buff_size;
+    m_x = DEFAULT_X;
+    m_y = DEFAULT_Y;
     m_width = request.width;
     m_height = request.height;
 }

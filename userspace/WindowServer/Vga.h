@@ -15,6 +15,7 @@ public:
 
     void clear();
     void draw(u32* window_buffer);
+    void draw(u32* window_buffer, u16 x, u16 y, u16 width, u16 height);
 
 private:
     int m_vga_fd {0};

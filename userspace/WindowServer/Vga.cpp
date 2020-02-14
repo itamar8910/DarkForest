@@ -43,3 +43,25 @@ void VGA::draw(u32* window_buffer)
 {
     memcpy(m_frame_buffer, window_buffer, height() * pitch());
 }
+
+void VGA::draw(u32* window_buffer, u16 x, u16 y, u16 width, u16 height)
+{
+    if(
+        (x + width >= m_width)
+        || (y + height >= m_height)
+        )
+        {
+            kprintf("VGA::draw out of bounds\n");
+            ASSERT_NOT_REACHED();
+        }
+    // kprintf("drawing: (x,y,width,height)=(%d,%d,%d,%d)\n", x, y, width, height);
+    for(u16 row = y; row < y + height; ++row)
+    {
+        for(u16 col = x; col < x + width; ++col)
+        {
+            u32* src_pixel = window_buffer + ((row-y)*width + (col-x));
+            u32* dst_pixel = m_frame_buffer + (row*m_width + col);
+            *dst_pixel = *src_pixel;
+        }
+    }
+}

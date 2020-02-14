@@ -184,6 +184,11 @@ namespace ATADisk{
     static void sanity_sector_idx(u32 start, u32 count)
     {
         constexpr u32 MAX_SECTOR = 200000;
+        if(!(start + count < MAX_SECTOR))
+        {
+            kprintf("~~~~~~~~~~~~~~~~~~~~~~~~~\nNOTE: this seems to happen sometimes\n"
+            "Run ./fs_resetsh and then ./fs_setup.sh");
+        }
         ASSERT(start + count < MAX_SECTOR);
     }
 
