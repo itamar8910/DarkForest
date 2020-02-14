@@ -10,9 +10,9 @@
 #include "ioctl_common.h"
 #include "asserts.h"
 
-constexpr u32 SHM_GUID = 123;
-
 constexpr char VGA_PATH[] = "/dev/vga";
+
+static u32 shared_mem_guid = 0;
 
 u32 vga_width;
 u32 vga_height;
@@ -32,7 +32,7 @@ void* create_framebuffer()
     const u32 size = vga_pitch*vga_height;
 
     void* addr = 0;
-    const int rc2 = std::create_shared_memory(SHM_GUID, size, addr);
+    const int rc2 = std::create_shared_memory(shared_mem_guid, size, addr);
     kprintf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     ASSERT(rc2 == E_OK);
     kprintf("gui: shared mem: 0x%x\n", addr);
@@ -41,6 +41,7 @@ void* create_framebuffer()
 }
 
 int main() {
+    shared_mem_guid = std::generate_guid();
     printf("gui!\n");
     std::sleep_ms(1000);
     u32 pid = 0;
@@ -67,8 +68,7 @@ int main() {
             }
         }
 
-        kprintf("sent message\n");
-        const int msg_rc = std::send_message(pid, (u32)SHM_GUID);
+        const int msg_rc = std::send_message(pid, (char*)&shared_mem_guid, sizeof(shared_mem_guid));
         ASSERT(msg_rc == E_OK);
         std::sleep_ms(500);
     }

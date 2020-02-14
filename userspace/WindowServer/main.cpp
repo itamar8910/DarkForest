@@ -40,10 +40,12 @@ int main() {
 
     while(true)
     {
-        u32 msg;
+        char msg_buff[sizeof(u32)];
+        u32 pid = 0;
         kprintf("waiting for message..\n");
-        const int rc = std::get_message(msg);
-        ASSERT(rc == E_OK);
+        const int rc = std::get_message(msg_buff, sizeof(u32), pid);
+        ASSERT(rc == sizeof(u32));
+        u32 msg = *(u32*)(msg_buff);
         kprintf("WindowServer got message: 0x%x\n", msg);
 
         u32* window_framebuffer = (u32*) open_shared_memory(vga, msg);

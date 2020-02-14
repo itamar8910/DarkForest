@@ -7,6 +7,7 @@
 #include "Loader/loader.h"
 #include "Scheduler.h"
 #include "MM/SharedMemoryManager.h"
+#include "Math.h"
 
 u32 g_next_pid;
 
@@ -334,7 +335,7 @@ int Process::syscall_open_shared_memory(const u32 guid, void** addr, u32* size)
     return E_OK;
 }
 
-int Process::syscall_send_message(const u32 pid, const u32 msg)
+int Process::syscall_send_message(const u32 pid, const char* msg, u32 size)
 {
     Process* receiver = Scheduler::the().get_process(pid);
     if(!receiver)
@@ -343,17 +344,15 @@ int Process::syscall_send_message(const u32 pid, const u32 msg)
         return E_NOTFOUND;
     }
 
-    receiver->put_message(msg); 
+    receiver->put_message(msg, size, m_pid); 
     return E_OK;
 }
 
-int Process::syscall_get_message(u32* msg)
+int Process::syscall_get_message(char* msg, u32 size, u32* pid)
 {
     if(has_pending_message())
     {
-        const bool rc  = get_message(*msg);
-        ASSERT(rc);
-        return E_OK;
+        return consume_message(msg, size, pid);
     }
 
     kprintf("no messages, blocking..\n");
@@ -361,12 +360,29 @@ int Process::syscall_get_message(u32* msg)
     auto* blocker = new PendingMessageBlocker(m_pid);
     Scheduler::the().block_current(blocker);
 
-    u32 tmp = 0;
-    const bool rc  = get_message(tmp);
-    ASSERT(rc);
-    *msg = tmp;
-    return E_OK;
+    return consume_message(msg, size, pid);
+}
 
+int Process::consume_message(char* msg, u32 size, u32* pid)
+{
+    Message m;
+    const bool rc  = get_message(m);
+    ASSERT(rc);
+
+    if(size != m.size)
+    {
+        // TODO: handle this case,
+        // TODO take 'size' bytes from the message & truncate it
+        ASSERT_NOT_REACHED();
+    }
+    const u32 size_to_copy = Math::min(size, m.size);
+
+    memcpy(msg, m.message, size_to_copy);
+    *pid = m.pid;
+
+    delete[] m.message;
+
+    return size_to_copy;
 }
 
 bool Process::has_pending_message()
@@ -374,8 +390,9 @@ bool Process::has_pending_message()
     return !m_messages.empty();
 }
 
-bool Process::get_message(u32& msg)
+bool Process::get_message(Message& msg)
 {
+    LOCKER(m_message_lock);
     if(m_messages.empty())
     {
         return false;
@@ -385,10 +402,14 @@ bool Process::get_message(u32& msg)
     return true;
 }
 
-void Process::put_message(u32 msg)
+void Process::put_message(const char* msg, u32 size, u32 pid)
 {
-    kprintf("put message: 0x%x\n", msg);
-    m_messages.append(msg);
+    LOCKER(m_message_lock);
+    kprintf("put message:");
+    print_hexdump((const u8*)msg, size);
+    char* msg_copy = new char[size];
+    memcpy(msg_copy, msg, size);
+    m_messages.append({pid, msg_copy, size});
 }
 
 

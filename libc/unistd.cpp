@@ -146,22 +146,17 @@ int open_shared_memory(u32 guid, void*& addr, u32& size)
     return E_OK;
 }
 
-int send_message(u32 pid, u32 msg)
+int send_message(u32 pid, char* msg, u32 size)
 {
-    return Syscall::invoke(Syscall::SendMessage, pid, msg);
+    return Syscall::invoke(Syscall::SendMessage, pid, (u32)msg, (u32)size);
 }
 
-int get_message(u32& msg)
+int get_message(char* msg, u32 size, u32& pid)
 {
-    u32 tmp_msg = 0;
-    const int rc = Syscall::invoke(Syscall::GetMessage, reinterpret_cast<u32>(&tmp_msg));
-    if(rc != E_OK)
-    {
-        return rc;
-    }
-
-    msg = tmp_msg;
-    return E_OK;
+    u32 tmp_pid = 0;
+    const int rc = Syscall::invoke(Syscall::GetMessage, (u32)(msg), (u32)size, (u32)&tmp_pid);
+    pid = tmp_pid;
+    return rc;
 }
 
 int get_pid_by_name(const String& name, u32& pid)
@@ -181,6 +176,11 @@ int get_pid_by_name(const String& name, u32& pid)
 int map_device(int fd, void* addr, u32 size)
 {
     return Syscall::invoke(Syscall::MapDevice, static_cast<u32>(fd), (u32)addr, size);
+}
+
+u32 generate_guid()
+{
+    return (u32) Syscall::invoke(Syscall::GenerateGUID);
 }
 
 }

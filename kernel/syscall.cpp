@@ -12,6 +12,8 @@
 // #define DBG_SYSCALL
 // #define DBG_SYSCALL2
 
+static u32 guid = 1;
+
 
 u32 syscalls_gate(u32 syscall_idx, u32, u32, u32);
 
@@ -100,13 +102,15 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::OpenSharedMemory:
             return Scheduler::the().current().syscall_open_shared_memory(arg1, (void**)arg2, (u32*)arg3);
         case Syscall::SendMessage:
-            return Scheduler::the().current().syscall_send_message(arg1, arg2);
+            return Scheduler::the().current().syscall_send_message(arg1, (char*)arg2, arg3);
         case Syscall::GetMessage:
-            return Scheduler::the().current().syscall_get_message((u32*)arg1);
+            return Scheduler::the().current().syscall_get_message((char*)arg1, arg2, (u32*)arg3);
         case Syscall::GetPidByName:
             return Scheduler::the().current().syscall_get_pid_by_name((char*)arg1, (u32*)arg2);
         case Syscall::MapDevice:
             return Scheduler::the().current().syscall_map_device((int)arg1, (void*)arg2, (u32)arg3);
+        case Syscall::GenerateGUID:
+            return guid++;
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();
