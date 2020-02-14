@@ -8,6 +8,9 @@
 constexpr u32 DEFAULT_X = 100;
 constexpr u32 DEFAULT_Y = 100;
 
+static u32 x_offset = 0;
+static u32 y_offset = 0;
+
 Window::Window(const WindowServerIPC::CreateWindowRequest& request)
 {
     const u32 window_guid = std::generate_guid();
@@ -26,8 +29,15 @@ Window::Window(const WindowServerIPC::CreateWindowRequest& request)
     m_buff_guid =  buff_guid;
     m_buff_addr = buff_addr;
     m_buff_size = buff_size;
-    m_x = DEFAULT_X;
+    m_x = DEFAULT_X ;
     m_y = DEFAULT_Y;
     m_width = request.width;
     m_height = request.height;
+
+
+    // TODO this is just for testing purposes
+    m_x += x_offset;
+    m_y += y_offset;
+    x_offset += 400;
+    y_offset += 100;
 }

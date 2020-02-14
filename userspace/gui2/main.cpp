@@ -25,8 +25,8 @@ WindowContext register_window(const u32 windowserver_pid)
     u32 create_widnow_code = WindowServerIPC::Code::CreateWindowRequest;
     std::send_message(windowserver_pid, (const char*)&create_widnow_code, sizeof(create_widnow_code));
 
-    const u32 width = 100;
-    const u32 height = 200;
+    const u32 width = 300;
+    const u32 height = 70;
     const WindowServerIPC::CreateWindowRequest request = {width, height};
     int rc = std::send_message(windowserver_pid, (const char*)&request, sizeof(request));
     ASSERT(rc == E_OK);
@@ -59,7 +59,7 @@ WindowContext register_window(const u32 windowserver_pid)
 
 int main() {
     printf("gui!\n");
-    std::sleep_ms(1000);
+    std::sleep_ms(1100);
     u32 window_server_pid = 0;
     const int rc = std::get_pid_by_name("WindowServer", window_server_pid);
     ASSERT(rc == E_OK);
@@ -77,7 +77,7 @@ int main() {
             for(size_t col = 0; col < window.width; ++col)
             {
                 u32* pixel = frame_buffer + (row*window.width + col);
-                *pixel = (0xdeadbeef*(i+1));
+                *pixel = (0x20013eef*(i+1));
             }
         }
 
@@ -88,7 +88,7 @@ int main() {
         WindowServerIPC::DrawWindow draw_window_req = {window.window_id};
         const int msg_rc = std::send_message(window_server_pid, (const char*)&draw_window_req, sizeof(draw_window_req));
         ASSERT(msg_rc == E_OK);
-        std::sleep_ms(500);
+        std::sleep_ms(200);
     }
 
     return 0;

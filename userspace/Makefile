@@ -13,6 +13,7 @@ APPS := \
 	mkdir.app \
 	WindowServer.app \
 	gui.app \
+	gui2.app \
 
 CURRENT_DIR := $(realpath ./)
 GLOBAL_DIR := $(realpath ../)

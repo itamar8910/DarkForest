@@ -58,6 +58,10 @@ void start_gui() {
 	load_and_jump_userspace("/bin/gui.app");
 }
 
+void start_gui2() {
+	load_and_jump_userspace("/bin/gui2.app");
+}
+
 void idle() {
 	for(;;) {
 		// kprintf("idle\n");
@@ -164,6 +168,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
     Scheduler::the().add_process(Process::create(start_windowserver, "WindowServer"));
 	Scheduler::the().add_process(Process::create(start_gui, "gui"));
+	Scheduler::the().add_process(Process::create(start_gui2, "gui2"));
 
 	// VGA::init();
 
