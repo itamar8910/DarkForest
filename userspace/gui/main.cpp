@@ -33,22 +33,12 @@ void* create_framebuffer()
 
     void* addr = 0;
     const int rc2 = std::create_shared_memory(SHM_GUID, size, addr);
-    kprintf("~~~~~~~~~~~~~~~~~~~~~~~~~~~`");
+    kprintf("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     ASSERT(rc2 == E_OK);
     kprintf("gui: shared mem: 0x%x\n", addr);
 
     return addr;
 }
-
-// void query_shared_mem()
-// {
-//     void* addr = 0;
-//     u32 size = 0;
-//     const int rc = std::open_shared_memory(SHM_GUID, addr, size);
-//     ASSERT(rc == E_OK);
-//     kprintf("shell: shared mem: 0x%x\n", addr);
-//     kprintf("shell: shared mem char: %d\n", reinterpret_cast<char*>(addr)[0]);
-// }
 
 int main() {
     printf("gui!\n");
