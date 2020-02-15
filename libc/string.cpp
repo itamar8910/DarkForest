@@ -3,6 +3,8 @@
 #include "logging.h"
 #include "types.h"
 #include "asserts.h"
+extern "C"
+{
 size_t strlen(const char* str) 
 {
 	#ifdef ASSERTS_LEVEL_1
@@ -82,6 +84,7 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 
 }
 
+}
 void ascii_to_unicode(char* dst, const char* src, size_t num_chars)
 {
 	for(size_t i = 0; i < num_chars; ++i)
