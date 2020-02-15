@@ -96,5 +96,27 @@ bool recv_create_window_response(u32 windowserver_pid, CreateWindowResponse& res
     return true;
 }
 
+bool send_draw_request(u32 windowserver_pid, const DrawWindow& request)
+{
+    u32 draw_window_code = WindowServerIPC::Code::DrawWindow;
+    int rc;
+    rc = std::send_message(windowserver_pid, (const char*)&draw_window_code, sizeof(draw_window_code));
+    if(rc != E_OK)
+    {
+        return false;
+    }
+
+    rc = std::send_message(windowserver_pid, (const char*)&request, sizeof(request));
+    return rc == E_OK;
+}
+
+bool recv_draw_request(u32 guid_pid, DrawWindow& request, bool recv_code)
+{
+    ASSERT(recv_code == false); // not implemented
+    u32 tmp_pid = 0;
+    u32 size = std::get_message((char*)&request, sizeof(request), tmp_pid);
+
+    return ((size == sizeof(request)) && (tmp_pid == guid_pid));
+}
 
 }

@@ -36,4 +36,8 @@ bool recv_create_window_request(u32 gui_pid, CreateWindowRequest& request, bool 
 bool send_create_window_response(u32 gui_pid, const CreateWindowResponse& resp);
 bool recv_create_window_response(u32 windowserver_pid, CreateWindowResponse& resp, bool recv_code);
 
+
+bool send_draw_request(u32 windowserver_pid, const DrawWindow& request);
+bool recv_draw_request(u32 guid_pid, DrawWindow& request, bool recv_code);
+
 }

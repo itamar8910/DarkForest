@@ -37,7 +37,6 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
 
             WindowServerIPC::CreateWindowResponse response = {w.id(), w.buff_guid()};
             rc = WindowServerIPC::send_create_window_response(pid, response);
-
             ASSERT(rc);
 
             m_windows.append(w);
@@ -49,10 +48,9 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
 
            kprintf("draw window\n");
            WindowServerIPC::DrawWindow request;
-           u32 tmp_pid = 0;
-           u32 size = std::get_message((char*)&request, sizeof(request), tmp_pid);
-           // TODO: these asserts don't have to hold (concurrency)
-           ASSERT(size == sizeof(request));
+           const bool rc = WindowServerIPC::recv_draw_request(pid, request, false);
+           ASSERT(rc);
+
            Window window = get_window(request.window_guid);
            m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
            break;

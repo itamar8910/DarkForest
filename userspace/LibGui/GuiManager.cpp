@@ -53,10 +53,7 @@ void GuiManager::draw(Window& window)
 {
     window.update();
 
-    u32 draw_window_code = WindowServerIPC::Code::DrawWindow;
-    std::send_message(m_windowserver_pid, (const char*)&draw_window_code, sizeof(draw_window_code));
-
     WindowServerIPC::DrawWindow draw_window_req = {window.id()};
-    const int msg_rc = std::send_message(m_windowserver_pid, (const char*)&draw_window_req, sizeof(draw_window_req));
-    ASSERT(msg_rc == E_OK);
+    const bool rc = WindowServerIPC::send_draw_request(m_windowserver_pid, draw_window_req);
+    ASSERT(rc);
 }
