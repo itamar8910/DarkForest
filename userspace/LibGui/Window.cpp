@@ -17,7 +17,8 @@ Window::Window(
     m_buff_size(buff_size),
     m_width(width),
     m_height(height),
-    m_background_color(0xffffffff)
+    m_background_color(0xffffffff),
+    m_widgets()
     {
         clear();
     }
@@ -38,4 +39,13 @@ void Window::clear()
 void Window::update()
 {
     clear();
+    for(auto& widget : m_widgets)
+    {
+        widget->draw((u32*)m_buff_addr, m_width, m_height);
+    }
+}
+
+void Window::add_widget(shared_ptr<Widget> w)
+{
+    m_widgets.append(w);
 }

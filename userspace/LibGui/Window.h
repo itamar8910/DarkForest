@@ -1,5 +1,8 @@
 #pragma once
 #include "types.h"
+#include "Widgets/Widget.h"
+#include "shared_ptr.h"
+#include "types/vector.h"
 
 class Window final
 {
@@ -26,6 +29,8 @@ public:
 
     void set_background_color(const u32 color) {m_background_color = color;}
 
+    void add_widget(shared_ptr<Widget> w);
+
 private:
     u32 m_window_id;
     u32 m_buff_guid;
@@ -35,4 +40,6 @@ private:
     u32 m_height;
 
     u32 m_background_color;
+
+    Vector<shared_ptr<Widget>> m_widgets;
 };

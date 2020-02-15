@@ -10,17 +10,21 @@
 #include "asserts.h"
 #include "LibWindowServer/IPC.h"
 #include "LibGui/GuiManager.h"
+#include "shared_ptr.h"
+#include "LibGui/Widgets/TextView.h"
 
 int main() {
     printf("gui!\n");
     std::sleep_ms(1000);
 
     Window window = GuiManager::the().create_window(300, 400);
+    shared_ptr<Widget> text_view(new TextView(20,20,200,200));
+    window.add_widget(text_view);
 
     for(size_t i = 0;;++i)
     {
         
-        window.set_background_color(0xdeadbeef*(i+1));
+        // window.set_background_color(0xdeadbeef*(i+1));
 
         GuiManager::the().draw(window);
 
