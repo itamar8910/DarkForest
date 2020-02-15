@@ -2,8 +2,18 @@
 #include "asserts.h"
 #include "string.h"
 #include "stdio.h"
+#include "SimpleFontSymbols.h"
 
 static SimpleFont* s_the = nullptr;
+
+    // "########"
+    // "########"
+    // "########"
+    // "########"
+    // "########"
+    // "########"
+    // "########"
+    // "########";
 
 constexpr char font_A[SIMPLEFONT_SYMBOL_SIZE*SIMPLEFONT_SYMBOL_SIZE+1] = \
     "###**###"
@@ -15,11 +25,44 @@ constexpr char font_A[SIMPLEFONT_SYMBOL_SIZE*SIMPLEFONT_SYMBOL_SIZE+1] = \
     "*######*"
     "*######*";
 
+constexpr char font_B[SIMPLEFONT_SYMBOL_SIZE*SIMPLEFONT_SYMBOL_SIZE+1] = \
+    "*******#"
+    "***###**"
+    "***####*"
+    "********"
+    "***###**"
+    "***####*"
+    "***###**"
+    "*******#";
+
+constexpr char font_C[SIMPLEFONT_SYMBOL_SIZE*SIMPLEFONT_SYMBOL_SIZE+1] = \
+    "#*******"
+    "*#######"
+    "*#######"
+    "*#######"
+    "*#######"
+    "*#######"
+    "*#######"
+    "#*******";
+
+constexpr char font_D[SIMPLEFONT_SYMBOL_SIZE*SIMPLEFONT_SYMBOL_SIZE+1] = \
+    "*******#"
+    "*#####**"
+    "*######*"
+    "*######*"
+    "*######*"
+    "*######*"
+    "*#####**"
+    "*******#";
+
 void SimpleFont::initialize()
 {
     ASSERT(s_the == nullptr);
     s_the = new SimpleFont();
     strcpy(s_the->m_symbols['A'].pixels, font_A);
+    strcpy(s_the->m_symbols['B'].pixels, font_B);
+    strcpy(s_the->m_symbols['C'].pixels, font_C);
+    strcpy(s_the->m_symbols['D'].pixels, font_D);
 }
 
 SimpleFont& SimpleFont::the()

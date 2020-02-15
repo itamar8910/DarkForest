@@ -2,7 +2,6 @@
 #include "types.h"
 #include "string.h"
 
-
 constexpr u8 SIMPLEFONT_SYMBOL_SIZE = 8;
 
 class SimpleFont
