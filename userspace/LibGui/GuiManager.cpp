@@ -58,8 +58,10 @@ GuiManager& GuiManager::the()
     return *s_the;
 }
 
-void GuiManager::draw(const Window& window)
+void GuiManager::draw(Window& window)
 {
+    window.update();
+
     u32 draw_window_code = WindowServerIPC::Code::DrawWindow;
     std::send_message(m_windowserver_pid, (const char*)&draw_window_code, sizeof(draw_window_code));
 

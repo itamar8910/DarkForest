@@ -10,8 +10,7 @@ public:
     u32 windowserver_pid() const {return m_windowserver_pid;};
     Window create_window(const u16 width, const u16 height);
 
-    void draw(const Window& window);
-
+    void draw(Window& window);
 
 private:
     GuiManager();
