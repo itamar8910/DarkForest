@@ -16,15 +16,4 @@ public:
 private:
     SimpleFont() = default;
 
-private:
-
-
-    struct Symbol
-    {
-        // bool pixels[SIMPLEFONT_SYMBOL_SIZE][SIMPLEFONT_SYMBOL_SIZE];
-        char pixels[SIMPLEFONT_SYMBOL_SIZE*SIMPLEFONT_SYMBOL_SIZE+1];
-    };
-
-    Symbol m_symbols[128] = {};
-
 };

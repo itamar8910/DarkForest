@@ -20,7 +20,7 @@ int main() {
     Window window = GuiManager::the().create_window(300, 400);
 
     TextView* tv = new TextView(20,20,200,200);
-    tv->set_text("ABCD");
+    tv->set_text("Hello World!");
     shared_ptr<Widget> text_view(tv);
 
     window.add_widget(text_view);
