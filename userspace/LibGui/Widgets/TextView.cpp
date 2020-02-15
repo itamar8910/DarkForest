@@ -16,6 +16,16 @@ void TextView::draw(u32* frame_buffer, const u32 window_width, const u32 window_
     {
         SimpleFont::the().draw(m_text[char_idx], frame_buffer, current_col, current_row, window_width);
         current_col += SIMPLEFONT_SYMBOL_SIZE + 2;
+        if(current_col >= m_width)
+        {
+            current_col = m_x;
+            current_row += SIMPLEFONT_SYMBOL_SIZE + 2;
+            if(current_row >= m_height)
+            {
+                kprintf("WARNING: Text Rendering clipped\n");
+                break;
+            }
+        }
     }
 
     // for(u16 row = m_y; row < m_y + m_height; ++row)
