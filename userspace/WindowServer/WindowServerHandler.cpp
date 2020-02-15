@@ -38,7 +38,7 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
            u32 code = WindowServerIPC::Code::CreateWindowResponse;
            std::send_message(pid, (const char*)&code, sizeof(code));
 
-           WindowServerIPC::CreateWindowResponse response = {w.m_id, w.m_buff_guid};
+           WindowServerIPC::CreateWindowResponse response = {w.id(), w.buff_guid()};
            std::send_message(pid, (const char*)&response, sizeof(response));
             m_windows.append(w);
            break;
@@ -53,7 +53,7 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
            // TODO: these asserts don't have to hold (concurrency)
            ASSERT(size == sizeof(request));
            Window window = get_window(request.window_guid);
-           m_vga.draw((u32*)window.m_buff_addr, window.m_x, window.m_y, window.m_width, window.m_height);
+           m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
            break;
        }
        default:
@@ -65,7 +65,7 @@ Window WindowServerHandler::get_window(u32 window_id)
 {
     for(auto& window : m_windows)
     {
-        if(window.m_id == window_id)
+        if(window.id() == window_id)
         {
             return window;
         }

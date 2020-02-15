@@ -6,6 +6,17 @@ class Window final
 public:
     Window(const WindowServerIPC::CreateWindowRequest& request);
     Window() = default;
+
+    u32 id() const {return m_id;}
+    u32 buff_guid() const {return m_buff_guid;}
+    void* buff_addr() const {return m_buff_addr;}
+    u32 buff_size() const {return m_buff_size;}
+    u32 x() const {return m_x;}
+    u32 y() const {return m_y;}
+    u32 width() const {return m_width;}
+    u32 height() const {return m_height;}
+
+private:
     u32 m_id = {0};
     u32 m_buff_guid = {0};
     void* m_buff_addr = {nullptr};
