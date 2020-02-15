@@ -3,6 +3,7 @@
 #include "unistd.h"
 #include "asserts.h"
 #include "LibWindowServer/IPC.h"
+#include "Fonts/SimpleFont.h"
 
 GuiManager::GuiManager()
 {
@@ -44,6 +45,7 @@ GuiManager& GuiManager::the()
 {
     if(s_the == nullptr)
     {
+        SimpleFont::initialize();
         s_the = new GuiManager();
     }
     return *s_the;

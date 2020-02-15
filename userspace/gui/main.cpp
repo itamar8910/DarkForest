@@ -18,7 +18,11 @@ int main() {
     std::sleep_ms(1000);
 
     Window window = GuiManager::the().create_window(300, 400);
-    shared_ptr<Widget> text_view(new TextView(20,20,200,200));
+
+    TextView* tv = new TextView(20,20,200,200);
+    tv->set_text("AAA");
+    shared_ptr<Widget> text_view(tv);
+
     window.add_widget(text_view);
 
     for(size_t i = 0;;++i)
