@@ -20,7 +20,7 @@ Window GuiManager::create_window(const u16 width, const u16 height)
     ASSERT(rc);
 
     WindowServerIPC::CreateWindowResponse response;
-    rc =WindowServerIPC::recv_create_window_response(m_windowserver_pid, response);
+    rc =WindowServerIPC::recv_create_window_response(m_windowserver_pid, response, true);
     ASSERT(rc);
 
     void* buff_addr = 0;

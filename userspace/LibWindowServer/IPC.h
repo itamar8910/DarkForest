@@ -30,7 +30,10 @@ struct [[gnu::packed]] DrawWindow
     u32 window_guid;
 };
 
-bool send_create_window_request(u32 windowserver_pid, CreateWindowRequest& request);
-bool recv_create_window_response(u32 windowserver_pid, CreateWindowResponse& resp);
+bool send_create_window_request(u32 windowserver_pid, const CreateWindowRequest& request);
+bool recv_create_window_request(u32 gui_pid, CreateWindowRequest& request, bool recv_code);
+
+bool send_create_window_response(u32 gui_pid, const CreateWindowResponse& resp);
+bool recv_create_window_response(u32 windowserver_pid, CreateWindowResponse& resp, bool recv_code);
 
 }

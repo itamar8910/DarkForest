@@ -28,21 +28,22 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
        case WindowServerIPC::Code::CreateWindowRequest:
        {
            WindowServerIPC::CreateWindowRequest request;
-           u32 tmp_pid = 0;
-           u32 size = std::get_message((char*)&request, sizeof(request), tmp_pid);
-           // TODO: these asserts don't have to hold (concurrency)
-           ASSERT(size == sizeof(request));
-           ASSERT(tmp_pid == pid);
 
-           const Window w(request);
-           u32 code = WindowServerIPC::Code::CreateWindowResponse;
-           std::send_message(pid, (const char*)&code, sizeof(code));
+            bool rc;
+            rc = WindowServerIPC::recv_create_window_request(pid, request, false);
+            ASSERT(rc);
 
-           WindowServerIPC::CreateWindowResponse response = {w.id(), w.buff_guid()};
-           std::send_message(pid, (const char*)&response, sizeof(response));
+            const Window w(request);
+
+            WindowServerIPC::CreateWindowResponse response = {w.id(), w.buff_guid()};
+            rc = WindowServerIPC::send_create_window_response(pid, response);
+
+            ASSERT(rc);
+
             m_windows.append(w);
            break;
        } 
+
        case WindowServerIPC::Code::DrawWindow:
        {
 
@@ -56,8 +57,11 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
            m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
            break;
        }
+
        default:
-        ASSERT_NOT_REACHED();
+        {
+           ASSERT_NOT_REACHED();
+        }
     }
 }
 
