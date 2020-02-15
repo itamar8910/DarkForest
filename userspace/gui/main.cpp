@@ -15,7 +15,7 @@ int main() {
     printf("gui!\n");
     std::sleep_ms(1000);
 
-    Window window = GuiManager::the().create_window(100, 200);
+    Window window = GuiManager::the().create_window(300, 400);
 
     for(size_t i = 0;;++i)
     {

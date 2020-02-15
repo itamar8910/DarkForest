@@ -29,4 +29,8 @@ struct [[gnu::packed]] DrawWindow
 {
     u32 window_guid;
 };
+
+bool send_create_window_request(u32 windowserver_pid, CreateWindowRequest& request);
+bool recv_create_window_response(u32 windowserver_pid, CreateWindowResponse& resp);
+
 }

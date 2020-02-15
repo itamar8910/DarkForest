@@ -14,23 +14,14 @@ GuiManager::GuiManager()
 
 Window GuiManager::create_window(const u16 width, const u16 height)
 {
-    u32 create_widnow_code = WindowServerIPC::Code::CreateWindowRequest;
-    std::send_message(m_windowserver_pid, (const char*)&create_widnow_code, sizeof(create_widnow_code));
-
-    const WindowServerIPC::CreateWindowRequest request = {width, height};
-    int rc = std::send_message(m_windowserver_pid, (const char*)&request, sizeof(request));
-    ASSERT(rc == E_OK);
-
-    u32 response_code = 0;
-    u32 tmp_pid;
-    ASSERT(std::get_message((char*)&response_code, sizeof(response_code), tmp_pid) == sizeof(response_code));
-    ASSERT(response_code == WindowServerIPC::Code::CreateWindowResponse);
-
+    WindowServerIPC::CreateWindowRequest request = {width, height};
+    bool rc;
+    rc = WindowServerIPC::send_create_window_request(m_windowserver_pid, request);
+    ASSERT(rc);
 
     WindowServerIPC::CreateWindowResponse response;
-    u32 len = std::get_message((char*)&response, sizeof(response), tmp_pid);
-    ASSERT(len == sizeof(response));
-    ASSERT(tmp_pid == m_windowserver_pid);
+    rc =WindowServerIPC::recv_create_window_response(m_windowserver_pid, response);
+    ASSERT(rc);
 
     void* buff_addr = 0;
     u32 buff_size = 0;
