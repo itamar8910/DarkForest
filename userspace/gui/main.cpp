@@ -33,7 +33,7 @@ int main() {
         GuiManager::the().draw(window);
 
         KeyEvent key_event = GuiManager::the().get_keyboard_event(); 
-        if(!key_event.released)
+        if(!key_event.released || !key_event.to_ascii())
         {
             continue;
         }
