@@ -37,6 +37,6 @@ Window::Window(const WindowServerIPC::CreateWindowRequest& request, u32 pid) :
     // TODO this is just for testing purposes
     m_x += x_offset;
     m_y += y_offset;
-    x_offset += 400;
+    x_offset += 600;
     y_offset += 100;
 }

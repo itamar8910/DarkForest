@@ -17,9 +17,9 @@ int main() {
     printf("gui!\n");
     std::sleep_ms(1000);
 
-    Window window = GuiManager::the().create_window(300, 400);
+    Window window = GuiManager::the().create_window(500, 400);
 
-    TextView* tv = new TextView(20,20,200,200);
+    TextView* tv = new TextView(20,20,400,400);
     tv->set_text("Hello World!");
     shared_ptr<Widget> text_view(tv);
 

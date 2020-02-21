@@ -43,21 +43,4 @@ int main() {
     window_server.run();
     return 0;
 
-    // while(true)
-    // {
-    //     u32 code = 0;
-    //     u32 pid = 0;
-    //     kprintf("waiting for message..\n");
-    //     const int rc = std::get_message((char*)&code, sizeof(u32), pid);
-    //     ASSERT(rc == sizeof(u32));
-    //     handle_message_code(code, pid);
-
-    //     u32* window_framebuffer = (u32*) open_shared_memory(vga, msg);
-    //     kprintf("buffer[0]=0x%x\n", window_framebuffer[0]);
-    //     // continue;
-    //     vga.clear();
-    //     vga.draw(window_framebuffer);
-
-    // }
-    // return 0;
 }
