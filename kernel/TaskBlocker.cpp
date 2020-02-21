@@ -43,3 +43,39 @@ bool PendingMessageBlocker::can_unblock()
     ASSERT(p != nullptr);
     return p->has_pending_message();
 }
+
+PendingInputBlocker::PendingInputBlocker(u32 pid, Vector<File*> pending_files) :
+    m_message_blocker(pid),
+    m_pending_files(pending_files)
+    {}
+
+bool PendingInputBlocker::can_unblock()
+{
+    if(m_message_blocker.can_unblock())
+    {
+        m_reason = Reason::PendingMessage;
+        return true;
+    }
+
+
+    for(u32 fd_idx = 0; fd_idx < m_pending_files.size(); ++fd_idx)
+    {
+        if(m_pending_files[fd_idx]->can_read())
+        {
+            m_ready_fd_idx = fd_idx;
+            m_reason = Reason::FdReady;
+            return true;
+        }
+    }
+    return false;
+}
+
+u32 PendingInputBlocker::ready_fd_idx() const
+{
+    return m_ready_fd_idx;
+}
+
+PendingInputBlocker::Reason PendingInputBlocker::reason() const
+{
+    return m_reason;
+}

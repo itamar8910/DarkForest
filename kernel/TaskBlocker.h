@@ -1,6 +1,8 @@
 #pragma once
 
 #include "types.h"
+#include "types/vector.h"
+#include "file.h"
 
 class TaskBlocker {
 
@@ -47,9 +49,31 @@ class PendingMessageBlocker : public TaskBlocker{
 public:
     PendingMessageBlocker(u32 pid);
     virtual bool can_unblock() override;
-    virtual ~PendingMessageBlocker() override = default;
+    ~PendingMessageBlocker() override = default;
     
 private:
     u32 m_pid;
 
+};
+
+class PendingInputBlocker : public TaskBlocker{
+public:
+    PendingInputBlocker(u32 pid, Vector<File*> pending_files);
+    bool can_unblock() override;
+    ~PendingInputBlocker() override = default;
+
+    enum class Reason : u8
+    {
+        PendingMessage = 0,
+        FdReady,
+    };
+
+    u32 ready_fd_idx() const;
+    Reason reason() const;
+    
+private:
+    PendingMessageBlocker m_message_blocker;
+    Vector<File*> m_pending_files;
+    u32 m_ready_fd_idx {0};
+    Reason m_reason {Reason::PendingMessage};
 };

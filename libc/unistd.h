@@ -2,6 +2,7 @@
 #include "types.h"
 #include "types/String.h"
 #include "types/vector.h"
+#include "kernel/TaskBlocker.h"
 
 #define CODE_ASSERT_NOT_REACHED 127
 
@@ -47,5 +48,12 @@ int get_pid_by_name(const String& name, u32& pid);
 int map_device(int fd, void* addr, u32 size);
 
 u32 generate_guid();
+
+/**
+ * blocks the process until either:
+ * 1. it has a pending message
+ * 2. one of the file descriptor is ready for read
+ */
+int block_until_pending(u32* fds, u32 num_fds, u32& ready_fd, PendingInputBlocker::Reason&);
 
 }

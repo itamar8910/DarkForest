@@ -435,3 +435,26 @@ int Process::syscall_map_device(int fd, void* addr, u32 size)
     Device* dev = static_cast<Device*>(f); // TODO dynamic cast
     return dev->mmap(addr, size);
 }
+
+int Process::syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_idx)
+{
+    Vector<File*> pending_files;
+    for(u32 i = 0; i < num_fds; ++i)
+    {
+        if(fds[i] >= NUM_FILE_DESCRIPTORS)
+        {
+            return -E_INVALID;
+        }
+        auto* f = m_file_descriptors[fds[i]];
+        if(f == nullptr)
+        {
+            return -E_NOTFOUND;
+        }
+        pending_files.append(f);
+    } 
+
+    PendingInputBlocker* blocker = new PendingInputBlocker(m_pid, pending_files);
+    Scheduler::the().block_current(blocker);
+    *ready_fd_idx = blocker->ready_fd_idx();
+    return static_cast<int>(blocker->reason());
+}

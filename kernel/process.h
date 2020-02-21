@@ -43,6 +43,7 @@ public:
     int syscall_get_message(char* msg, u32 size, u32* pid);
     int syscall_get_pid_by_name(char* name, u32* pid);
     int syscall_map_device(int fd, void* addr, u32 size);
+    int syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_idx);
 
 private:
     struct Message

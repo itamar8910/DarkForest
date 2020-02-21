@@ -183,4 +183,17 @@ u32 generate_guid()
     return (u32) Syscall::invoke(Syscall::GenerateGUID);
 }
 
+int block_until_pending(u32* fds, u32 num_fds, u32& ready_fd, PendingInputBlocker::Reason& reason)
+{
+    u32 tmp_ready_fd = 0;
+    const int rc = Syscall::invoke(Syscall::BlockUntilPending, reinterpret_cast<u32>(fds), (u32)num_fds, reinterpret_cast<u32>(&tmp_ready_fd));
+    if(rc >= 0)
+    {
+        reason = static_cast<PendingInputBlocker::Reason>(rc);
+        ready_fd = tmp_ready_fd; 
+        return E_OK;
+    }
+    return -rc;
+}
+
 }
