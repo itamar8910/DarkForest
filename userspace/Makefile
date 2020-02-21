@@ -5,14 +5,14 @@ OBJS := \
 APPS := \
 	HelloWorld.app \
 	shell.app \
-	terminal.app \
+	TextTerminal.app \
 	cat.app \
 	ls.app \
 	echo.app \
 	touch.app \
 	mkdir.app \
 	WindowServer.app \
-	gui.app \
+	GuiTerminal.app \
 	gui2.app \
 
 CURRENT_DIR := $(realpath ./)

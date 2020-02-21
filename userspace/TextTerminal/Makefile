@@ -2,7 +2,7 @@
 LIBC_DIR := ../../libc
 INCLUDE += -I$(LIBC_DIR)
 
-TARGET := terminal.o
+TARGET := TextTerminal.o
 
 OBJS := \
 	main.o \

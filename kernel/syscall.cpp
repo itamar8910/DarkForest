@@ -113,6 +113,8 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return guid++;
         case Syscall::BlockUntilPending:
             return Scheduler::the().current().syscall_block_until_pending((u32*)arg1, (u32)arg2, (u32*)arg3);
+        case Syscall::CreateTerminal:
+            return Scheduler::the().current().syscall_create_terminal((char*)arg1);
 
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);

@@ -13,9 +13,34 @@
 #include "shared_ptr.h"
 #include "LibGui/Widgets/TextView.h"
 
+void create_terminal()
+{
+    char terminal[MAX_PATH];
+    const int rc = std::create_terminal(terminal);
+    ASSERT(rc == E_OK);
+    Path terminal_path("/dev/pts/");
+    terminal_path.add_part(terminal);
+
+    Path stdin = terminal_path;
+    stdin.add_part("in");
+
+    Path stdout = terminal_path;
+    stdout.add_part("out");
+
+    int stdin_fd = std::open(stdin.to_string().c_str());
+    int stdout_fd = std::open(stdout.to_string().c_str());
+
+    ASSERT(stdin_fd == STDIN);
+    ASSERT(stdout_fd == STDOUT);
+
+
+}
+
 int main() {
     printf("gui!\n");
     std::sleep_ms(1000);
+
+    create_terminal();
 
     Window window = GuiManager::the().create_window(500, 400);
 

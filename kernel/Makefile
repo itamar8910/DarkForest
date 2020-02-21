@@ -18,6 +18,7 @@ KERN_OBJS := \
 	backtrace.o \
 	lock.o \
 	BigBuffer.o \
+	Pipe.o \
 	
 
 DRIVERS_DIR := drivers
@@ -43,6 +44,7 @@ FS_OBJS := \
 	$(FS_DIR)/CharFile.o \
 	$(FS_DIR)/FileUtils.o \
 	$(FS_DIR)/Fat32FS.o \
+	$(FS_DIR)/PtsFS.o \
 
 LOADER_DIR := Loader
 LOADER_OBJS := \

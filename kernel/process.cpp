@@ -8,6 +8,7 @@
 #include "Scheduler.h"
 #include "MM/SharedMemoryManager.h"
 #include "Math.h"
+#include "FileSystem/PtsFS.h"
 
 u32 g_next_pid;
 
@@ -460,4 +461,18 @@ int Process::syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_id
     ASSERT(ready_fd_idx_in_array < num_fds);
     *ready_fd_idx = fds[ready_fd_idx_in_array];
     return static_cast<int>(ready_reason);
+}
+
+int Process::syscall_create_terminal(char* name_out)
+{
+    String name;
+    const bool rc = PtsFS::the().create_new(name);
+    if(!rc)
+    {
+        return E_INVALID;
+    }
+
+    memcpy(name_out, name.c_str(), name.len());
+    name_out[name.len() + 1] = '\0';
+    return E_OK;
 }

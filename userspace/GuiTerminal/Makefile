@@ -1,5 +1,5 @@
 
-TARGET := gui.o
+TARGET := GuiTerminal.o
 
 OBJS := \
 	main.o \

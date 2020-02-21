@@ -196,4 +196,9 @@ int block_until_pending(u32* fds, u32 num_fds, u32& ready_fd, PendingInputBlocke
     return -rc;
 }
 
+int create_terminal(char* name_out)
+{
+    return Syscall::invoke(Syscall::CreateTerminal, reinterpret_cast<u32>(name_out));
+}
+
 }

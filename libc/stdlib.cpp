@@ -1,6 +1,7 @@
 #include "stdlib.h"
 #include "malloc.h"
 #include "asserts.h"
+#include "printf.h"
 
 int atoi_10(const char* str) {
     int sum = 0;
@@ -49,6 +50,26 @@ int atoi(const char* str, size_t base) {
     ASSERT_NOT_REACHED();
 }
 
+int itoa(int num, char* out, u32 out_len)
+{
+    u32 out_idx = 0;
+    auto putchar = [&](char c)
+    {
+        if(out_idx >= out_len)
+        {
+            return;
+        } 
+        out[out_idx++] = c;
+    };
+    const int rc = printf_internal_wrapper(putchar, "%d", num);
+    if(out_idx >= out_len)
+    {
+        return 0;
+    }
+    out[out_idx] = 0;
+    return rc;
+
+}
 
 
 #ifndef KERNEL

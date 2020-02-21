@@ -5,6 +5,7 @@
 #include "kernel/TaskBlocker.h"
 
 #define CODE_ASSERT_NOT_REACHED 127
+#define MAX_PATH 255
 
 namespace std
 {
@@ -55,5 +56,7 @@ u32 generate_guid();
  * 2. one of the file descriptor is ready for read
  */
 int block_until_pending(u32* fds, u32 num_fds, u32& ready_fd, PendingInputBlocker::Reason&);
+
+int create_terminal(char* name_out);
 
 }
