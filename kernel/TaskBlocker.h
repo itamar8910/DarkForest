@@ -58,22 +58,20 @@ private:
 
 class PendingInputBlocker : public TaskBlocker{
 public:
-    PendingInputBlocker(u32 pid, Vector<File*> pending_files);
-    bool can_unblock() override;
-    ~PendingInputBlocker() override = default;
-
     enum class Reason : u8
     {
         PendingMessage = 0,
         FdReady,
     };
 
-    u32 ready_fd_idx() const;
-    Reason reason() const;
+    PendingInputBlocker(u32 pid, Vector<File*> pending_files, u32& ready_fd_idx, Reason& reason);
+    bool can_unblock() override;
+    ~PendingInputBlocker() override = default;
+
     
 private:
     PendingMessageBlocker m_message_blocker;
     Vector<File*> m_pending_files;
-    u32 m_ready_fd_idx {0};
-    Reason m_reason {Reason::PendingMessage};
+    u32& m_out_ready_fd_idx;
+    Reason& m_out_reason;
 };
