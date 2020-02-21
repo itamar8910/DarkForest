@@ -45,8 +45,15 @@ void WindowServerHandler::handle_pending_keyboard_event()
     KeyEvent key_event;
     const int read_rc = std::read(m_keyboard_fd, reinterpret_cast<char*>(&key_event), 1);
     ASSERT(read_rc == 1);
-    kprintf("key event: %c\n", key_event.to_ascii());
-    // TODO: send event to currently focues window
+    kprintf("WindowServer: key event: %c\n", key_event.to_ascii());
+
+    // TODO: only send event to currently focued window
+
+    for(auto& window : m_windows)
+    {
+        kprintf("send key event\n");
+        WindowServerIPC::send_key_event(window.owner_pid(), key_event);
+    }
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
@@ -65,7 +72,7 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
             rc = WindowServerIPC::recv_create_window_request(pid, request, false);
             ASSERT(rc);
 
-            const Window w(request);
+            const Window w(request, pid);
 
             WindowServerIPC::CreateWindowResponse response = {w.id(), w.buff_guid()};
             rc = WindowServerIPC::send_create_window_response(pid, response);

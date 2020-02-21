@@ -27,12 +27,20 @@ int main() {
 
     for(size_t i = 0;;++i)
     {
-        
+
         // window.set_background_color(0xdeadbeef*(i+1));
 
         GuiManager::the().draw(window);
 
-        std::sleep_ms(500);
+        KeyEvent key_event = GuiManager::the().get_keyboard_event(); 
+        if(!key_event.released)
+        {
+            continue;
+        }
+
+        kprintf("gui: key event: %c\n", key_event.to_ascii());
+        tv->set_text(tv->get_text() + String(key_event.to_ascii()));
+
     }
 
     return 0;

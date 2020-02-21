@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include "Window.h"
+#include "LibWindowServer/IPC.h"
 
 class GuiManager
 {
@@ -11,6 +12,8 @@ public:
     Window create_window(const u16 width, const u16 height);
 
     void draw(Window& window);
+
+    KeyEvent get_keyboard_event();
 
 private:
     GuiManager();

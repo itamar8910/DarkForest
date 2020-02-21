@@ -59,3 +59,11 @@ void GuiManager::draw(Window& window)
     const bool rc = WindowServerIPC::send_draw_request(m_windowserver_pid, draw_window_req);
     ASSERT(rc);
 }
+
+KeyEvent GuiManager::get_keyboard_event()
+{
+    KeyEvent key_event;
+    const bool rc = WindowServerIPC::recv_key_event(m_windowserver_pid, key_event, true);
+    ASSERT(rc);
+    return key_event;
+}

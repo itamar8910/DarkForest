@@ -136,6 +136,7 @@ bool send_key_event(u32 gui_pid, const KeyEvent& event)
 
 bool recv_key_event(u32 windowserver_pid, KeyEvent& key_event, bool recv_code)
 {
+    kprintf("recv key event\n");
     u32 tmp_pid;
     int rc = 0;
     if(recv_code)
@@ -143,7 +144,7 @@ bool recv_key_event(u32 windowserver_pid, KeyEvent& key_event, bool recv_code)
         u32 response_code = 0;
         rc = std::get_message((char*)&response_code, sizeof(response_code), tmp_pid);
         if((rc != sizeof(response_code)) 
-            || (response_code != WindowServerIPC::Code::RecvKeyEvent) 
+            || (response_code != WindowServerIPC::Code::SendKeyEvent) 
             || (tmp_pid != windowserver_pid))
         {
             return false;

@@ -4,10 +4,11 @@
 class Window final
 {
 public:
-    Window(const WindowServerIPC::CreateWindowRequest& request);
+    Window(const WindowServerIPC::CreateWindowRequest& request, u32 pid);
     Window() = default;
 
     u32 id() const {return m_id;}
+    u32 owner_pid() const {return m_owner_pid;}
     u32 buff_guid() const {return m_buff_guid;}
     void* buff_addr() const {return m_buff_addr;}
     u32 buff_size() const {return m_buff_size;}
@@ -18,6 +19,7 @@ public:
 
 private:
     u32 m_id = {0};
+    u32 m_owner_pid;
     u32 m_buff_guid = {0};
     void* m_buff_addr = {nullptr};
     u32 m_buff_size = {0};
