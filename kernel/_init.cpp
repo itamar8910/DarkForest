@@ -165,7 +165,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	MemoryManager::the().lock_kernel_PDEs();
 
 	// Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
-	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
+	// Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
     Scheduler::the().add_process(Process::create(start_windowserver, "WindowServer"));
 	Scheduler::the().add_process(Process::create(start_gui, "gui"));
 	Scheduler::the().add_process(Process::create(start_gui2, "gui2"));

@@ -455,6 +455,9 @@ int Process::syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_id
 
     PendingInputBlocker* blocker = new PendingInputBlocker(m_pid, pending_files);
     Scheduler::the().block_current(blocker);
-    *ready_fd_idx = blocker->ready_fd_idx();
+    kprintf("PendingInputBlocker returned, ready_fd_idx: %d, reason:%d\n", blocker->ready_fd_idx(), blocker->reason());
+    const u32 ready_fd_idx_in_array = blocker->ready_fd_idx();
+    ASSERT(ready_fd_idx_in_array < num_fds);
+    *ready_fd_idx = fds[ready_fd_idx_in_array];
     return static_cast<int>(blocker->reason());
 }

@@ -2,6 +2,14 @@
 #include "unistd.h"
 #include "LibWindowServer/IPC.h"
 #include "stdio.h"
+#include "kernel/errs.h"
+
+WindowServerHandler::WindowServerHandler(VGA& vga) :
+    m_vga(vga),
+    m_keyboard_fd(std::open("/dev/keyboard")),
+    m_windows()
+{
+}
 
 void WindowServerHandler::run()
 {
@@ -10,12 +18,36 @@ void WindowServerHandler::run()
         u32 code = 0;
         u32 pid = 0;
         kprintf("waiting for message..\n");
-        const int rc = std::get_message((char*)&code, sizeof(u32), pid);
-        ASSERT(rc == sizeof(u32));
-        handle_message_code(code, pid);
+
+        PendingInputBlocker::Reason reason = {};
+        u32 ready_fd = 0;
+        u32 fds[] = {m_keyboard_fd};
+        kprintf("keyboard fd:%d\n", m_keyboard_fd);
+        const int rc = std::block_until_pending(fds, 1, ready_fd, reason);
+        ASSERT(rc == E_OK);
+
+        if(reason == PendingInputBlocker::Reason::PendingMessage)
+        {
+            const int rc = std::get_message((char*)&code, sizeof(u32), pid);
+            ASSERT(rc == sizeof(u32));
+            handle_message_code(code, pid);
+        }
+        else if(reason == PendingInputBlocker::Reason::FdReady)
+        {
+            ASSERT(ready_fd == m_keyboard_fd);
+            handle_pending_keyboard_event();
+        }
     }
 }
 
+void WindowServerHandler::handle_pending_keyboard_event()
+{
+    KeyEvent key_event;
+    const int read_rc = std::read(m_keyboard_fd, reinterpret_cast<char*>(&key_event), 1);
+    ASSERT(read_rc == 1);
+    kprintf("key event: %c\n", key_event.to_ascii());
+    // TODO: send event to currently focues window
+}
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
 {
