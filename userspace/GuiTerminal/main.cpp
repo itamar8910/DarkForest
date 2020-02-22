@@ -102,10 +102,11 @@ int main() {
 
         else if(reason == PendingInputBlocker::Reason::FdReady)
         {
-            char c;
-            const int rc = std::read(stdout_fd, &c, 1);
-            ASSERT(rc == 1);
-            tv->set_text(tv->get_text() + String(c));
+            char buff[100];
+            const int rc = std::read(stdout_fd, buff,100);
+            ASSERT(rc != 0);
+            buff[rc] = '\0';
+            tv->set_text(tv->get_text() + String(buff));
         }
 
     }

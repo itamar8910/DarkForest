@@ -13,50 +13,17 @@
 
 #include "ShellManager.h"
 
-// constexpr u32 SHM_GUID = 1;
-
-// void try_shared_mem()
-// {
-//     void* addr = 0;
-//     const int rc = std::create_shared_memory(SHM_GUID, 4096, addr);
-//     kprintf("shell: shared mem: 0x%x\n", addr);
-//     reinterpret_cast<char*>(addr)[0] = 'a';
-//     ASSERT(rc == E_OK);
-// }
-
-// void query_shared_mem()
-// {
-//     void* addr = 0;
-//     u32 size = 0;
-//     const int rc = std::open_shared_memory(SHM_GUID, addr, size);
-//     ASSERT(rc == E_OK);
-//     kprintf("shell: shared mem: 0x%x\n", addr);
-//     kprintf("shell: shared mem char: %d\n", reinterpret_cast<char*>(addr)[0]);
-// }
-
-// void try_messages()
-// {
-//     u32 msg;
-//     kprintf("getting message...\n");
-//     const int rc = std::get_message(msg);
-//     ASSERT(rc == E_OK);
-//     kprintf("shell: msg: 0x%x\n", msg);
-// }
 
 int main() {
-
-    // try_shared_mem();
 
     ShellManager shell;
     Vector<char> command(50);
 
     while(1) {
         char c = getchar();
+        kprintf("shell: getchar: %c\n", c);
         if(c == '\n') {
             shell.process_command(String(command.data(), command.size()));
-
-            // query_shared_mem();
-            // try_messages();
 
             command.clear();
         }

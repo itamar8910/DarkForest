@@ -13,7 +13,7 @@ void Pipe::block_until_can_read()
 
 int Pipe::read(size_t count, void* buf)
 {
-    if(m_blocking)
+    if(m_blocking && !can_read())
     {
         block_until_can_read();
     }

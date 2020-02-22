@@ -17,12 +17,10 @@ void WindowServerHandler::run()
     {
         u32 code = 0;
         u32 pid = 0;
-        kprintf("waiting for message..\n");
 
         PendingInputBlocker::Reason reason = {};
         u32 ready_fd = 0;
         u32 fds[] = {m_keyboard_fd};
-        kprintf("keyboard fd:%d\n", m_keyboard_fd);
         const int rc = std::block_until_pending(fds, 1, ready_fd, reason);
         ASSERT(rc == E_OK);
 
@@ -45,22 +43,17 @@ void WindowServerHandler::handle_pending_keyboard_event()
     KeyEvent key_event;
     const int read_rc = std::read(m_keyboard_fd, reinterpret_cast<char*>(&key_event), 1);
     ASSERT(read_rc == 1);
-    kprintf("WindowServer: key event: %c\n", key_event.to_ascii());
 
     // TODO: only send event to currently focued window
 
     for(auto& window : m_windows)
     {
-        kprintf("send key event\n");
         WindowServerIPC::send_key_event(window.owner_pid(), key_event);
     }
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
 {
-    (void)pid;
-
-    kprintf("handle_message_code: %d\n", code);
 
     switch(code)
     {
@@ -85,7 +78,6 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
        case WindowServerIPC::Code::DrawWindow:
        {
 
-           kprintf("draw window\n");
            WindowServerIPC::DrawWindow request;
            const bool rc = WindowServerIPC::recv_draw_request(pid, request, false);
            ASSERT(rc);

@@ -136,7 +136,6 @@ bool send_key_event(u32 gui_pid, const KeyEvent& event)
 
 bool recv_key_event(u32 windowserver_pid, KeyEvent& key_event, bool recv_code)
 {
-    kprintf("recv key event\n");
     u32 tmp_pid;
     int rc = 0;
     if(recv_code)

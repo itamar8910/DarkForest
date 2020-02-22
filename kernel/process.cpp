@@ -336,6 +336,8 @@ int Process::syscall_open_shared_memory(const u32 guid, void** addr, u32* size)
     return E_OK;
 }
 
+// #define DBG_IPC
+
 int Process::syscall_send_message(const u32 pid, const char* msg, u32 size)
 {
     Process* receiver = Scheduler::the().get_process(pid);
@@ -356,7 +358,9 @@ int Process::syscall_get_message(char* msg, u32 size, u32* pid)
         return consume_message(msg, size, pid);
     }
 
+#ifdef DBG_IPC
     kprintf("no messages, blocking..\n");
+#endif
 
     auto* blocker = new PendingMessageBlocker(m_pid);
     Scheduler::the().block_current(blocker);
@@ -399,15 +403,19 @@ bool Process::get_message(Message& msg)
         return false;
     }
     msg = m_messages.pop_front();
+#ifdef DBG_IPC
     kprintf("get message: 0x%x\n", msg);
+#endif
     return true;
 }
 
 void Process::put_message(const char* msg, u32 size, u32 pid)
 {
     LOCKER(m_message_lock);
+#ifdef DBG_IPC
     kprintf("put message:");
     print_hexdump((const u8*)msg, size);
+#endif
     char* msg_copy = new char[size];
     memcpy(msg_copy, msg, size);
     m_messages.append({pid, msg_copy, size});

@@ -35,7 +35,7 @@ File* PtsFS::open(const Path& path)
 
     if(type == "out")
     {
-        return terminal.stdin;
+        return terminal.stdout;
     }
 
     return nullptr;
