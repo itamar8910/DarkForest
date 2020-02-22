@@ -12,6 +12,7 @@ PtsFS& PtsFS::the()
 
 File* PtsFS::open(const Path& path)
 {
+    kprintf("PtsFS::open %s\n", path.to_string().c_str());
     if(path.num_parts() != 2)
     {
         return nullptr;
@@ -81,6 +82,8 @@ bool PtsFS::create_new(String& name)
         m_terminals[idx].stdin = new Pipe(Path(base + "in"));
         m_terminals[idx].stdout = new Pipe(Path(base + "out"));
         name = String(max_idx_string);
+        used_map[idx] = true;
+        return true;
     }
     return false;
 }
