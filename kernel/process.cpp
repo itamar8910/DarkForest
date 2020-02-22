@@ -481,6 +481,6 @@ int Process::syscall_create_terminal(char* name_out)
     }
 
     memcpy(name_out, name.c_str(), name.len());
-    name_out[name.len() + 1] = '\0';
+    name_out[name.len()] = '\0';
     return E_OK;
 }
