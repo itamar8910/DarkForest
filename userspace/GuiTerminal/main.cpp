@@ -64,6 +64,7 @@ int main() {
     ASSERT(pid > 0);
 
     Window window = GuiManager::the().create_window(600, 400);
+    window.set_background_color(0x00000000);
 
     TextView* tv = new TextView(20,20,580,380);
     // tv->set_text("Hello World!");
@@ -71,10 +72,9 @@ int main() {
 
     window.add_widget(text_view);
 
-    for(size_t i = 0;;++i)
+    for(;;)
     {
 
-        // window.set_background_color(0xdeadbeef*(i+1));
 
         GuiManager::the().draw(window);
 

@@ -36,7 +36,7 @@ VGA::~VGA()
 
 void VGA::clear()
 {
-    memset(m_frame_buffer, 0, height() * pitch()*2);
+    memset(m_frame_buffer, 0xaa, height() * pitch()*2);
 }
 
 void VGA::draw(u32* window_buffer)

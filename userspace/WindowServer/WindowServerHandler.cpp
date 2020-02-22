@@ -9,6 +9,7 @@ WindowServerHandler::WindowServerHandler(VGA& vga) :
     m_keyboard_fd(std::open("/dev/keyboard")),
     m_windows()
 {
+    m_vga.clear();
 }
 
 void WindowServerHandler::run()

@@ -30,7 +30,9 @@ void SimpleFont::draw(const char c, u32* frame_buffer, const u16 x, const u16 y,
                 continue;
             }
             u32* dst_pixel = frame_buffer + (row*framebuffer_width + col);
-            *dst_pixel = 0x00000000; // TODO: dynamic color
+            // *dst_pixel = 0x00000000; // TODO: dynamic color
+            // *dst_pixel = 0xFFFFFFFF; // TODO: dynamic color
+            *dst_pixel = 0x0000ff00; // TODO: dynamic color
         }
     }
 }
