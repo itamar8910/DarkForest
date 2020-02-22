@@ -75,3 +75,14 @@ private:
     u32& m_out_ready_fd_idx;
     Reason& m_out_reason;
 };
+
+class FileReadableBlocker : public TaskBlocker{
+public:
+    FileReadableBlocker(File* file);
+    virtual bool can_unblock() override;
+    ~FileReadableBlocker() override = default;
+    
+private:
+    File* m_file;
+
+};

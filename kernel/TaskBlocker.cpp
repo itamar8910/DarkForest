@@ -71,3 +71,13 @@ bool PendingInputBlocker::can_unblock()
     }
     return false;
 }
+
+FileReadableBlocker::FileReadableBlocker(File* file) :
+    m_file(file)
+{
+}
+
+bool FileReadableBlocker::can_unblock()
+{
+    return m_file->can_read();
+}

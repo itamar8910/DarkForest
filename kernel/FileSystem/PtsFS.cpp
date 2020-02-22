@@ -79,8 +79,8 @@ bool PtsFS::create_new(String& name)
         char max_idx_string[64];
         itoa(idx, max_idx_string, 64);
         String base = String("/dev/pts/") + String(max_idx_string);
-        m_terminals[idx].stdin = new Pipe(Path(base + "in"));
-        m_terminals[idx].stdout = new Pipe(Path(base + "out"));
+        m_terminals[idx].stdin = new Pipe(Path(base + "in"), true);
+        m_terminals[idx].stdout = new Pipe(Path(base + "out"), false);
         name = String(max_idx_string);
         used_map[idx] = true;
         return true;
