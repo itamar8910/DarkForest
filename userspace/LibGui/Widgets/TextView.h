@@ -12,5 +12,9 @@ public:
     const String& get_text() const {return m_text;};
 
 private:
+
+    // to deal with scrolling
+    u32 get_first_visible_char_idx() const;
+
     String m_text;
 };
