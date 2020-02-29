@@ -31,6 +31,7 @@
 #include "FileSystem/Fat32FS.h"
 #include "lock.h"
 #include "FileSystem/PtsFS.h"
+#include "drivers/PS2Mouse.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -144,6 +145,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	KernelHeapAllocator::initialize();
 
 	PS2Keyboard::initialize();
+	PS2Mouse::initialize();
 	ATADisk::initialize();
 
 	VgaTTY::the().write("Initializing File Systems...\n");

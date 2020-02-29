@@ -29,6 +29,7 @@ DRIV_OBJS := \
 	$(DRIVERS_DIR)/PIT.o \
 	$(DRIVERS_DIR)/PS2Keyboard.o \
 	$(DRIVERS_DIR)/ATADisk.o \
+	$(DRIVERS_DIR)/PS2Mouse.o \
 
 MM_DIR := MM
 MM_OBJS := \
