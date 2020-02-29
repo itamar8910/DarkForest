@@ -19,5 +19,7 @@ private:
     VGA& m_vga;
     int m_keyboard_fd;
     int m_mouse_fd;
+    int m_mouseX {0};
+    int m_mouseY {0};
     Vector<Window> m_windows;
 };

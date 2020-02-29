@@ -6,6 +6,7 @@ namespace Math
     {
         return (x < y) ? x : y;
     }
+
     u32 div_ceil(u32 e, u32 d)
     {
         u32 leftover = e % d;
@@ -14,11 +15,23 @@ namespace Math
 
     }
     
-    // return val rounded up to be a multiple of m
     u32 round_up(u32 val, u32 m)
     {
         if((val % m) == 0)
             return val;
         return val + (m-(val%m));
+    }
+
+    int clamp(int val, int min, int max)
+    {
+        if(val < min)
+        {
+            val = min;
+        }
+        if(val > max)
+        {
+            val = max;
+        }
+        return val;
     }
 }

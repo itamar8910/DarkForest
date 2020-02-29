@@ -4,6 +4,7 @@
 #include "stdio.h"
 #include "kernel/errs.h"
 #include "PS2MouseCommon.h"
+#include "Math.h"
 
 WindowServerHandler::WindowServerHandler(VGA& vga) :
     m_vga(vga),
@@ -13,6 +14,8 @@ WindowServerHandler::WindowServerHandler(VGA& vga) :
 {
     ASSERT(m_keyboard_fd >=0);
     ASSERT(m_mouse_fd >=0);
+    m_mouseX = (m_vga.width()) / 2;
+    m_mouseY = (m_vga.height()) / 2;
     m_vga.clear();
 }
 
@@ -75,7 +78,22 @@ void WindowServerHandler::handle_pending_mouse_event()
     MouseEvent event;
     const int read_rc = std::read(m_mouse_fd, reinterpret_cast<char*>(&event), 1);
     ASSERT(read_rc == 1);
-    kprintf("WinodwServer: Mouse Event: %d,%d\n", event.delta_x, event.delta_y);
+    // kprintf("WinodwServer: Mouse Event: %d,%d\n", event.delta_x, event.delta_y);
+
+    constexpr u32 MOUSE_SPRITE_SIZE = 7;
+
+    m_mouseX = Math::clamp(m_mouseX + event.delta_x, 0, m_vga.width() - MOUSE_SPRITE_SIZE - 1);
+    m_mouseY = Math::clamp(m_mouseY - event.delta_y, 0, m_vga.height() - MOUSE_SPRITE_SIZE - 1);
+
+    kprintf("WinodwServer: Mouse: %d,%d\n", m_mouseX, m_mouseY);
+
+
+    u32 mouse_sprite_buffer[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE] = {} ;
+    memset(mouse_sprite_buffer, 0xff, sizeof(mouse_sprite_buffer));
+
+    m_vga.draw(mouse_sprite_buffer, m_mouseX, m_mouseY, MOUSE_SPRITE_SIZE, MOUSE_SPRITE_SIZE); 
+
+
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
