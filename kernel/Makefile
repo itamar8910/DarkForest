@@ -59,6 +59,7 @@ HAL_OBJS := \
 	$(HAL_DIR)/VgaTTY.o \
 	$(HAL_DIR)/AsciiKeyboardDevice.o \
 	$(HAL_DIR)/VgaDevice.o \
+	$(HAL_DIR)/MouseDevice.o \
 
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 

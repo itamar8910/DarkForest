@@ -5,6 +5,7 @@
 #include "HAL/VgaTTY.h"
 #include "HAL/AsciiKeyboardDevice.h"
 #include "HAL/VgaDevice.h"
+#include "HAL/MouseDevice.h"
 
 static DevFS* s_the;
 
@@ -21,6 +22,7 @@ void DevFS::initiailize() {
     DevFS::the().add_device(new VgaTTYDevice(Path("vgatty")));
     DevFS::the().add_device(new AsciiKeyboardDevice(Path("asciiKeyboard")));
     DevFS::the().add_device(new VgaDevice(Path("vga")));
+    DevFS::the().add_device(new MouseDevice(Path("mouse")));
 }
 
 void DevFS::add_device(Device* device) {
