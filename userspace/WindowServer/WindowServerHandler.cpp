@@ -3,12 +3,16 @@
 #include "LibWindowServer/IPC.h"
 #include "stdio.h"
 #include "kernel/errs.h"
+#include "PS2MouseCommon.h"
 
 WindowServerHandler::WindowServerHandler(VGA& vga) :
     m_vga(vga),
     m_keyboard_fd(std::open("/dev/keyboard")),
+    m_mouse_fd(std::open("/dev/mouse")),
     m_windows()
 {
+    ASSERT(m_keyboard_fd >=0);
+    ASSERT(m_mouse_fd >=0);
     m_vga.clear();
 }
 
@@ -21,8 +25,9 @@ void WindowServerHandler::run()
 
         PendingInputBlocker::Reason reason = {};
         u32 ready_fd = 0;
-        u32 fds[] = {m_keyboard_fd};
-        const int rc = std::block_until_pending(fds, 1, ready_fd, reason);
+        constexpr u32 NUM_FDS = 2;
+        u32 fds[] = {(u32)m_keyboard_fd, (u32)m_mouse_fd};
+        const int rc = std::block_until_pending(fds, NUM_FDS, ready_fd, reason);
         ASSERT(rc == E_OK);
 
         if(reason == PendingInputBlocker::Reason::PendingMessage)
@@ -33,8 +38,20 @@ void WindowServerHandler::run()
         }
         else if(reason == PendingInputBlocker::Reason::FdReady)
         {
-            ASSERT(ready_fd == m_keyboard_fd);
-            handle_pending_keyboard_event();
+            kprintf("kb fd: %d\n", m_keyboard_fd);
+            kprintf("ms fd: %d\n", m_mouse_fd);
+            kprintf("ready fd: %d\n", ready_fd);
+            if(ready_fd == (u32)m_keyboard_fd)
+            {
+                handle_pending_keyboard_event();
+                continue;
+            }
+            else if(ready_fd == (u32)m_mouse_fd)
+            {
+                handle_pending_mouse_event();
+                continue;
+            }
+            ASSERT_NOT_REACHED();
         }
     }
 }
@@ -51,6 +68,14 @@ void WindowServerHandler::handle_pending_keyboard_event()
     {
         WindowServerIPC::send_key_event(window.owner_pid(), key_event);
     }
+}
+
+void WindowServerHandler::handle_pending_mouse_event()
+{
+    MouseEvent event;
+    const int read_rc = std::read(m_mouse_fd, reinterpret_cast<char*>(&event), 1);
+    ASSERT(read_rc == 1);
+    kprintf("WinodwServer: Mouse Event: %d,%d\n", event.delta_x, event.delta_y);
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
