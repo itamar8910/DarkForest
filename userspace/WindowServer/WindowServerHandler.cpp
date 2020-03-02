@@ -6,7 +6,10 @@
 #include "PS2MouseCommon.h"
 #include "Math.h"
 
-u32 WindowServerHandler::mouse_sprite_buffer[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE] = {};
+u32 WindowServerHandler::mouse_sprite_template[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE] = {};
+u32 WindowServerHandler::current_mouse_sprite[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE] = {};
+
+
 
 WindowServerHandler::WindowServerHandler(VGA& vga) :
     m_vga(vga),
@@ -92,16 +95,22 @@ void WindowServerHandler::handle_pending_mouse_event()
     m_mouseX = Math::clamp(m_mouseX + event.delta_x, 0, m_vga.width() - MOUSE_SPRITE_SIZE - 1);
     m_mouseY = Math::clamp(m_mouseY - event.delta_y, 0, m_vga.height() - MOUSE_SPRITE_SIZE - 1);
 
-    kprintf("WinodwServer: Mouse: %d,%d\n", m_mouseX, m_mouseY);
-
-    // memset(mouse_sprite_buffer, 0xff, sizeof(mouse_sprite_buffer));
-
     Vector<u32> tmp_hidden_pixels = m_hidden_by_mouse;
 
     m_vga.draw(tmp_hidden_pixels.data(), previous_mouseX, previous_mouseY, MOUSE_SPRITE_SIZE, MOUSE_SPRITE_SIZE); 
     m_vga.copy_framebuffer_section(m_hidden_by_mouse.data(), m_mouseX, m_mouseY, MOUSE_SPRITE_SIZE, MOUSE_SPRITE_SIZE);
 
-    m_vga.draw(mouse_sprite_buffer, m_mouseX, m_mouseY, MOUSE_SPRITE_SIZE, MOUSE_SPRITE_SIZE); 
+
+    for(uint32_t i = 0; i < MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE; ++i)
+    {
+        if(mouse_sprite_template[i] != 0)
+        {
+            current_mouse_sprite[i] = mouse_sprite_template[i];
+            continue;
+        }
+        current_mouse_sprite[i] = m_hidden_by_mouse[i];
+    }
+    m_vga.draw(current_mouse_sprite, m_mouseX, m_mouseY, MOUSE_SPRITE_SIZE, MOUSE_SPRITE_SIZE); 
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
@@ -171,6 +180,6 @@ void WindowServerHandler::init_mouse_sprite()
     
     for(uint32_t i = 0; i < MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE; ++i)
     {
-        mouse_sprite_buffer[i] = (sprite[i] == '*') ? 0xffffffff : 0;
+        mouse_sprite_template[i] = (sprite[i] == '*') ? 0xffffffff : 0;
     }
 }

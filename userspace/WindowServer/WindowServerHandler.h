@@ -26,6 +26,7 @@ private:
     Vector<Window> m_windows;
 
     static constexpr u32 MOUSE_SPRITE_SIZE = 7;
-    static u32 mouse_sprite_buffer[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE];
+    static u32 mouse_sprite_template[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE];
+    static u32 current_mouse_sprite[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE];
     Vector<u32> m_hidden_by_mouse;
 };
