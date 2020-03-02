@@ -2,6 +2,7 @@
 #include "types/vector.h"
 #include "LibWindowServer/IPC.h"
 #include "Window.h"
+#include "types/vector.h"
 
 class WindowServerHandler final
 {
@@ -22,4 +23,7 @@ private:
     int m_mouseX {0};
     int m_mouseY {0};
     Vector<Window> m_windows;
+
+    static constexpr u32 MOUSE_SPRITE_SIZE = 7;
+    Vector<u32> m_hidden_by_mouse;
 };

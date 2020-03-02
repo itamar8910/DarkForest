@@ -16,6 +16,7 @@ public:
     void clear();
     void draw(u32* window_buffer);
     void draw(u32* window_buffer, u16 x, u16 y, u16 width, u16 height);
+    void copy_framebuffer_section(u32* dst, u16 x, u16 y, u16 width, u16 height) const;
 
 private:
     int m_vga_fd {0};

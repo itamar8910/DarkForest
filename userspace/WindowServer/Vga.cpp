@@ -65,3 +65,26 @@ void VGA::draw(u32* window_buffer, u16 x, u16 y, u16 width, u16 height)
         }
     }
 }
+
+void VGA::copy_framebuffer_section(u32* dst, u16 x, u16 y, u16 width, u16 height) const
+{
+
+    if(
+        (x + width >= m_width)
+        || (y + height >= m_height)
+        )
+        {
+            kprintf("VGA::out of bounds\n");
+            ASSERT_NOT_REACHED();
+        }
+
+    for(u16 row = y; row < y + height; ++row)
+    {
+        for(u16 col = x; col < x + width; ++col)
+        {
+            u32* src_pixel = m_frame_buffer + (row*m_width + col);
+            u32* dst_pixel = dst + ((row-y)*width + (col-x));
+            *dst_pixel = *src_pixel;
+        }
+    }
+}
