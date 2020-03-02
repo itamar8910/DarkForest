@@ -15,6 +15,7 @@ private:
     void handle_pending_keyboard_event();
     void handle_pending_mouse_event();
     Window get_window(u32 window_id);
+    static void init_mouse_sprite();
 
 private:
     VGA& m_vga;
@@ -25,5 +26,6 @@ private:
     Vector<Window> m_windows;
 
     static constexpr u32 MOUSE_SPRITE_SIZE = 7;
+    static u32 mouse_sprite_buffer[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE];
     Vector<u32> m_hidden_by_mouse;
 };
