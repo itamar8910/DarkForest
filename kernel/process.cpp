@@ -6,6 +6,9 @@
 #include "FileSystem/CharFile.h"
 #include "Loader/loader.h"
 #include "Scheduler.h"
+#include "MM/SharedMemoryManager.h"
+#include "Math.h"
+#include "FileSystem/PtsFS.h"
 
 u32 g_next_pid;
 
@@ -21,7 +24,8 @@ Process::Process(u32 pid, ThreadControlBlock* task, String name, String current_
     : m_pid(pid),
       m_task(task),
       m_name(name),
-      m_current_directory(current_directory)
+      m_current_directory(current_directory),
+      m_next_shared_memory((void*)SHARED_MEMORY_START)
 {
     if(descriptors) {
         for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
@@ -197,7 +201,7 @@ int Process::syscall_listdir(const String& path, void* dest, size_t* size)
 
 int Process::syscall_set_current_directory(const String& path)
 {
-    if (!VFS::the().does_directory_exist(Path(get_full_path(path))))
+    if (!VFS::the().is_directory(Path(get_full_path(path))))
     {
         kprintf("Not setting current directory of %s since it doesn't exist\n", path.c_str());
         return E_NOTFOUND;
@@ -271,5 +275,212 @@ int Process::syscall_creste_entry(const String& path, DirectoryEntry::Type type)
         return -E_INVALID;
     }
     return 0;
+}
 
+int Process::syscall_create_shared_memory(const u32 guid, const u32 size, void** addr)
+{
+    if(((size%PAGE_SIZE) != 0) || ((u32)m_next_shared_memory + size >= SHARED_MEMORY_END))
+    {
+        return E_INVALID_SIZE;
+    }
+
+    const int rc = MemoryManager::the().allocate_range((u32)m_next_shared_memory, size, PageWritable::YES, UserAllowed::YES);
+    if(rc)
+    {
+        return rc;
+    }
+
+    const bool register_rc = SharedMemoryManager::the().register_shm(guid, m_pid, m_next_shared_memory, size);
+    if(!register_rc)
+    {
+        return E_TAKEN;
+    }
+
+    *addr = m_next_shared_memory;
+    m_next_shared_memory = reinterpret_cast<void*>((u32)m_next_shared_memory + size);
+    return E_OK;
+}
+
+int Process::syscall_open_shared_memory(const u32 guid, void** addr, u32* size)
+{
+    SharedMemoryManager::SharedMemoryEntry entry;
+    const bool rc = SharedMemoryManager::the().get(guid, entry);
+    if(!rc)
+    {
+        return E_NOTFOUND;
+    }
+
+    if(entry.pid == m_pid)
+    {
+        *addr = entry.virt_addr;
+        *size = entry.size;
+        return E_OK;
+    }
+
+    Process* owner = Scheduler::the().get_process(entry.pid);
+    if(!owner)
+    {
+        kprintf("shared memory owner not found\n");
+        return E_NOTFOUND;
+    }
+    const int dup_rc = MemoryManager::the().duplicate(owner->m_task->CR3, (u32)entry.virt_addr, entry.size, (u32)m_next_shared_memory);
+    if(dup_rc)
+    {
+        return dup_rc;
+    }
+    *addr = m_next_shared_memory;
+    *size = entry.size;
+
+    m_next_shared_memory = reinterpret_cast<void*>((u32)m_next_shared_memory + entry.size);
+
+    return E_OK;
+}
+
+// #define DBG_IPC
+
+int Process::syscall_send_message(const u32 pid, const char* msg, u32 size)
+{
+    Process* receiver = Scheduler::the().get_process(pid);
+    if(!receiver)
+    {
+        kprintf("notfound\n");
+        return E_NOTFOUND;
+    }
+
+    receiver->put_message(msg, size, m_pid); 
+    return E_OK;
+}
+
+int Process::syscall_get_message(char* msg, u32 size, u32* pid)
+{
+    if(has_pending_message())
+    {
+        return consume_message(msg, size, pid);
+    }
+
+#ifdef DBG_IPC
+    kprintf("no messages, blocking..\n");
+#endif
+
+    auto* blocker = new PendingMessageBlocker(m_pid);
+    Scheduler::the().block_current(blocker);
+
+    return consume_message(msg, size, pid);
+}
+
+int Process::consume_message(char* msg, u32 size, u32* pid)
+{
+    Message m;
+    const bool rc  = get_message(m);
+    ASSERT(rc);
+
+    if(size != m.size)
+    {
+        // TODO: handle this case,
+        // TODO take 'size' bytes from the message & truncate it
+        ASSERT_NOT_REACHED();
+    }
+    const u32 size_to_copy = Math::min(size, m.size);
+
+    memcpy(msg, m.message, size_to_copy);
+    *pid = m.pid;
+
+    delete[] m.message;
+
+    return size_to_copy;
+}
+
+bool Process::has_pending_message()
+{
+    return !m_messages.empty();
+}
+
+bool Process::get_message(Message& msg)
+{
+    LOCKER(m_message_lock);
+    if(m_messages.empty())
+    {
+        return false;
+    }
+    msg = m_messages.pop_front();
+#ifdef DBG_IPC
+    kprintf("get message: 0x%x\n", msg);
+#endif
+    return true;
+}
+
+void Process::put_message(const char* msg, u32 size, u32 pid)
+{
+    LOCKER(m_message_lock);
+#ifdef DBG_IPC
+    kprintf("put message:");
+    print_hexdump((const u8*)msg, size);
+#endif
+    char* msg_copy = new char[size];
+    memcpy(msg_copy, msg, size);
+    m_messages.append({pid, msg_copy, size});
+}
+
+
+int Process::syscall_get_pid_by_name(char* name, u32* pid)
+{
+    Process* p = Scheduler::the().get_process_by_name(name);
+    if(!p)
+    {
+        return E_NOTFOUND;
+    }
+    *pid = p->pid();
+    return E_OK;
+}
+
+
+int Process::syscall_map_device(int fd, void* addr, u32 size)
+{
+    if(fd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+    auto* f = m_file_descriptors[fd];
+    if(f == nullptr)
+        return -E_NOTFOUND;
+    Device* dev = static_cast<Device*>(f); // TODO dynamic cast
+    return dev->mmap(addr, size);
+}
+
+int Process::syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_idx)
+{
+    Vector<File*> pending_files;
+    for(u32 i = 0; i < num_fds; ++i)
+    {
+        if(fds[i] >= NUM_FILE_DESCRIPTORS)
+        {
+            return -E_INVALID;
+        }
+        auto* f = m_file_descriptors[fds[i]];
+        if(f == nullptr)
+        {
+            return -E_NOTFOUND;
+        }
+        pending_files.append(f);
+    } 
+
+    u32 ready_fd_idx_in_array = 0;
+    PendingInputBlocker::Reason ready_reason = {};
+    PendingInputBlocker* blocker = new PendingInputBlocker(m_pid, pending_files, ready_fd_idx_in_array, ready_reason);
+    Scheduler::the().block_current(blocker);
+    ASSERT(ready_fd_idx_in_array < num_fds);
+    *ready_fd_idx = fds[ready_fd_idx_in_array];
+    return static_cast<int>(ready_reason);
+}
+
+int Process::syscall_create_terminal(char* name_out)
+{
+    String name;
+    const bool rc = PtsFS::the().create_new(name);
+    if(!rc)
+    {
+        return E_INVALID;
+    }
+
+    memcpy(name_out, name.c_str(), name.len());
+    name_out[name.len()] = '\0';
+    return E_OK;
 }

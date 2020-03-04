@@ -19,6 +19,8 @@ public:
     bool can_consume();
 
 private:
+
+
     PS2Keyboard();
     static inline u8 get_status();
     static void poll_for_write();

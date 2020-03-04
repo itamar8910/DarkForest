@@ -20,40 +20,45 @@ File* VFS::open(const Path& path) {
     Path inside_path("/");
     FileSystem* fs = get_fs(path, inside_path);
     if(fs == nullptr)
+    {
+        kprintf("dint't find matching fs!\n");
         return nullptr;
+    }
 
     return fs->open(inside_path);
 }
 
 bool VFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
-    if(path.num_parts() == 0)
-    {
-        // this is not really correct because
-        // in the future not all filesystem must be mounted in /
-        // + there could be things in / which are not filesystems
-        for(auto* fs : mounted_filesystems)
-        {
-           res.append(DirectoryEntry(fs->mountpoint(), DirectoryEntry::Type::Directory));
-        }
-        return true;
-    }
     kprintf("VFS::ls %s\n", path.to_string().c_str());
+
+    for(auto* fs : mounted_filesystems)
+    {
+        if(path.is_parent_of(fs->mountpoint()))
+        {
+            res.append(DirectoryEntry(fs->mountpoint(), DirectoryEntry::Type::Directory));
+        }
+    }
+
+    // if(path.num_parts() == 0)
+    //     return true;
+
     Path inside_path("/");
     FileSystem* fs = get_fs(path, inside_path);
     if(fs == nullptr)
         return false;
+
     return fs->list_directory(inside_path, res);
 }
 
-bool VFS::does_directory_exist(const Path& path)
+bool VFS::is_directory(const Path& path)
 {
     if(path.num_parts() == 0)
     {
         return true;
     }
     
-    kprintf("VFS::does_directory_exist %s\n", path.to_string().c_str());
+    kprintf("VFS::is_directory %s\n", path.to_string().c_str());
     Path inside_path("/");
     FileSystem* fs = get_fs(path, inside_path);
 
@@ -62,22 +67,42 @@ bool VFS::does_directory_exist(const Path& path)
         return false;
     }
 
-    return fs->does_directory_exist(inside_path);
+    return fs->is_directory(inside_path);
+}
+
+bool VFS::is_file(const Path& path)
+{
+    Path inside_path("/");
+    FileSystem* fs = get_fs(path, inside_path);
+
+    if(fs == nullptr)
+    {
+        return false;
+    }
+
+    return fs->is_file(inside_path);
+
 }
 
 FileSystem* VFS::get_fs(const Path& path, Path& path_inside_fs)
 {
+    FileSystem* matching_fs = nullptr;
+    size_t longest_mount_point_size = 0;
     for(auto* fs : mounted_filesystems) {
         ASSERT(fs != nullptr);
-        Path inside_path("/");
-        bool rc = path.remove_mount_prefix(*fs, inside_path);
-        if(!rc) {
-            continue;
+        if((fs->mountpoint().is_prefix_of(path)) && (fs->mountpoint().num_parts() >= longest_mount_point_size))
+        {
+            matching_fs = fs;
+            longest_mount_point_size = fs->mountpoint().num_parts();
         }
-        path_inside_fs = inside_path;
-        return fs;
     }
-    return nullptr;
+
+    if(matching_fs == nullptr)
+        return nullptr;
+
+    int rc = path.remove_mount_prefix(*matching_fs, path_inside_fs);
+    ASSERT(rc);
+    return matching_fs;
 }
 
 

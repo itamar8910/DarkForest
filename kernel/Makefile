@@ -18,6 +18,7 @@ KERN_OBJS := \
 	backtrace.o \
 	lock.o \
 	BigBuffer.o \
+	Pipe.o \
 	
 
 DRIVERS_DIR := drivers
@@ -28,12 +29,14 @@ DRIV_OBJS := \
 	$(DRIVERS_DIR)/PIT.o \
 	$(DRIVERS_DIR)/PS2Keyboard.o \
 	$(DRIVERS_DIR)/ATADisk.o \
+	$(DRIVERS_DIR)/PS2Mouse.o \
 
 MM_DIR := MM
 MM_OBJS := \
 	$(MM_DIR)/MemoryManager.o \
 	$(MM_DIR)/PageDirectory.o \
 	$(MM_DIR)/PageTable.o \
+	$(MM_DIR)/SharedMemoryManager.o \
 
 FS_DIR := FileSystem
 FS_OBJS := \
@@ -42,6 +45,7 @@ FS_OBJS := \
 	$(FS_DIR)/CharFile.o \
 	$(FS_DIR)/FileUtils.o \
 	$(FS_DIR)/Fat32FS.o \
+	$(FS_DIR)/PtsFS.o \
 
 LOADER_DIR := Loader
 LOADER_OBJS := \
@@ -54,6 +58,8 @@ HAL_OBJS := \
 	$(HAL_DIR)/VgaTextDevice.o \
 	$(HAL_DIR)/VgaTTY.o \
 	$(HAL_DIR)/AsciiKeyboardDevice.o \
+	$(HAL_DIR)/VgaDevice.o \
+	$(HAL_DIR)/MouseDevice.o \
 
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 

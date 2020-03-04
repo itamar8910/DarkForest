@@ -10,14 +10,12 @@ A work in progress x86 operating system
 - Heap memory management
 - Interrupts
 - Keyboard driver
-- Tar RamDisk filesystem
 - Partial elf parser
 - Userspace
-- ATA Disk driver (currently read only)
-- Fat32 (currently read only)
-
-## Coming up
-- userspace shell
+- ATA Disk driver
+- Fat32 (missing some features)
+- userspace shell (cd, ls, cat, touch, mkdir)
+- shared memory
 
 ## Build prerequisites
 

@@ -91,7 +91,8 @@ void Scheduler::pick_next_and_switch() {
     m_current_process->task().meta_data->state = TaskMetaData::State::Running;
     m_tick_since_switch = 0;
     #ifdef DBG_SCHEDULER
-    kprintf("Scheduler: switched to task: %s\n", current().name().c_str());
+    if(current().name() != "idle")
+        kprintf("Scheduler: switched to task: %s\n", current().name().c_str());
     #endif
     switch_to_task(&m_current_process->task());
 }
@@ -174,6 +175,19 @@ Process* Scheduler::get_process(size_t pid)
         return *i1;
     }
     auto i2 = m_blocked_list.find([&](Process* other){return other->pid()==pid;});
+    if(i2 != m_blocked_list.end()) {
+        return *i2;
+    }
+    return nullptr;
+}
+
+Process* Scheduler::get_process_by_name(const String& name)
+{
+    auto i1 = m_runanble_list.find([&](Process* other){return other->name() == name;});
+    if(i1 != m_runanble_list.end()) {
+        return *i1;
+    }
+    auto i2 = m_blocked_list.find([&](Process* other){return other->name() == name;});
     if(i2 != m_blocked_list.end()) {
         return *i2;
     }

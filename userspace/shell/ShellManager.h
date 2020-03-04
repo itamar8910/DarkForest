@@ -19,6 +19,8 @@ private:
     void do_mkdir(const Vector<String>& cmd_parts);
     void print_prompt();
 
+    bool find_app(const String& name, String& app_path);
+
 private:
     String m_current_directory;
 };

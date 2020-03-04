@@ -17,7 +17,8 @@ public:
 
     virtual bool list_directory(const Path& path, Vector<DirectoryEntry>& res) override;
 
-    virtual bool does_directory_exist(const Path& path) override;
+    virtual bool is_directory(const Path& path) override;
+    virtual bool is_file(const Path& path) override;
 
     void mount(FileSystem* fs);
 

@@ -7,9 +7,12 @@
 #include "MM/MemoryManager.h"
 #include "FileSystem/FileUtils.h"
 #include "fork_args.h"
+#include "FileSystem/VFS.h"
 
 // #define DBG_SYSCALL
 // #define DBG_SYSCALL2
+
+static u32 guid = 1;
 
 
 u32 syscalls_gate(u32 syscall_idx, u32, u32, u32);
@@ -55,7 +58,7 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
         case Syscall::DbgPrint:
             kprint("DbgPrint\n");
             return 0;
-        case Syscall::getID:
+        case Syscall::GetID:
             return Scheduler::the().current().pid();
         case Syscall::Exit:
             syscall_exit((int)arg1);    
@@ -68,19 +71,17 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return 0;
         case Syscall::Open:
             return Scheduler::the().current().syscall_open(String((char*) arg1));
-        case Syscall::IOCTL:
+        case Syscall::IOctl:
             return Scheduler::the().current().syscall_ioctl(arg1, arg2, (void*) arg3);
-        case Syscall::FILE_SIZE:
+        case Syscall::FileSize:
             return Scheduler::the().current().syscall_file_size(arg1);
-        case Syscall::READ:
+        case Syscall::Read:
             return Scheduler::the().current().syscall_read(arg1, (char*) arg2, arg3);
-        case Syscall::WRITE:
+        case Syscall::Write:
             return Scheduler::the().current().syscall_write(arg1, (char*) arg2, arg3);
         case Syscall::ForkAndExec:
-            {
             return Scheduler::the().current().syscall_ForkAndExec((ForkArgs*)arg1);
-            }
-        case Syscall::WAIT:
+        case Syscall::Wait:
             return Scheduler::the().current().syscall_wait(arg1);
         case Syscall::ListDir:
             return Scheduler::the().current().syscall_listdir(String((char*) arg1), (char*) arg2, (size_t*) arg3);
@@ -92,6 +93,29 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_creste_entry((char*)arg1, DirectoryEntry::Type::File);
         case Syscall::CreateDirectory:
             return Scheduler::the().current().syscall_creste_entry((char*)arg1, DirectoryEntry::Type::Directory);
+        case Syscall::IsFile:
+            return VFS::the().is_file(Path(String((char*)arg1)));
+        case Syscall::IsDirectory:
+            return VFS::the().is_directory(Path(String((char*)arg1)));
+        case Syscall::CreateSharedMemory:
+            return Scheduler::the().current().syscall_create_shared_memory(arg1, arg2, (void**)arg3);
+        case Syscall::OpenSharedMemory:
+            return Scheduler::the().current().syscall_open_shared_memory(arg1, (void**)arg2, (u32*)arg3);
+        case Syscall::SendMessage:
+            return Scheduler::the().current().syscall_send_message(arg1, (char*)arg2, arg3);
+        case Syscall::GetMessage:
+            return Scheduler::the().current().syscall_get_message((char*)arg1, arg2, (u32*)arg3);
+        case Syscall::GetPidByName:
+            return Scheduler::the().current().syscall_get_pid_by_name((char*)arg1, (u32*)arg2);
+        case Syscall::MapDevice:
+            return Scheduler::the().current().syscall_map_device((int)arg1, (void*)arg2, (u32)arg3);
+        case Syscall::GenerateGUID:
+            return guid++;
+        case Syscall::BlockUntilPending:
+            return Scheduler::the().current().syscall_block_until_pending((u32*)arg1, (u32)arg2, (u32*)arg3);
+        case Syscall::CreateTerminal:
+            return Scheduler::the().current().syscall_create_terminal((char*)arg1);
+
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

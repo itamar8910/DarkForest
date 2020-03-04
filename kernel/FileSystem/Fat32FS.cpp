@@ -19,17 +19,6 @@ void Fat32FS::initialize()
     FatBootSector* boot_sector = (FatBootSector*) buff;
     Fat32Extension* extension = (Fat32Extension*) boot_sector->extended_section;
     s_the = new Fat32FS(*boot_sector, *extension);
-
-    // test file creation
-    // the().create_file(Path("/rootfile2.txt"));
-    // kprintf("added file\n");
-    // Vector<DirectoryEntry> entries;
-    // the().list_directory(Path("/c"), entries);
-    // for(auto& e  : entries)
-    // {
-    //     kprintf("%s\n", e.path().to_string().c_str());
-    // }
-
 }
 
 Fat32FS& Fat32FS::the(){
@@ -38,7 +27,7 @@ Fat32FS& Fat32FS::the(){
 }
 
 Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
-    : CharFileSystem(Path("/root"))
+    : CharFileSystem(Path("/"))
 {
 
     ASSERT(boot_sector.table_count == 2);
@@ -421,9 +410,9 @@ bool Fat32FS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
     return true;
 }
 
-bool Fat32FS::does_directory_exist(const Path& path)
+bool Fat32FS::is_directory(const Path& path)
 {
-    kprintf("does_directory_exist: path got %s\n", path.to_string().c_str());
+    kprintf("is_directory: path got %s\n", path.to_string().c_str());
 
     if (path.num_parts() == 0)
     {
@@ -433,6 +422,12 @@ bool Fat32FS::does_directory_exist(const Path& path)
 
     FatDirectoryEntry entry;
     return find_directory(path, entry);
+}
+
+bool Fat32FS::is_file(const Path& path)
+{
+    FatDirectoryEntry entry;
+    return find_file(path, entry);
 }
 
 bool Fat32FS::read_file(CharDirectoryEntry& entry, u8* data) const
@@ -555,7 +550,6 @@ FatDirectoryEntry Fat32FS::create_entry_from(u8* buff, const FatRawDirectoryEntr
         if(current->is_last())
             break;
     }
-    kprintf("full dirent name: %s\n", name.c_str());
     return FatDirectoryEntry
     {
         name,
@@ -646,12 +640,10 @@ bool Fat32FS::create_entry(const Path& path, DirectoryEntry::Type type)
         
         String current_part_str = basename.substr(long_entry_i*FatLongDirectoryEntry::NAME_LEN_IN_ENTRY, (long_entry_i+1)*FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
         Vector<char> current_part(current_part_str.c_str(), current_part_str.len());
-        print_hexdump(reinterpret_cast<u8*>(current_part.data()), FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
         for(size_t i = current_part_str.len(); i < FatLongDirectoryEntry::NAME_LEN_IN_ENTRY; ++i)
         {
             current_part.append(0);
         }
-        print_hexdump(reinterpret_cast<u8*>(current_part.data()), FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
         ASSERT(current_part.size() == FatLongDirectoryEntry::NAME_LEN_IN_ENTRY);
 
         ascii_to_unicode(long_entry.name1, current_part.data(), FatLongDirectoryEntry::NAME1_NUM_CHARS); 
@@ -662,7 +654,6 @@ bool Fat32FS::create_entry(const Path& path, DirectoryEntry::Type type)
         long_entry.chksum = 0; // TODO
         long_entry._unused = 0;
 
-        print_hexdump(reinterpret_cast<const u8*>(long_entry.name1), FatLongDirectoryEntry::NAME1_NUM_CHARS);
 
         memcpy(buff->data() + offset_in_cluster + (num_long_entries-1-long_entry_i)*sizeof(FatLongDirectoryEntry), reinterpret_cast<void*>(&long_entry), sizeof(FatLongDirectoryEntry));
     }
@@ -693,12 +684,6 @@ bool Fat32FS::create_entry(const Path& path, DirectoryEntry::Type type)
     shared_ptr<BigBuffer> zero_buff = BigBuffer::allocate(cluster_size());
     memset(zero_buff->data(), 0, zero_buff->size());
     write_cluster(first_cluster_of_file, zero_buff->data());
-
-    // kprintf("allocated cluster: %d, sector:%d\n", first_cluster_of_file, cluster_to_sector(first_cluster_of_file));
-    // shared_ptr<BigBuffer> buff2 = BigBuffer::allocate(cluster_size());
-    // read_cluster(first_cluster_of_file, buff2->data());
-    // kprintf("data:%x\n");
-    // print_hexdump(buff2->data(), buff2->size());
 
     return true; 
 }

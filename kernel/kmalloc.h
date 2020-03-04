@@ -3,11 +3,6 @@
 #include "types.h"
 #include "HeapAllocator.h"
 
-enum class KMallocMode {
-    KMALLOC_ETERNAL,
-    KMALLOC_NORMAL
-};
-
 
 class KernelHeapAllocator : public HeapAllocator {
 public:
@@ -22,12 +17,5 @@ private:
 
 void* kmalloc(size_t size);
 void kfree(void* addr);
-
-/**
- * allocate memory that cannot be freed
- */
-void* kmalloc_eternal(size_t size);
-
-void kmalloc_set_mode(KMallocMode mode);
 
 void kmalloc_initialize();

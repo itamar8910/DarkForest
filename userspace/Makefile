@@ -2,26 +2,45 @@
 OBJS := \
 	start.ao \
 
-# NOTE: remember to add line in make clean target (or make it automatic)
 APPS := \
 	HelloWorld.app \
 	shell.app \
-	terminal.app \
+	TextTerminal.app \
 	cat.app \
 	vi.app \
+	ls.app \
+	echo.app \
+	touch.app \
+	mkdir.app \
+	WindowServer.app \
+	GuiTerminal.app \
+	gui2.app \
 
-LIBC_DIR := ../libc
+CURRENT_DIR := $(realpath ./)
+GLOBAL_DIR := $(realpath ../)
+LIBC_DIR := $(realpath ../libc)
+LIBGUI_DIR := $(realpath LibGui/)
+LIB_WINDOW_SERVER_DIR := $(realpath LibWindowServer/)
+
 LIBC_OBJ := $(LIBC_DIR)/libc.o
+LIBGUI_OBJ := $(LIBGUI_DIR)/LibGui.o
+LIB_WINDOW_SERVER_OBJ := $(LIB_WINDOW_SERVER_DIR)/LibWindowServer.o
 
-OBJS_TO_LINK := $(OBJS) $(LIBC_OBJ)
+OBJS_TO_LINK := $(OBJS) $(LIBC_OBJ) $(LIB_WINDOW_SERVER_OBJ) $(LIBGUI_OBJ)
 
-export INCLUDE := -I$(LIBC_DIR) -I../../
+export INCLUDE := -I$(LIBC_DIR) -I$(CURRENT_DIR) -I$(GLOBAL_DIR)
 
-all: libc start.ao apps
+all: libc libgui  lib_windowserver start.ao apps
 
 libc:
 	make -C $(LIBC_DIR) clean
 	make -C $(LIBC_DIR) LIBCMODE=USERSPACE
+
+libgui:
+	make -C $(LIBGUI_DIR)
+
+lib_windowserver:
+	make -C $(LIB_WINDOW_SERVER_DIR)
 
 apps: $(APPS)
 
@@ -30,12 +49,6 @@ apps: $(APPS)
 	$(CC) -T linker.ld -o $*.app $(LDFLAGS) $(OBJS_TO_LINK) $*/$*.o -lgcc
 
 FORCE:
-
-# main: main.o start.ao
-# 	$(CC) -T linker.ld -o $@ $(LDFLAGS) $(OBJS_TO_LINK) -lgcc
-
-# main.o: main.cpp start.S
-# 	$(CC) $(INCLUDE) -DUSERSPACE -c $< -o $@ $(CFLAGS)
 
 %.ao: %.S
 	$(ASM) -felf32 $< -o $@
@@ -47,3 +60,14 @@ clean:
 	make -C cat/ clean
 	make -C vi/ clean
 	rm -f *.o *.ao *.app
+
+CLEAN_SUBDIRS := $(wildcard */.)
+
+.PHONY: $(CLEAN_SUBDIRS)
+
+clean: $(CLEAN_SUBDIRS)
+	rm -f *.o *.ao *.app
+
+$(CLEAN_SUBDIRS):
+	$(MAKE) -C $@ clean
+

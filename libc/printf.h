@@ -159,3 +159,12 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
     }
     return ret;
 }
+
+template <typename PutcFunc>
+int printf_internal_wrapper(PutcFunc putc_f, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    const int rc = printf_internal(putc_f, fmt, args);
+    va_end(args);
+    return rc;
+}

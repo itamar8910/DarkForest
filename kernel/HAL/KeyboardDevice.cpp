@@ -38,3 +38,8 @@ int KeyboardDevice::ioctl(u32 request, void* buf) {
     return -1;
 
 }
+
+bool KeyboardDevice::can_read() const
+{
+    return PS2Keyboard::the().can_consume();
+}

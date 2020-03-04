@@ -109,9 +109,13 @@ void VgaTTY::write(const char* str)
 }
 
 static VgaTTY* s_the = nullptr;
+
+static u8 placeholder[sizeof(VgaTTY)];
+
 VgaTTY& VgaTTY::the() {
     if(!s_the) {
-        s_the = new VgaTTY();
+        new(placeholder) VgaTTY();
+        s_the = (VgaTTY*) placeholder;
     }
     return *s_the;
 }

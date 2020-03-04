@@ -13,15 +13,18 @@
 
 #include "ShellManager.h"
 
+
 int main() {
-    kprintf("a1\n"); // WTF HeapAllocator crashes without this
+
     ShellManager shell;
     Vector<char> command(50);
 
     while(1) {
         char c = getchar();
+        kprintf("shell: getchar: %c\n", c);
         if(c == '\n') {
             shell.process_command(String(command.data(), command.size()));
+
             command.clear();
         }
 		else {

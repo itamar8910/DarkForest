@@ -8,23 +8,28 @@
 #include "PageDirectory.h"
 #include "cpu.h"
 #include "kmalloc.h"
-// #include "string.h"
+#include "InterruptDisabler.h"
+#include "errs.h"
+#include "new.h"
 
 // #define MM_DBG
 
 static MemoryManager* mm = nullptr;
+static u8 memory_manager_placeholder[sizeof(MemoryManager)];
 
 // TODO: use a bitmap for page directories instead of just advancing next_page_directory_allocation
-static u32 next_page_directory_allocation = 2 * MB;
-const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB;
+static u32 next_page_directory_allocation = 3 * MB;
+const u32 PAGE_DIRECTORY_ALLOCATION_END = next_page_directory_allocation + 1*MB - PAGE_SIZE;
 
 void MemoryManager::initialize(multiboot_info_t* mbt) { kprintf("MemoryManager::initialize()\n");
-    mm = new MemoryManager();
+    InterruptDisabler dis();
+    new(memory_manager_placeholder) MemoryManager();
+    mm = (MemoryManager*) memory_manager_placeholder;
     mm->init(mbt);
 }
 
 void MemoryManager::init(multiboot_info_t* mbt) {
-    mm->m_page_directory = new PageDirectory(PhysicalAddress(get_cr3()));
+    mm->m_page_directory = PageDirectory(PhysicalAddress(get_cr3()));
     kprintf("Physical memory map:\n");
     // loop over all mmap entries
 	for(
@@ -32,13 +37,15 @@ void MemoryManager::init(multiboot_info_t* mbt) {
         ; (u32) mmap < mbt->mmap_addr + mbt->mmap_length
         ; mmap = (MultibootMemMapEntry*) ( (unsigned int)mmap + mmap->size + sizeof(mmap->size) )
          ) {
-        kprintf("base: 0x%x%08x, len: 0x%x%08x, type: %d\n",
+#ifdef MM_DBG
+    kprintf("base: 0x%x%08x, len: 0x%x%08x, type: %d\n",
             u32((mmap->base >> 32) & 0xffffffff),
             u32(mmap->base & 0xffffffff),
             u32((mmap->len >> 32) & 0xffffffff),
             u32(mmap->len & 0xffffffff),
             u32(mmap->type)
         );
+#endif
         if(mmap->type != MULTIBOOT_MEMORY_AVAILABLE)
             continue;
         ASSERT(
@@ -47,7 +54,6 @@ void MemoryManager::init(multiboot_info_t* mbt) {
         );
         u32 region_base = u32(mmap->base & 0xffffffff);
         u32 region_len = u32(mmap->len & 0xffffffff);
-        kprintf("region base:%x\n", region_base);
         for(u32 frame_base = region_base; frame_base <= region_base+region_len-PAGE_SIZE; frame_base += PAGE_SIZE ) {
             // we don't want to allocate frames with base addr bellow 5MB
             if(frame_base < 5 * MB)
@@ -142,7 +148,7 @@ void MemoryManager::flush_entire_tlb()
 
 PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bool tempMap_pageTable) {
     // kprintf("MemoryManager::ensure_pte: 0x%x\n", (u32)addr);
-    auto pde = m_page_directory->get_pde(addr);
+    auto pde = m_page_directory.get_pde(addr);
     bool new_pagetable = false;
     if(!pde.is_present() && create_new_PageTable) {
         kprintf("no PDE for virt addr: 0x%x, creating a new page table\n", addr);
@@ -197,27 +203,83 @@ void MemoryManager::disable_page(Frame frame) {
     flush_tlb(frame);
 }
 
+
 void MemoryManager::allocate(VirtualAddress virt_addr, PageWritable writable, UserAllowed user_allowed) {
+    InterruptDisabler dis;
     #ifdef MM_DBG
     kprintf("MM: allocate: 0x%x\n", virt_addr);
     #endif
-    auto pte = ensure_pte(virt_addr);
-    ASSERT(!pte.is_present());
     Err err;
     Frame pt_frame = get_free_frame(err);
     ASSERT(!err);
-    pte.set_addr(pt_frame);
+    const int rc = map_page(virt_addr, pt_frame, writable, user_allowed);
+    // NOTE: if map_page fails, we leak the allocated frame
+    ASSERT(!rc);
+}
+
+int MemoryManager::allocate_range(VirtualAddress virt_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
+{
+    InterruptDisabler dis;
+    if(size % PAGE_SIZE != 0) 
+    {
+        return E_INVALID_SIZE;
+    }
+    for(size_t page = virt_addr; page < virt_addr + size; page += PAGE_SIZE)
+    {
+        allocate(page, writable, user_allowed);
+    }
+    return E_OK;
+}
+
+int MemoryManager::map(VirtualAddress virt_addr, PhysicalAddress phys_addr, size_t size, PageWritable writable, UserAllowed user_allowed)
+{
+    InterruptDisabler dis;
+   if(size % PAGE_SIZE != 0) 
+   {
+       return E_INVALID_SIZE;
+   }
+   if((virt_addr % PAGE_SIZE != 0) | (phys_addr % PAGE_SIZE != 0))
+   {
+       return E_INVALID;
+   }
+
+   const size_t num_pages = size / PAGE_SIZE;
+
+   for(size_t page_idx = 0; page_idx < num_pages; ++page_idx)
+   {
+    //    kprintf("map: 0x%x->0x%x\n", virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE);
+       const int rc = map_page(virt_addr + page_idx*PAGE_SIZE, phys_addr + page_idx*PAGE_SIZE, writable, user_allowed);
+        // NOTE: if map_page fails, we leave the pages mapped so far
+       ASSERT(!rc);
+   }
+
+   return E_OK;
+
+   
+
+}
+
+int MemoryManager::map_page(VirtualAddress virt_addr, PhysicalAddress phys_addr, PageWritable writable, UserAllowed user_allowed)
+{
+    auto pte = ensure_pte(virt_addr);
+    if(pte.is_present())
+    {
+        return E_TAKEN;
+    }
+    pte.set_addr(phys_addr);
     pte.set_present(true);
     pte.set_writable(writable==PageWritable::YES);
     pte.set_user_allowed(user_allowed==UserAllowed::YES);
     un_temp_map(); // 'ensure_pte' temp_mapped the page table of PTE
     flush_tlb(virt_addr);
+    return E_OK;
 }
 
 void MemoryManager::deallocate(VirtualAddress virt_addr, bool free_page) {
     #ifdef MM_DBG
     kprintf("MM: deallocate: 0x%x\n", virt_addr);
     #endif
+    InterruptDisabler dis();
     auto pte = ensure_pte(virt_addr);
     ASSERT(pte.is_present());
     if(free_page) {
@@ -270,19 +332,21 @@ void MemoryManager::memcpy_frames(PhysicalAddress dst, PhysicalAddress src) {
  */
 PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages) {
     #ifdef DBG_CLONE_PAGE_DIRECTORY
-    kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory->get_base());
+    kprintf("MemoryManager::clone_page_directory from: 0x%x\n", (u32)m_page_directory.get_base());
     #endif
+    InterruptDisabler dis();
 
     Err err;
     auto new_PD_addr = next_page_directory_allocation;
     next_page_directory_allocation += PAGE_SIZE;
+    ASSERT(next_page_directory_allocation < PAGE_DIRECTORY_ALLOCATION_END);
     auto new_page_directory = PageDirectory(PhysicalAddress(new_PD_addr));
 
     // shallow copy of page directory
-    memcpy_frames(new_page_directory.get_base(), m_page_directory->get_base());
+    memcpy_frames(new_page_directory.get_base(), m_page_directory.get_base());
 
     u32* PD_entries = new u32[NUM_PAGE_DIRECTORY_ENTRIES];
-    copy_from_physical_frame((u32)m_page_directory->entries(), (u8*)PD_entries);
+    copy_from_physical_frame((u32)m_page_directory.entries(), (u8*)PD_entries);
 
     u32* new_page_tables_addresses = new u32[NUM_PAGE_DIRECTORY_ENTRIES]; // allocate on heap because kernel stack is small
     memset(new_page_tables_addresses, 0, NUM_PAGE_DIRECTORY_ENTRIES*sizeof(u32));
@@ -356,16 +420,17 @@ PageDirectory MemoryManager::clone_page_directory(CopyUserPages copy_user_pages)
 
 MemoryManager& MemoryManager::the(u32 cr3) {
     ASSERT(mm != nullptr);
+    InterruptDisabler dis();
     // update page table address to CR3 value
     if(cr3 == 0) {
         cr3 = get_cr3();
     }
-    mm->m_page_directory->set_page_directoy_addr(PhysicalAddress(cr3));
+    mm->m_page_directory.set_page_directoy_addr(PhysicalAddress(cr3));
     return *mm;
 }
 
 MemoryManager::MemoryManager()
-    :  m_page_directory(nullptr),
+    :  m_page_directory(0),
      m_tempmap_used(false),
       m_kernel_PDEs_locked(false)
 {
@@ -383,4 +448,30 @@ bool address_in_user_space(VirtualAddress addr) {
 }
 bool address_in_kernel_space(VirtualAddress addr) {
     return addr < USERSPACE_START || addr >= KERNELSPACE_START;
+}
+
+
+int MemoryManager::duplicate(void* other_cr3, VirtualAddress src_addr, size_t size, VirtualAddress dst_addr)
+{
+    if(((src_addr%PAGE_SIZE) != 0) || ((size%PAGE_SIZE) != 0))
+    {
+        return E_INVALID;
+    }
+    PageDirectory other_pd((u32)other_cr3);
+    for(u32 virt_addr = src_addr; virt_addr < src_addr + size; virt_addr += PAGE_SIZE)
+    {
+        PDE other_pde = other_pd.get_pde(virt_addr);
+        ASSERT(other_pde.is_present());
+        VirtualAddress temp_pt_addr = temp_map(other_pde.addr());
+        PageTable other_pt(temp_pt_addr);
+        PTE pte = other_pt.get_pte(virt_addr);
+        // FIXME: instead of asserting we should fail gracefully & restore the previous state
+        ASSERT(pte.is_present());
+        ASSERT(pte.is_user_allowed()); // shared memory is for userspace
+        PhysicalAddress frame = pte.addr();
+        un_temp_map();
+        int rc = map_page(dst_addr + (virt_addr-src_addr), frame, PageWritable::YES, UserAllowed::YES);
+        ASSERT(!rc);
+    }
+    return E_OK;
 }

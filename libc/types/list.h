@@ -59,6 +59,15 @@ public:
         append(T(t));
     } 
 
+    T pop_front()
+    {
+        ASSERT(m_head != nullptr);
+        Iterator front = begin();
+        T cpy = *front;
+        remove(front);
+        return cpy;
+    }
+
     void append(T&& t){
         Node* node = new Node(t);
         m_size++;
@@ -76,12 +85,6 @@ public:
 
     Iterator find(const T& t) {
         return find([&t](T& other) {return other==t;});
-        // for(auto* node = m_head; node != nullptr; node = node->next) {
-        //     if(node->val == t) {
-        //         return Iterator(node);
-        //     }
-        // }
-        // return end();
     }
 
     template<typename Func>
@@ -99,6 +102,12 @@ public:
         if(itr == end()) {
             return false;
         }
+        remove(itr);
+        return true;
+    }
+
+    void remove(Iterator itr)
+    {
         Node* t = itr.node();
         if(t->prev != nullptr) {
             t->prev->next = t->next;
@@ -114,7 +123,7 @@ public:
         }
         delete t;
         m_size--;
-        return true;
+
     }
 
     Iterator begin() {
@@ -135,6 +144,8 @@ public:
         m_tail = nullptr;
         m_size = 0;
     }
+
+    bool empty() {return m_size == 0;}
 
 
 private:

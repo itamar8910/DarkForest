@@ -3,6 +3,8 @@
 #include "file.h"
 #include "fork_args.h"
 #include "FileSystem/DirectoryEntry.h"
+#include "types/list.h"
+#include "lock.h"
 
 #define NUM_FILE_DESCRIPTORS 256
 
@@ -20,6 +22,8 @@ public:
     String name(){return m_name;}
     void set_waiter(WaitBlocker*);
 
+    bool has_pending_message();
+
     ~Process();
 
     int syscall_open(const String& path);
@@ -33,6 +37,30 @@ public:
     int syscall_set_current_directory(const String& path);
     int syscall_get_current_directory(char* buff, size_t* count);
     int syscall_creste_entry(const String& path, DirectoryEntry::Type type);
+    int syscall_create_shared_memory(const u32 guid, const u32 size, void** addr);
+    int syscall_open_shared_memory(const u32 guid, void** addr, u32* size);
+    int syscall_send_message(const u32 pid, const char* msg, u32 size);
+    int syscall_get_message(char* msg, u32 size, u32* pid);
+    int syscall_get_pid_by_name(char* name, u32* pid);
+    int syscall_map_device(int fd, void* addr, u32 size);
+    int syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_idx);
+    int syscall_create_terminal(char* name_out);
+
+private:
+    struct Message
+    {
+        u32 pid;
+        char* message;
+        u32 size;
+
+        Message& operator=(const Message& other) = default;
+    };
+
+    bool get_message(Message& msg);
+    int consume_message(char* msg, u32 size, u32* pid);
+
+    void put_message(const char* msg, u32 size, u32 pid);
+
 
 private:
     String get_full_path(const String& path);
@@ -42,7 +70,11 @@ private:
     ThreadControlBlock* m_task;
     String m_name;
     String m_current_directory;
+    void* m_next_shared_memory;
 
     File* m_file_descriptors[NUM_FILE_DESCRIPTORS] {0};
     WaitBlocker* m_waiter {nullptr};
+
+    List<Message> m_messages {};
+    Lock m_message_lock = {"message_lock"};
 };

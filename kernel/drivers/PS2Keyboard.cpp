@@ -7,7 +7,6 @@
 #include "bits.h"
 
 #define PS2_IRQ1 1
-#define PS2_IRQ2 12
 
 #define PS2_DATA_PORT 0x60
 #define PS2_STATUS_PORT 0x64
@@ -104,6 +103,7 @@ void PS2Keyboard::clear_input() {
     }
 }
 
+
 void PS2Keyboard::initialize() {
 
     u8 val = get_status();
@@ -121,7 +121,6 @@ void PS2Keyboard::initialize() {
     register_interrupt_handler(IRQ_ISRS_BASE + PS2_IRQ1, isr_ps2_keyboard_entry);
 
     PIC::enable_irq(PS2_IRQ1);
-    PIC::enable_irq(PS2_IRQ2);
 
 }
 

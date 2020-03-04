@@ -24,19 +24,19 @@ int open(const char* path) {
 }
 
 int ioctl(int fd, u32 code, void* data) {
-    return Syscall::invoke(Syscall::IOCTL, fd, code, (u32)data);
+    return Syscall::invoke(Syscall::IOctl, fd, code, (u32)data);
 }
 
 int file_size(int fd) {
-    return Syscall::invoke(Syscall::FILE_SIZE, fd);
+    return Syscall::invoke(Syscall::FileSize, fd);
 }
 
 int read(size_t fd, char* buff, size_t count) {
-    return Syscall::invoke(Syscall::READ, fd, (u32)buff, count);
+    return Syscall::invoke(Syscall::Read, fd, (u32)buff, count);
 }
 
 int write(size_t fd, const char* buff, size_t count) {
-    return Syscall::invoke(Syscall::WRITE, fd, (u32)buff, count);
+    return Syscall::invoke(Syscall::Write, fd, (u32)buff, count);
 }
 
 int fork_and_exec(const String& path, const String& name, const Vector<String>& args)
@@ -66,7 +66,7 @@ int fork_and_exec(const String& path, const String& name, const Vector<String>& 
 
 int wait(size_t pid)
 {
-    return Syscall::invoke(Syscall::WAIT, pid);
+    return Syscall::invoke(Syscall::Wait, pid);
 }
 
 int list_dir(const String& path, void* dest, size_t* size)
@@ -102,12 +102,12 @@ int get_current_directory(String& out_path)
     return syscall_return_code;
 }
 
-int create_file(String& path)
+int create_file(const String& path)
 {
     return Syscall::invoke(Syscall::CreateFile, (u32) path.c_str());
 }
 
-int create_directory(String& path)
+int create_directory(const String& path)
 {
     return Syscall::invoke(Syscall::CreateDirectory, (u32) path.c_str());
 }
@@ -131,6 +131,97 @@ int clear_screen(u8 color)
     data.value = color;
 
     return ioctl(open("/dev/vgatext"), request, &data);
+}
+
+int is_file(const String& path)
+{
+    return Syscall::invoke(Syscall::IsFile, (u32) path.c_str());
+}
+
+int is_directory(const String& path)
+{
+    return Syscall::invoke(Syscall::IsDirectory, (u32) path.c_str());
+}
+
+int create_shared_memory(u32 guid, u32 size, void*& addr)
+{
+    void* tmp_addr = 0;
+    const int rc = Syscall::invoke(Syscall::CreateSharedMemory, guid, size, reinterpret_cast<u32>(&tmp_addr));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+    addr = tmp_addr;
+    return E_OK;
+}
+
+int open_shared_memory(u32 guid, void*& addr, u32& size)
+{
+    void* tmp_addr = 0;
+    u32 tmp_size = 0;
+    const int rc = Syscall::invoke(Syscall::OpenSharedMemory, guid, reinterpret_cast<u32>(&tmp_addr), reinterpret_cast<u32>(&tmp_size));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+    addr = tmp_addr;
+    size = tmp_size;
+    return E_OK;
+}
+
+int send_message(u32 pid, const char* msg, u32 size)
+{
+    return Syscall::invoke(Syscall::SendMessage, pid, (u32)msg, (u32)size);
+}
+
+int get_message(char* msg, u32 size, u32& pid)
+{
+    u32 tmp_pid = 0;
+    const int rc = Syscall::invoke(Syscall::GetMessage, (u32)(msg), (u32)size, (u32)&tmp_pid);
+    pid = tmp_pid;
+    return rc;
+}
+
+int get_pid_by_name(const String& name, u32& pid)
+{
+    u32 tmp_pid = 0;
+    const int rc = Syscall::invoke(Syscall::GetPidByName, reinterpret_cast<u32>(name.c_str()), reinterpret_cast<u32>(&tmp_pid));
+    if(rc != E_OK)
+    {
+        return rc;
+    }
+
+    pid = tmp_pid;
+    return E_OK;
+
+}
+
+int map_device(int fd, void* addr, u32 size)
+{
+    return Syscall::invoke(Syscall::MapDevice, static_cast<u32>(fd), (u32)addr, size);
+}
+
+u32 generate_guid()
+{
+    return (u32) Syscall::invoke(Syscall::GenerateGUID);
+}
+
+int block_until_pending(u32* fds, u32 num_fds, u32& ready_fd, PendingInputBlocker::Reason& reason)
+{
+    u32 tmp_ready_fd = 0;
+    const int rc = Syscall::invoke(Syscall::BlockUntilPending, reinterpret_cast<u32>(fds), (u32)num_fds, reinterpret_cast<u32>(&tmp_ready_fd));
+    if(rc >= 0)
+    {
+        reason = static_cast<PendingInputBlocker::Reason>(rc);
+        ready_fd = tmp_ready_fd; 
+        return E_OK;
+    }
+    return -rc;
+}
+
+int create_terminal(char* name_out)
+{
+    return Syscall::invoke(Syscall::CreateTerminal, reinterpret_cast<u32>(name_out));
 }
 
 }

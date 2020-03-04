@@ -29,6 +29,9 @@
 #include "HAL/VgaTTY.h"
 #include "drivers/ATADisk.h"
 #include "FileSystem/Fat32FS.h"
+#include "lock.h"
+#include "FileSystem/PtsFS.h"
+#include "drivers/PS2Mouse.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -42,11 +45,23 @@
  
 
 void hello_world_userspace() {
-	load_and_jump_userspace("/root/bin/hello.app");
+	load_and_jump_userspace("/bin/HelloWorld.app");
 }
 
 void terminal_userspace() {
-	load_and_jump_userspace("/root/bin/terminal.app");
+	load_and_jump_userspace("/bin/terminal.app");
+}
+
+void start_windowserver() {
+	load_and_jump_userspace("/bin/WindowServer.app");
+}
+
+void start_gui_terminal() {
+	load_and_jump_userspace("/bin/GuiTerminal.app");
+}
+
+void start_gui2() {
+	load_and_jump_userspace("/bin/gui2.app");
 }
 
 void idle() {
@@ -59,12 +74,61 @@ void idle() {
 void init_VFS() {
 	VFS::the().mount(&DevFS::the());
 	VFS::the().mount(&Fat32FS::the());
+	VFS::the().mount(&PtsFS::the());
 }
 
 void init_kernel_symbols() {
 	#ifdef KERNEL_SYMBOLS_ENABLED
 	KernelSymbols::initialize();
 	#endif
+}
+
+volatile int glob_a = 0;
+
+Lock& get_test_lock()
+{
+	static Lock lock("TestLock");
+	return lock;
+}    
+
+void task1()
+{
+	int N = 10;
+	for(int i = 0; i < N; ++i)
+	{
+		// kprintf("task1\n");
+		for(int i = 0; i < N; ++i)
+		{
+		// for(int i = 0; i < N; ++i)
+		// {
+		LOCKER(get_test_lock());
+			glob_a+=1;
+			sleep_ms(1);
+			glob_a -= 1;
+		// }
+		}
+	}
+	kprintf("task1: %d\n", glob_a);
+}
+
+void task2()
+{
+	int N = 10;
+	for(int i = 0; i < N; ++i)
+	{
+		// kprintf("task1\n");
+		for(int i = 0; i < N; ++i)
+		{
+		// for(int i = 0; i < N; ++i)
+		// {
+		LOCKER(get_test_lock());
+			glob_a+=1;
+			sleep_ms(1);
+			glob_a -= 1;
+		// }
+		}
+	}
+	kprintf("task2: %d\n", glob_a);
 }
 
 extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
@@ -77,12 +141,11 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	PIC::initialize();
 	init_descriptor_tables();
 	PIT::initialize();
-	kmalloc_set_mode(KMallocMode::KMALLOC_ETERNAL);
 	MemoryManager::initialize(mbt);
 	KernelHeapAllocator::initialize();
-	kmalloc_set_mode(KMallocMode::KMALLOC_NORMAL);
 
 	PS2Keyboard::initialize();
+	PS2Mouse::initialize();
 	ATADisk::initialize();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
@@ -90,17 +153,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Fat32FS::initialize();
 	// cpu_hang();
 
-
 	init_VFS();
-
-	// Vector<DirectoryEntry> res;
-	// ASSERT(VFS::the().list_directory(Path("/root/a"), res));
-	// for(auto& entry : res)
-	// {
-	// 	kprintf("%s\n", entry.path.to_string().c_str());
-	// }
-	// kprintf("# entries: %d\n", res.size());
-	// cpu_hang();
 
 	VgaTTY::the().write("Loading kernel symbols...\n");
 	init_kernel_symbols();
@@ -115,13 +168,16 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	Scheduler::initialize(idle);
 	MemoryManager::the().lock_kernel_PDEs();
 
-	// can't have them run concurrently becuase of FAT races
-	// TODO: add locks to FAT
 	// Scheduler::the().add_process(Process::create(hello_world_userspace, "HelloWorldUser"));
-	Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
+	// Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
+    Scheduler::the().add_process(Process::create(start_windowserver, "WindowServer"));
+	Scheduler::the().add_process(Process::create(start_gui_terminal, "GuiTerminal"));
+	Scheduler::the().add_process(Process::create(start_gui2, "gui2"));
 
-	// VFS::the().open("/inird/helllo.txt");
-	// XASSERT(false);
+	// VGA::init();
+
+	// Scheduler::the().add_process(Process::create(task1, "task1"));
+	// Scheduler::the().add_process(Process::create(task2, "task2"));
 
 	kprintf("enableing interrupts\n");
 	asm volatile("sti");
