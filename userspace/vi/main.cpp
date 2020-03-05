@@ -13,10 +13,10 @@ enum class Mode
 };
 
 int main(char* argv[], int argc) {
-    Window window = GuiManager::the().create_window(300, 300);
+    Window window = GuiManager::the().create_window(100, 100);
     window.set_background_color(0x33333333);
 
-    TextBox* textbox = new TextBox(10, 10, 280, 280);
+    TextBox* textbox = new TextBox(10, 10, 50, 50);
     shared_ptr<Widget> widget(textbox);
     window.add_widget(widget);
 
@@ -60,7 +60,7 @@ int main(char* argv[], int argc) {
             textbox->set_cursor_position(current_cursor_position);
         }
 
-        if (keycode == 'q')
+        else if (keycode == 'q')
         {
             return 0;
         }
@@ -86,6 +86,12 @@ int main(char* argv[], int argc) {
         {
             Point cursor_position = textbox->get_cursor_position();
             cursor_position.x -= SIMPLEFONT_SYMBOL_SIZE + 2;
+            textbox->set_cursor_position(cursor_position);
+        }
+        else if (keycode == '0')
+        {
+            Point cursor_position = textbox->get_cursor_position();
+            cursor_position.x = 0;
             textbox->set_cursor_position(cursor_position);
         }
         else if (keycode == 'i')
