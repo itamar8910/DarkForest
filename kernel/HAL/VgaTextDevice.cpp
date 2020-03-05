@@ -4,6 +4,9 @@
 #include "ioctl_common.h"
 #include "VgaTextCommon.h"
 
+// tmp
+#include "logging.h"
+
 int VgaTextDevice::read(size_t count, void* buf) {
     (void)count;
     (void)buf;
@@ -52,6 +55,7 @@ int VgaTextDevice::ioctl(u32 request, void* buf) {
             }
             break;
         case IOCTL::VgaText::Code::CLEAR:
+	    kprintf("Clear VgaText has been called!!");
             VgaText::clear(static_cast<u8>(data->value));
             break;
         default:

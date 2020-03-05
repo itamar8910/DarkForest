@@ -33,37 +33,6 @@ void ShellManager::process_command(const String& command) {
     if(parts.size() > 0 && parts[0].len() > 0) {
         auto program = parts[0];
 
-        if(program == "cat") {
-            int pid = std::fork_and_exec("/root/bin/cat.app", "cat", parts);
-            ASSERT(pid>0);
-            std::wait(pid);
-        } 
-        else if(program == "ls") { // TODO: extract to separate userspace exectuable
-            do_ls(parts);
-            printf("\n");
-        }
-        else if(program == "echo") { // TODO: extract to separate userspace exectuable
-            do_echo(parts);
-            printf("\n");
-        }
-        else if(program == "cd") {
-            do_cd(parts);
-            printf("\n");
-        }
-        else if(program == "vi") {
-            int pid = std::fork_and_exec("/root/bin/vi.app", "vi", parts);
-            ASSERT(pid>0);
-            std::wait(pid);
-        }
-        else if(program == "touch") {
-            do_touch(parts);
-            printf("\n");
-        }
-        else if(program == "mkdir") {
-            do_mkdir(parts);
-            printf("\n");
-        }
-
         if(program == "cd")
         {
             do_cd(parts);

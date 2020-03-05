@@ -8,6 +8,7 @@ OBJS := \
 	Window.o \
 	GuiManager.o \
 	$(WIDGETS_DIR)/Widget.o \
+    $(WIDGETS_DIR)/TextBox.o \
 	$(WIDGETS_DIR)/TextView.o \
 	$(FONTS_DIR)/SimpleFont.o
 
