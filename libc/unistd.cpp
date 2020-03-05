@@ -112,27 +112,6 @@ int create_directory(const String& path)
     return Syscall::invoke(Syscall::CreateDirectory, (u32) path.c_str());
 }
 
-int update_cursor(u8 col, u8 row)
-{
-    u32 request = static_cast<u32>(IOCTL::VgaText::Code::UPDATE_CURSOR);
-
-    IOCTL::VgaText::Data data = {};
-    data.col = col;
-    data.row = row;
-
-    return ioctl(open("/dev/vgatext"), request, &data);
-}
-
-int clear_screen(u8 color)
-{
-    u32 request = static_cast<u32>(IOCTL::VgaText::Code::CLEAR);
-
-    IOCTL::VgaText::Data data = {};
-    data.value = color;
-
-    return ioctl(open("/dev/vgatext"), request, &data);
-}
-
 int is_file(const String& path)
 {
     return Syscall::invoke(Syscall::IsFile, (u32) path.c_str());

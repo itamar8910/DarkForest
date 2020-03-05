@@ -53,14 +53,6 @@ FORCE:
 %.ao: %.S
 	$(ASM) -felf32 $< -o $@
 
-clean:
-	make -C shell/ clean
-	make -C HelloWorld/ clean
-	make -C terminal/ clean
-	make -C cat/ clean
-	make -C vi/ clean
-	rm -f *.o *.ao *.app
-
 CLEAN_SUBDIRS := $(wildcard */.)
 
 .PHONY: $(CLEAN_SUBDIRS)
