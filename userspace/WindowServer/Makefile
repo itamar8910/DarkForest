@@ -6,6 +6,7 @@ OBJS := \
 	Vga.o \
 	WindowServerHandler.o \
 	Window.o \
+	Mouse.o \
 
 all: $(TARGET)
 
