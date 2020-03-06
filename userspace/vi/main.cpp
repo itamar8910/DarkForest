@@ -13,12 +13,16 @@ enum class Mode
 };
 
 int main(char* argv[], int argc) {
-    Window window = GuiManager::the().create_window(100, 100);
+    Window window = GuiManager::the().create_window(300, 300);
     window.set_background_color(0x33333333);
 
-    TextBox* textbox = new TextBox(10, 10, 50, 50);
-    shared_ptr<Widget> widget(textbox);
-    window.add_widget(widget);
+    TextBox* textbox = new TextBox(20, 20, 280, 250);
+    shared_ptr<Widget> textbox_widget(textbox);
+    window.add_widget(textbox_widget);
+
+    TextView* textview = new TextView(20, 280, 280, 10);
+    shared_ptr<Widget> textview_widget(textview);
+    window.add_widget(textview);
 
     if (argc == 2)
     {
@@ -26,6 +30,7 @@ int main(char* argv[], int argc) {
     }
 
     Mode current_mode = Mode::NORMAL;
+    textview->set_text("NORMAL MODE");
 
     for (;;)
     {
@@ -46,6 +51,7 @@ int main(char* argv[], int argc) {
         if (keycode == ESC_KEYCODE)
         {
             current_mode = Mode::NORMAL;
+            textview->set_text("NORMAL MODE");
             continue;
         }
 
@@ -55,7 +61,7 @@ int main(char* argv[], int argc) {
 
             textbox->set_character((char)keycode, current_cursor_position);
 
-            current_cursor_position.x += SIMPLEFONT_SYMBOL_SIZE + 2;
+            current_cursor_position.x += 1;
 
             textbox->set_cursor_position(current_cursor_position);
         }
@@ -67,25 +73,25 @@ int main(char* argv[], int argc) {
         else if (keycode == 'j')
         {
             Point cursor_position = textbox->get_cursor_position();
-            cursor_position.y += SIMPLEFONT_SYMBOL_SIZE + 2;
+            cursor_position.y += 1;
             textbox->set_cursor_position(cursor_position);
         }
         else if (keycode == 'k')
         {
             Point cursor_position = textbox->get_cursor_position();
-            cursor_position.y -= SIMPLEFONT_SYMBOL_SIZE + 2;
+            cursor_position.y -= 1;
             textbox->set_cursor_position(cursor_position);
         }
         else if (keycode == 'l')
         {
             Point cursor_position = textbox->get_cursor_position();
-            cursor_position.x += SIMPLEFONT_SYMBOL_SIZE + 2;
+            cursor_position.x += 1;
             textbox->set_cursor_position(cursor_position);
         }
         else if (keycode == 'h')
         {
             Point cursor_position = textbox->get_cursor_position();
-            cursor_position.x -= SIMPLEFONT_SYMBOL_SIZE + 2;
+            cursor_position.x -= 1;
             textbox->set_cursor_position(cursor_position);
         }
         else if (keycode == '0')
@@ -97,6 +103,7 @@ int main(char* argv[], int argc) {
         else if (keycode == 'i')
         {
             current_mode = Mode::INSERT;
+            textview->set_text("INSERT MODE");
         }
     }
 

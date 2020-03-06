@@ -22,7 +22,7 @@ void TextView::draw(u32* frame_buffer, const u32 window_width, const u32 window_
 
     for(u32 char_idx = get_first_visible_char_idx(); char_idx < m_text.len(); ++char_idx)
     {
-        if(current_row >= m_height)
+        if(current_row >= m_y + m_height)
         {
             kprintf("\nWARNING: Text Rendering clipped\n");
             break;
