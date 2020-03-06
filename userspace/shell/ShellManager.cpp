@@ -32,6 +32,7 @@ void ShellManager::process_command(const String& command) {
     printf("\n");
     if(parts.size() > 0 && parts[0].len() > 0) {
         auto program = parts[0];
+
         if(program == "cd")
         {
             do_cd(parts);

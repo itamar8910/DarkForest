@@ -7,6 +7,7 @@ APPS := \
 	shell.app \
 	TextTerminal.app \
 	cat.app \
+	vi.app \
 	ls.app \
 	echo.app \
 	touch.app \
@@ -61,3 +62,4 @@ clean: $(CLEAN_SUBDIRS)
 
 $(CLEAN_SUBDIRS):
 	$(MAKE) -C $@ clean
+
