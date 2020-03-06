@@ -34,7 +34,6 @@ int MouseDevice::ioctl(u32 request, void* buf) {
     (void)buf;
     NOT_IMPLEMENTED();
     return -1;
-
 }
 
 bool MouseDevice::can_read() const

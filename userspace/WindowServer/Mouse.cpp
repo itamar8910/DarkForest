@@ -55,3 +55,18 @@ void Mouse::init_sprite()
         sprite_template[i] = (sprite[i] == '*') ? 0xffffffff : 0;
     }
 }
+
+int Mouse::x() const
+{
+    return m_x;
+}
+
+int Mouse::y() const
+{
+    return m_y;
+}
+
+Point Mouse::point() const
+{
+    return {m_x, m_y};
+}

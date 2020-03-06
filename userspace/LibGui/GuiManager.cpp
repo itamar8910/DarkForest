@@ -60,10 +60,10 @@ void GuiManager::draw(Window& window)
     ASSERT(rc);
 }
 
-KeyEvent GuiManager::get_keyboard_event()
+IOEvent GuiManager::get_io_event()
 {
-    KeyEvent key_event;
-    const bool rc = WindowServerIPC::recv_key_event(m_windowserver_pid, key_event, true);
+    IOEvent io_event;
+    const bool rc = WindowServerIPC::recv_io_event(m_windowserver_pid, io_event, true);
     ASSERT(rc);
-    return key_event;
+    return io_event;
 }

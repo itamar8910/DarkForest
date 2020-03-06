@@ -76,6 +76,19 @@ void WindowServerHandler::handle_pending_mouse_event()
     ASSERT(read_rc == 1);
 
     m_mouse.draw(event, m_vga);
+
+    if(event.left_button)
+    {
+        for(auto& window : m_windows)
+        {
+            if(window.rectangle().intersects(m_mouse.point()))
+            {
+                WindowServerIPC::send_mouse_event(window.owner_pid(), event);
+            }
+        }
+    } 
+
+
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)

@@ -122,19 +122,37 @@ bool recv_draw_request(u32 guid_pid, DrawWindow& request, bool recv_code)
 
 bool send_key_event(u32 gui_pid, const KeyEvent& event)
 {
-    u32 key_event_code = WindowServerIPC::Code::SendKeyEvent;
+    IOEvent io_event(event);
+    u32 event_code = WindowServerIPC::Code::SendIOEvent;
+
     int rc;
-    rc = std::send_message(gui_pid, (const char*)&key_event_code, sizeof(key_event_code));
+    rc = std::send_message(gui_pid, (const char*)&event_code, sizeof(event_code));
     if(rc != E_OK)
     {
         return false;
     }
 
-    rc = std::send_message(gui_pid, (const char*)&event, sizeof(event));
+    rc = std::send_message(gui_pid, (const char*)&io_event, sizeof(io_event));
     return rc == E_OK;
 }
 
-bool recv_key_event(u32 windowserver_pid, KeyEvent& key_event, bool recv_code)
+bool send_mouse_event(u32 gui_pid, const MouseEvent& event)
+{
+    IOEvent io_event(event);
+    u32 event_code = WindowServerIPC::Code::SendIOEvent;
+
+    int rc;
+    rc = std::send_message(gui_pid, (const char*)&event_code, sizeof(event_code));
+    if(rc != E_OK)
+    {
+        return false;
+    }
+
+    rc = std::send_message(gui_pid, (const char*)&io_event, sizeof(io_event));
+    return rc == E_OK;
+}
+
+bool recv_io_event(u32 windowserver_pid, IOEvent& io_event, bool recv_code)
 {
     u32 tmp_pid;
     int rc = 0;
@@ -143,15 +161,15 @@ bool recv_key_event(u32 windowserver_pid, KeyEvent& key_event, bool recv_code)
         u32 response_code = 0;
         rc = std::get_message((char*)&response_code, sizeof(response_code), tmp_pid);
         if((rc != sizeof(response_code)) 
-            || (response_code != WindowServerIPC::Code::SendKeyEvent) 
+            || (response_code != WindowServerIPC::Code::SendIOEvent) 
             || (tmp_pid != windowserver_pid))
         {
             return false;
         }
     }
 
-    const u32 len = std::get_message((char*)&key_event, sizeof(key_event), tmp_pid);
-    return ((len==sizeof(key_event)) && (tmp_pid == windowserver_pid));
+    const u32 len = std::get_message((char*)&io_event, sizeof(io_event), tmp_pid);
+    return ((len==sizeof(io_event)) && (tmp_pid == windowserver_pid));
 }
 
 }

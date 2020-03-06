@@ -40,3 +40,8 @@ Window::Window(const WindowServerIPC::CreateWindowRequest& request, u32 pid) :
     x_offset += m_width + 15;
     y_offset += 10;
 }
+
+Rectangle Window::rectangle() const
+{
+    return {m_x, m_y, m_width, m_height};
+}

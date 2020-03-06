@@ -13,7 +13,7 @@ public:
 
     void draw(Window& window);
 
-    KeyEvent get_keyboard_event();
+    IOEvent get_io_event();
 
 private:
     GuiManager();

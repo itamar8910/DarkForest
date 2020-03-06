@@ -87,7 +87,13 @@ int main() {
         
         if(reason == PendingInputBlocker::Reason::PendingMessage)
         {
-            KeyEvent key_event = GuiManager::the().get_keyboard_event(); 
+            IOEvent io_event = GuiManager::the().get_io_event(); 
+            if(io_event.type != IOEvent::Type::KeyEvent)
+            {
+                continue;
+            }
+
+            KeyEvent key_event = io_event.as_key_event();
             if(key_event.released || !key_event.to_ascii())
             {
                 continue;

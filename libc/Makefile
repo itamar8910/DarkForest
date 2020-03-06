@@ -14,7 +14,8 @@ LIBC_OBJS := \
 	malloc.o \
 	VgaTextCommon.o \
 	PS2KeyboardCommon.o \
-	Math.o
+	Math.o \
+	Geometry.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \

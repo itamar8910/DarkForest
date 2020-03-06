@@ -21,7 +21,6 @@
 #define STATUS_OUTPUT (1<<0)
 #define STATUS_INPUT (1<<1)
 
-
 // #define DBG_PS2Mouse
 
 struct [[gnu::packed]] FirstPacket
@@ -103,9 +102,10 @@ void isr_ps2_mouse_handler(RegisterDump& regs) {
 #ifdef DBG_PS2Mouse
     kprintf("x delta: %d\n", x_delta);
     kprintf("y delta: %d\n", y_delta);
+    kprintf("left button: %d\n", first->left_button);
 #endif
 
-    PS2Mouse::the().insert_mouse_event({x_delta, y_delta});
+    PS2Mouse::the().insert_mouse_event({x_delta, y_delta, first->left_button==1, first->right_button==1});
 
     PIC::eoi(PS2_IRQ2);
 }

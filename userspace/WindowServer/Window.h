@@ -1,5 +1,6 @@
 #include "types.h"
 #include "LibWindowServer/IPC.h"
+#include "Geometry.h"
 
 class Window final
 {
@@ -16,6 +17,7 @@ public:
     u32 y() const {return m_y;}
     u32 width() const {return m_width;}
     u32 height() const {return m_height;}
+    Rectangle rectangle() const;
 
 private:
     u32 m_id = {0};

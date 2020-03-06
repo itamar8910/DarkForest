@@ -1,6 +1,8 @@
 #pragma once
 #include "types.h"
 #include "PS2KeyboardCommon.h"
+#include "PS2MouseCommon.h"
+#include "IOEvent.h"
 
 namespace WindowServerIPC
 {
@@ -11,8 +13,7 @@ namespace WindowServerIPC
             CreateWindowRequest,
             CreateWindowResponse,
             DrawWindow,
-            SendKeyEvent,
-            RecvKeyEvent,
+            SendIOEvent,
         };
     }
 
@@ -44,6 +45,6 @@ bool send_draw_request(u32 windowserver_pid, const DrawWindow& request);
 bool recv_draw_request(u32 guid_pid, DrawWindow& request, bool recv_code);
 
 bool send_key_event(u32 gui_pid, const KeyEvent& event);
-bool recv_key_event(u32 windowserver_pid, KeyEvent& request, bool recv_code);
-
+bool send_mouse_event(u32 gui_pid, const MouseEvent& event);
+bool recv_io_event(u32 windowserver_pid, IOEvent& request, bool recv_code);
 }

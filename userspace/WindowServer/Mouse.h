@@ -3,6 +3,7 @@
 #include "types/vector.h"
 #include "PS2MouseCommon.h"
 #include "Vga.h"
+#include "Geometry.h"
 
 class Mouse final
 {
@@ -11,6 +12,11 @@ public:
     ~Mouse() = default;
 
     void draw(const MouseEvent&, VGA&);
+
+    int x() const;
+    int y() const;
+    Point point() const;
+
 private:
     static void init_sprite();
 

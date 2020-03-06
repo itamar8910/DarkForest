@@ -2,6 +2,7 @@ TARGET := LibWindowServer.o
 
 OBJS := \
 	IPC.o \
+	IOEvent.o \
 
 all: $(TARGET)
 
