@@ -16,6 +16,7 @@ private:
     void handle_pending_keyboard_event();
     void handle_pending_mouse_event();
     Window get_window(u32 window_id);
+    void draw_window(Window& window);
 
 private:
     VGA& m_vga;

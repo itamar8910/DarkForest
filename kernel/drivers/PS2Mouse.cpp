@@ -22,7 +22,7 @@
 #define STATUS_INPUT (1<<1)
 
 
-#define DBG_PS2Mouse
+// #define DBG_PS2Mouse
 
 struct [[gnu::packed]] FirstPacket
 {

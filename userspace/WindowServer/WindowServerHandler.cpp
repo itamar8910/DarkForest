@@ -40,9 +40,6 @@ void WindowServerHandler::run()
         }
         else if(reason == PendingInputBlocker::Reason::FdReady)
         {
-            kprintf("kb fd: %d\n", m_keyboard_fd);
-            kprintf("ms fd: %d\n", m_mouse_fd);
-            kprintf("ready fd: %d\n", ready_fd);
             if(ready_fd == (u32)m_keyboard_fd)
             {
                 handle_pending_keyboard_event();
@@ -111,7 +108,7 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
            ASSERT(rc);
 
            Window window = get_window(request.window_guid);
-           m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
+           draw_window(window);
            break;
        }
 
@@ -132,4 +129,20 @@ Window WindowServerHandler::get_window(u32 window_id)
         }
     }
     ASSERT_NOT_REACHED();
+}
+
+void WindowServerHandler::draw_window(Window& window)
+{
+    constexpr u32 WINDOW_BANNER_HEIGHT = 15;
+    const u32 window_banner_size = window.width() * WINDOW_BANNER_HEIGHT;
+    Vector<u32> window_banner(window_banner_size);
+    window_banner.set_size(window_banner_size);
+
+    for(u32 i = 0; i < window_banner_size; ++i)
+    {
+        window_banner[i] = 0x0000ffff;
+    }
+
+    m_vga.draw(window_banner.data(), window.x(), window.y() - WINDOW_BANNER_HEIGHT, window.width(), WINDOW_BANNER_HEIGHT);
+    m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
 }
