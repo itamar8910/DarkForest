@@ -18,6 +18,8 @@ public:
     u32 width() const {return m_width;}
     u32 height() const {return m_height;}
     Rectangle rectangle() const;
+    void set_focused(bool focused) {m_focused = focused;}
+    bool focused() const {return m_focused;}
 
 private:
     u32 m_id = {0};
@@ -29,4 +31,5 @@ private:
     u16 m_y = {0};
     u16 m_width = {0};
     u16 m_height = {0};
+    bool m_focused = {false};
 };

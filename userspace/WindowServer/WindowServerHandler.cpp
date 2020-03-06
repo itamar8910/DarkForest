@@ -61,12 +61,11 @@ void WindowServerHandler::handle_pending_keyboard_event()
     const int read_rc = std::read(m_keyboard_fd, reinterpret_cast<char*>(&key_event), 1);
     ASSERT(read_rc == 1);
 
-    // TODO: only send event to currently focued window
-
-    for(auto& window : m_windows)
+    if(m_current_focused_window_idx == -1)
     {
-        WindowServerIPC::send_key_event(window.owner_pid(), key_event);
+        return;
     }
+    WindowServerIPC::send_key_event(focused_window().owner_pid(), key_event);
 }
 
 void WindowServerHandler::handle_pending_mouse_event()
@@ -79,10 +78,12 @@ void WindowServerHandler::handle_pending_mouse_event()
 
     if(event.left_button)
     {
+        u32 window_idx = 0;
         for(auto& window : m_windows)
         {
             if(window.rectangle().intersects(m_mouse.point()))
             {
+                set_focused_window(window_idx);
                 MouseEvent translated 
                 {
                     static_cast<u16>(m_mouse.x() - window.x()),
@@ -92,6 +93,8 @@ void WindowServerHandler::handle_pending_mouse_event()
                 };
                 WindowServerIPC::send_mouse_event(window.owner_pid(), translated);
             }
+
+            ++window_idx;
         }
     } 
 
@@ -110,13 +113,19 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
             rc = WindowServerIPC::recv_create_window_request(pid, request, false);
             ASSERT(rc);
 
-            const Window w(request, pid);
+            Window w(request, pid);
 
             WindowServerIPC::CreateWindowResponse response = {w.id(), w.buff_guid()};
             rc = WindowServerIPC::send_create_window_response(pid, response);
             ASSERT(rc);
 
             m_windows.append(w);
+
+            if(m_current_focused_window_idx == -1)
+            {
+                set_focused_window(m_windows.size() - 1);
+            }
+            kprintf("focused? %d\n", w.focused());
            break;
        } 
 
@@ -160,9 +169,27 @@ void WindowServerHandler::draw_window(Window& window)
 
     for(u32 i = 0; i < window_banner_size; ++i)
     {
-        window_banner[i] = 0x0000ffff;
+        const u32 banner_color = (window.focused() ? 0x00ff0000 : 0x0000ffff);
+        window_banner[i] = banner_color;
     }
 
     m_vga.draw(window_banner.data(), window.x(), window.y() - WINDOW_BANNER_HEIGHT, window.width(), WINDOW_BANNER_HEIGHT);
     m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
+}
+
+Window& WindowServerHandler::focused_window()
+{
+    ASSERT(m_current_focused_window_idx >= 0);
+    return m_windows[m_current_focused_window_idx];
+}
+
+void WindowServerHandler::set_focused_window(u32 index)
+{
+    if(m_current_focused_window_idx != -1)
+    {
+        focused_window().set_focused(false);
+        draw_window(m_windows[m_current_focused_window_idx]);
+    }
+    m_current_focused_window_idx = index;
+    focused_window().set_focused(true);
 }

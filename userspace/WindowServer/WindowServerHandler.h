@@ -17,6 +17,9 @@ private:
     void handle_pending_mouse_event();
     Window get_window(u32 window_id);
     void draw_window(Window& window);
+    Window& focused_window();
+    void set_focused_window(u32 index);
+
 
 private:
     VGA& m_vga;
@@ -24,4 +27,5 @@ private:
     int m_mouse_fd;
     Vector<Window> m_windows;
     Mouse m_mouse;
+    int m_current_focused_window_idx {-1};
 };
