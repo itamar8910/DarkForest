@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 
-struct MouseEvent
+struct RawMouseEvent
 {
     int32_t delta_x;
     int32_t delta_y;

@@ -71,7 +71,7 @@ void WindowServerHandler::handle_pending_keyboard_event()
 
 void WindowServerHandler::handle_pending_mouse_event()
 {
-    MouseEvent event;
+    RawMouseEvent event;
     const int read_rc = std::read(m_mouse_fd, reinterpret_cast<char*>(&event), 1);
     ASSERT(read_rc == 1);
 
@@ -83,7 +83,14 @@ void WindowServerHandler::handle_pending_mouse_event()
         {
             if(window.rectangle().intersects(m_mouse.point()))
             {
-                WindowServerIPC::send_mouse_event(window.owner_pid(), event);
+                MouseEvent translated 
+                {
+                    static_cast<u16>(m_mouse.x() - window.x()),
+                    static_cast<u16>(m_mouse.y() - window.y()),
+                    event.left_button,
+                    event.right_button
+                };
+                WindowServerIPC::send_mouse_event(window.owner_pid(), translated);
             }
         }
     } 

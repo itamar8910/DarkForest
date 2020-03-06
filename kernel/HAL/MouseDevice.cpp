@@ -8,7 +8,7 @@ bool MouseReadBlocker::can_unblock() {
     return PS2Mouse::the().can_consume();
 }
 
-MouseEvent MouseDevice::mouse_read() {
+RawMouseEvent MouseDevice::mouse_read() {
     MouseReadBlocker* blocker = new MouseReadBlocker();
     Scheduler::the().block_current(blocker);
 
@@ -17,8 +17,8 @@ MouseEvent MouseDevice::mouse_read() {
 
 int MouseDevice::read(size_t count, void* buf) {
     ASSERT(count == 1);
-    MouseEvent e = mouse_read();
-    new(buf) MouseEvent(e);
+    RawMouseEvent e = mouse_read();
+    new(buf) RawMouseEvent(e);
     return 1;
 }
 

@@ -11,18 +11,18 @@ public:
     Mouse(const int x, const int y);
     ~Mouse() = default;
 
-    void draw(const MouseEvent&, VGA&);
+    void draw(const RawMouseEvent&, VGA&);
 
-    int x() const;
-    int y() const;
+    u16 x() const;
+    u16 y() const;
     Point point() const;
 
 private:
     static void init_sprite();
 
 private:
-    int m_x {0};
-    int m_y {0};
+    u16 m_x {0};
+    u16 m_y {0};
 
     static constexpr u32 MOUSE_SPRITE_SIZE = 7;
     static u32 sprite_template[MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE];

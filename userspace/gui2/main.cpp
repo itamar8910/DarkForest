@@ -36,10 +36,11 @@ int main() {
         }
 
         MouseEvent event = io_event.as_mouse_event();
-        if(!event.left_button)
+        if(!event.left_click)
         {
             continue;
         }
+        kprintf("click: %d,%d\n", event.x, event.y);
     }
 
     return 0;

@@ -14,7 +14,7 @@ Mouse::Mouse(const int x, const int y) :
     m_hidden_by_mouse.set_size(MOUSE_SPRITE_SIZE*MOUSE_SPRITE_SIZE);
 }
 
-void Mouse::draw(const MouseEvent& event, VGA& vga)
+void Mouse::draw(const RawMouseEvent& event, VGA& vga)
 {
     int previous_mouseX = m_x;
     int previous_mouseY = m_y;
@@ -56,12 +56,12 @@ void Mouse::init_sprite()
     }
 }
 
-int Mouse::x() const
+u16 Mouse::x() const
 {
     return m_x;
 }
 
-int Mouse::y() const
+u16 Mouse::y() const
 {
     return m_y;
 }

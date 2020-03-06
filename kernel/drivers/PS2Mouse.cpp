@@ -110,7 +110,7 @@ void isr_ps2_mouse_handler(RegisterDump& regs) {
     PIC::eoi(PS2_IRQ2);
 }
 
-void PS2Mouse::insert_mouse_event(MouseEvent event) {
+void PS2Mouse::insert_mouse_event(RawMouseEvent event) {
     m_events_pending += 1;
     m_events_buffer[m_events_buffer_idx++] = event;
     m_events_buffer_idx %= MOUSE_EVENTS_BUFFER_LEN;
@@ -164,7 +164,7 @@ void PS2Mouse::initialize()
     PIC::enable_irq(PS2_IRQ2);
 }
 
-MouseEvent PS2Mouse::consume() {
+RawMouseEvent PS2Mouse::consume() {
     ASSERT(m_events_pending>0);
     m_events_pending -= 1;
     m_events_buffer_idx = (m_events_buffer_idx-1) % MOUSE_EVENTS_BUFFER_LEN;

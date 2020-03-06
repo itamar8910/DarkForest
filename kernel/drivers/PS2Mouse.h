@@ -12,16 +12,16 @@ public:
 
     static void initialize();
 
-    MouseEvent consume();
+    RawMouseEvent consume();
     bool can_consume();
 
-    void insert_mouse_event(MouseEvent event);
+    void insert_mouse_event(RawMouseEvent event);
 
 private:
 
     PS2Mouse() = default;
 
-    MouseEvent m_events_buffer[MOUSE_EVENTS_BUFFER_LEN];
+    RawMouseEvent m_events_buffer[MOUSE_EVENTS_BUFFER_LEN];
     u8 m_events_buffer_idx {0};
     u8 m_events_pending {0};
 

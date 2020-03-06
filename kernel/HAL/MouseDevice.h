@@ -23,5 +23,5 @@ public:
     bool can_read() const override;
 
 private:
-    static MouseEvent mouse_read();
+    static RawMouseEvent mouse_read();
 };

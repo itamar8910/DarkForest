@@ -1,7 +1,16 @@
 #pragma once
 
+#include "types.h"
 #include "PS2KeyboardCommon.h"
 #include "PS2MouseCommon.h"
+
+struct MouseEvent
+{
+    u16 x;
+    u16 y;
+    bool left_click;
+    bool right_click;
+};
 
 struct IOEvent
 {
