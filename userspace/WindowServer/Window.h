@@ -24,6 +24,9 @@ public:
     void set_focused(bool focused) {m_focused = focused;}
     bool focused() const {return m_focused;}
 
+    void move_x(int32_t delta_x) {m_x += delta_x;}
+    void move_y(int32_t delta_y) {m_y += delta_y;}
+
 private:
     u32 m_id = {0};
     u32 m_owner_pid;

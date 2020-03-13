@@ -76,6 +76,24 @@ void WindowServerHandler::handle_pending_mouse_event()
 
     m_mouse.draw(event, m_vga);
 
+    if(m_mouse_state.type == MouseStateType::WindowDrag)
+    {
+        if(!event.left_button)
+        {
+            m_mouse_state.set_normal();
+            return;
+        }
+        handle_window_drag(event, m_mouse_state.window_id);
+    }
+    else if(m_mouse_state.type == MouseStateType::Normal)
+    {
+        handle_mouse_event(event);
+    }
+
+}
+
+void WindowServerHandler::handle_mouse_event(const RawMouseEvent& event)
+{
     if(event.left_button)
     {
         u32 window_idx = 0;
@@ -84,6 +102,7 @@ void WindowServerHandler::handle_pending_mouse_event()
             if(window.banner_rectangle().intersects(m_mouse.point()))
             {
                 set_focused_window(window_idx);
+                m_mouse_state.set_drag(window.id());
                 draw_window(window);
             }
             if(window.rectangle().intersects(m_mouse.point()))
@@ -104,7 +123,18 @@ void WindowServerHandler::handle_pending_mouse_event()
         }
     } 
 
+}
+void WindowServerHandler::handle_window_drag(const RawMouseEvent& event, const u32 window_id)
+{
+    Window dragged_window = get_window(m_mouse_state.window_id);
 
+    dragged_window.move_x(event.delta_x);
+    dragged_window.move_y(-event.delta_y);
+
+    kprintf("(%d,%d)\n", dragged_window.x(), dragged_window.y());
+
+    set_window(window_id, dragged_window);
+    draw_window(dragged_window);
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
@@ -200,4 +230,28 @@ void WindowServerHandler::set_focused_window(u32 index)
     }
     m_current_focused_window_idx = index;
     focused_window().set_focused(true);
+}
+
+void WindowServerHandler::MouseState::set_drag(u16 id)
+{
+    type = MouseStateType::WindowDrag;
+    window_id = id;
+}
+void WindowServerHandler::MouseState::set_normal()
+{
+    type = MouseStateType::Normal;
+    window_id = 0;
+}
+
+void WindowServerHandler::set_window(u32 window_id, Window w)
+{
+    for(auto& window : m_windows)
+    {
+        if(window.id() == window_id)
+        {
+            window = w;
+            return;
+        }
+    }
+    ASSERT_NOT_REACHED();
 }
