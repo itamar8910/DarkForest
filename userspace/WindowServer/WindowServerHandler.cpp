@@ -126,15 +126,36 @@ void WindowServerHandler::handle_mouse_event(const RawMouseEvent& event)
 }
 void WindowServerHandler::handle_window_drag(const RawMouseEvent& event, const u32 window_id)
 {
-    Window dragged_window = get_window(m_mouse_state.window_id);
+    Window window = get_window(m_mouse_state.window_id);
 
+    Window dragged_window(window);
     dragged_window.move_x(event.delta_x);
     dragged_window.move_y(-event.delta_y);
+    
+    if(!is_in_screen(dragged_window))
+    {
+        return;
+    }
 
-    kprintf("(%d,%d)\n", dragged_window.x(), dragged_window.y());
+    const u32 window_size = window.width() * (window.height() + window.banner_rectangle().height);
+    Vector<u32> background(window_size);
+    background.set_size(window_size);
+    memset(background.data(), 0xaa, background.size() * sizeof(u32));
+
+    m_vga.draw(
+        background.data(),
+        window.x(),
+        window.y() - window.banner_rectangle().height,
+        window.width(),
+        window.height() + window.banner_rectangle().height
+    );
 
     set_window(window_id, dragged_window);
-    draw_window(dragged_window);
+
+    for(auto& w : m_windows)
+    {
+        draw_window(w);
+    }
 }
 
 void WindowServerHandler::handle_message_code(u32 code, u32 pid)
@@ -254,4 +275,15 @@ void WindowServerHandler::set_window(u32 window_id, Window w)
         }
     }
     ASSERT_NOT_REACHED();
+}
+
+bool WindowServerHandler::is_in_screen(const Point p)
+{
+    return p.x >= 0 && p.y >= 0 && (u32)p.x < m_vga.width() && (u32)p.y < m_vga.height();
+}
+
+bool WindowServerHandler::is_in_screen(const Window& window)
+{
+    return is_in_screen({window.x(), window.y() - static_cast<u16>(window.banner_rectangle().height)}) 
+           && is_in_screen({window.x() + window.width(), window.y() + window.height()}); 
 }

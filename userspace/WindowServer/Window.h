@@ -15,8 +15,8 @@ public:
     u32 buff_size() const {return m_buff_size;}
     u16 x() const {return m_x;}
     u16 y() const {return m_y;}
-    u32 width() const {return m_width;}
-    u32 height() const {return m_height;}
+    u16 width() const {return m_width;}
+    u16 height() const {return m_height;}
 
     Rectangle rectangle() const;
     Rectangle banner_rectangle() const;

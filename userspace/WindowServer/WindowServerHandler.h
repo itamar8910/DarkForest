@@ -26,6 +26,9 @@ private:
     void handle_mouse_event(const RawMouseEvent& event);
     void handle_window_drag(const RawMouseEvent& event, const u32 window_id);
 
+    bool is_in_screen(const Point p);
+    bool is_in_screen(const Window& window);
+
     enum class MouseStateType
     {
         Normal,
