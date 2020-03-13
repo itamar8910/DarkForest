@@ -17,7 +17,10 @@ public:
     u16 y() const {return m_y;}
     u32 width() const {return m_width;}
     u32 height() const {return m_height;}
+
     Rectangle rectangle() const;
+    Rectangle banner_rectangle() const;
+
     void set_focused(bool focused) {m_focused = focused;}
     bool focused() const {return m_focused;}
 

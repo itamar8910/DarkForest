@@ -81,6 +81,11 @@ void WindowServerHandler::handle_pending_mouse_event()
         u32 window_idx = 0;
         for(auto& window : m_windows)
         {
+            if(window.banner_rectangle().intersects(m_mouse.point()))
+            {
+                set_focused_window(window_idx);
+                draw_window(window);
+            }
             if(window.rectangle().intersects(m_mouse.point()))
             {
                 set_focused_window(window_idx);
@@ -92,6 +97,7 @@ void WindowServerHandler::handle_pending_mouse_event()
                     event.right_button
                 };
                 WindowServerIPC::send_mouse_event(window.owner_pid(), translated);
+                draw_window(window);
             }
 
             ++window_idx;
@@ -162,8 +168,8 @@ Window WindowServerHandler::get_window(u32 window_id)
 
 void WindowServerHandler::draw_window(Window& window)
 {
-    constexpr u32 WINDOW_BANNER_HEIGHT = 15;
-    const u32 window_banner_size = window.width() * WINDOW_BANNER_HEIGHT;
+    const Rectangle banner_rectangle = window.banner_rectangle();
+    const u32 window_banner_size = window.width() * banner_rectangle.height;
     Vector<u32> window_banner(window_banner_size);
     window_banner.set_size(window_banner_size);
 
@@ -173,7 +179,9 @@ void WindowServerHandler::draw_window(Window& window)
         window_banner[i] = banner_color;
     }
 
-    m_vga.draw(window_banner.data(), window.x(), window.y() - WINDOW_BANNER_HEIGHT, window.width(), WINDOW_BANNER_HEIGHT);
+    m_vga.draw(window_banner.data(), banner_rectangle.x, banner_rectangle.y,
+         banner_rectangle.width,
+          banner_rectangle.height);
     m_vga.draw((u32*)window.buff_addr(), window.x(), window.y(), window.width(), window.height());
 }
 

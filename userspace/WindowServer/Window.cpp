@@ -45,3 +45,9 @@ Rectangle Window::rectangle() const
 {
     return {m_x, m_y, m_width, m_height};
 }
+
+Rectangle Window::banner_rectangle() const 
+{
+    constexpr u16 WINDOW_BANNER_HEIGHT = 15;
+    return {m_x, m_y - WINDOW_BANNER_HEIGHT, m_width, WINDOW_BANNER_HEIGHT};
+}
