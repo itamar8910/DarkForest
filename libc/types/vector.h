@@ -3,7 +3,7 @@
 #include "types.h"
 #include "std_misc.h"
 #include "new.h"
-#include "string.h"
+#include "cstring.h"
 #include "asserts.h"
 #include "stdlib.h"
 #include "logging.h"

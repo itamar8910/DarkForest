@@ -1,0 +1,6 @@
+create vdisk file="%USERPROFILE%\darkforest_disk.vhdx" maximum=1024 type=fixed
+select vdisk file="%USERPROFILE%\darkforest_disk.vhdx"
+attach vdisk
+create partition primary
+format fs=fat32
+assign letter=R

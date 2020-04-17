@@ -3,7 +3,7 @@
 #include "stdarg.h"
 #include "printf.h"
 #include "unistd.h"
-#include "string.h"
+#include "cstring.h"
 
 void puts(const char* str) {
     std::write(STDOUT, str, strlen(str));

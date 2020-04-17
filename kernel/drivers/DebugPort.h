@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "string.h"
+#include "cstring.h"
 
 #define DEBUG_PORT_ADDR 0xe9
 

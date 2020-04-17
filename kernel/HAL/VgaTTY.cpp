@@ -1,5 +1,5 @@
 #include "asserts.h"
-#include "string.h"
+#include "cstring.h"
 #include "types.h"
 #include "ioctl_common.h"
 #include "VgaTextCommon.h"

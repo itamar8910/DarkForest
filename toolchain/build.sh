@@ -11,6 +11,7 @@ build_binutils=false
 build_gcc=false
 
 requested_operation=$1
+num_of_cores=$2
 
 case $requested_operation in
 	full )
@@ -32,10 +33,15 @@ case $requested_operation in
 		build_gcc=true
 		;;
 	* )
-		echo "Usage: $0 full/download/extract/build_binutils/build_gcc"
+		echo "Usage: $0 full/download/extract/build_binutils/build_gcc [num_of_cores_to_build_with]"
 		exit 1
 		;;
 esac
+
+if [[ "$2" == "" ]]; then
+    echo "Number of cores to use for build not specified so defaulting to only 1 core"
+    num_of_cores=1
+fi
 
 if [[ "$download" == true ]]; then
 	curl "$BINUTILS_FTP/binutils-$BINUTILS_VER.tar.gz" -o binutils.tar.gz
@@ -57,7 +63,7 @@ if [[ "$build_binutils" == true ]]; then
 	mkdir $DIR/build-binutils
 	cd $DIR/build-binutils
 	../binutils-$BINUTILS_VER/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
-	make
+	make -j$num_of_cores
 	make install
 fi
 
@@ -70,8 +76,8 @@ if [[ "$build_gcc" == true ]]; then
 	mkdir build-gcc
 	cd build-gcc
 	../gcc-$GCC_VER/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
-	make all-gcc
-	make all-target-libgcc
+	make -j$num_of_cores all-gcc
+	make -j$num_of_cores all-target-libgcc
 	make install-gcc
 	make install-target-libgcc
 fi

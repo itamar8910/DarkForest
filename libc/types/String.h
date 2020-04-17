@@ -1,6 +1,6 @@
 #pragma once
 #include "types/vector.h"
-#include "string.h"
+#include "cstring.h"
 
 class String {
 

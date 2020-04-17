@@ -3,7 +3,7 @@
 #include "types.h"
 #include "multiboot.h"
 #include "asserts.h"
-#include "string.h"
+#include "cstring.h"
 #include "drivers/DebugPort.h"
 #include "cpu.h"
 #include "logging.h"

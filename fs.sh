@@ -4,7 +4,7 @@
 mkdir -p mnt/stuff
 if [[ $? -ne 0 ]]
 then
-    echo "failed to prepare fs, run fs_reset.sh & then fs_setup.sh"
+    echo "failed to prepare fs, run fs_scripts/fs_reset.sh & then fs_scripts/fs_setup.sh"
     exit 1
 fi
 echo "hello1" > mnt/stuff/a.txt

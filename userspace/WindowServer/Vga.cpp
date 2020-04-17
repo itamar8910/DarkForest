@@ -3,7 +3,7 @@
 #include "ioctl_common.h"
 #include "asserts.h"
 #include "kernel/errs.h"
-#include "string.h"
+#include "cstring.h"
 
 constexpr u32 FRAME_BUFFER_MAP_ADDR = 0x60000000;
 constexpr char VGA_PATH[] = "/dev/vga";

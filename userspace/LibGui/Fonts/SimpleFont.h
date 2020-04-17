@@ -1,6 +1,6 @@
 #pragma once
 #include "types.h"
-#include "string.h"
+#include "cstring.h"
 
 constexpr u8 SIMPLEFONT_SYMBOL_SIZE = 8;
 

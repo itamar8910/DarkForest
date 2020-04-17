@@ -2,7 +2,7 @@
 #include "MemoryManager.h"
 #include "logging.h"
 #include "asserts.h"
-#include "string.h"
+#include "cstring.h"
 #include "bits.h"
 #include "PageTable.h"
 #include "PageDirectory.h"
