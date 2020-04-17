@@ -30,13 +30,13 @@ OBJS_TO_LINK := $(OBJS) $(LIBC_OBJ) $(LIB_WINDOW_SERVER_OBJ) $(LIBGUI_OBJ)
 
 export INCLUDE := -I$(LIBC_DIR) -I$(CURRENT_DIR) -I$(GLOBAL_DIR)
 
-all: libc libgui  lib_windowserver start.ao apps
+all: libc lib_gui lib_windowserver start.ao apps
 
 libc:
 	make -C $(LIBC_DIR) clean
 	make -C $(LIBC_DIR) LIBCMODE=USERSPACE
 
-libgui:
+lib_gui:
 	make -C $(LIBGUI_DIR)
 
 lib_windowserver:

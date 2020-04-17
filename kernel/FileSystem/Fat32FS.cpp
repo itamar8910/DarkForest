@@ -7,7 +7,7 @@
 #include "errs.h"
 #include "libc/Math.h"
 
-// #define FAT32_DBG
+//#define FAT32_DBG
 
 static Fat32FS* s_the = nullptr;
 
@@ -32,7 +32,6 @@ Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
 
     ASSERT(boot_sector.table_count == 2);
     ASSERT(boot_sector.bytes_per_sector == 512);
-    ASSERT(boot_sector.reserved_sector_count == 32);
     ASSERT(extension.root_cluster == 2);
 
     bytes_per_sector = boot_sector.bytes_per_sector;
@@ -54,35 +53,6 @@ Fat32FS::Fat32FS(FatBootSector& boot_sector, const Fat32Extension& extension)
     kprintf("data start sector: %d\n", data_start_sector);
     kprintf("sectors per cluster: %d\n", sectors_per_cluster);
     kprintf("root cluster: %d\n", root_cluster);
-
-    auto entries = read_directory(root_cluster);
-    kprintf("# root dir entries: %d\n", entries.size());
-    for(auto& entry : entries)
-    {
-        if(entry.is_directory())
-        {
-            continue;
-        }
-        kprintf("file: %s\n", entry.name);
-        auto content = read_whole_entry(entry);
-        kprintf("content: %s\n", content->data());
-    }
-    auto content = read_file(Path("/a/myfile.txt"));
-    ASSERT(content.get() != nullptr);
-    kprintf("content: %s\n", content->data());
-    auto content2 = read_file(Path("/a/subdir/another.dat"));
-    ASSERT(content2.get() != nullptr);
-    kprintf("content: %s\n", content2->data());
-    auto content3 = read_file(Path("/dir2/aa.txt"));
-    ASSERT(content3.get() != nullptr);
-    kprintf("content: %s\n", content3->data());
-
-    auto content4 = read_file(Path("a.txt"));
-    ASSERT(content4.get() != nullptr);
-    kprintf("content: %s\n", content4->data());
-    kprintf("content size: %d\n", content4->size());
-
-    open(Path("a.txt"));
     #endif
 }
 
@@ -541,15 +511,28 @@ CharDirectoryEntry FatDirectoryEntry::to_char_directory_entry(const Path& path) 
 FatDirectoryEntry Fat32FS::create_entry_from(u8* buff, const FatRawDirectoryEntry* raw_entry) const
 {
     const FatLongDirectoryEntry* current = reinterpret_cast<const FatLongDirectoryEntry*>(raw_entry - 1);
+
     String name;
+
     // loop backwards over all Long Directory Entries
-    for(;  ;current -= 1)
+    for(;;current -= 1)
     {
         ASSERT((void*)current >= (void*)buff);
+
+        // if the entries preceding are not long directory entries then it means the name is short enough to fit in 8.3
+        constexpr u8 LONG_DIRECTORY_ATTRIBUTE_MAGIC = 0x0F;
+        if(current->attrs != LONG_DIRECTORY_ATTRIBUTE_MAGIC)
+        {
+            name = raw_entry->name_lower();
+            break;
+        }
+
         name = name + current->get_name(); 
+
         if(current->is_last())
             break;
     }
+
     return FatDirectoryEntry
     {
         name,

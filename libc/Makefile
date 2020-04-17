@@ -1,7 +1,7 @@
 
 
 LIBC_OBJS := \
-	string.o \
+	cstring.o \
 	printf.o \
 	stdlib.o \
 	bits.o \

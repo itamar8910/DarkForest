@@ -2,7 +2,7 @@
 #include "logging.h"
 #include "asserts.h"
 #include "bits.h"
-#include "string.h"
+#include "cstring.h"
 
 static void bits_tests() {
     kprintf("[BITS_TESTS]\n");

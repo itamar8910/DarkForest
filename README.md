@@ -19,10 +19,22 @@ A work in progress x86 operating system
 
 ## Build prerequisites
 
-### On debian
+### On Debian
 ```bash
 apt-get install gcc g++ make curl libmpc-dev nasm qemu-system-i386 dosfstools
 ```
+
+### On Windows
+Firstly get the scoop package manager which can be found on Github, or manually install the following packages
+```batch
+scoop install nasm qemu msys2 
+```
+
+Then run msys2 and update pacman, then
+```bash
+pacman -S gcc make texinfo mpc-devel diffutils python3 dosfstools
+```
+If you used scoop in the first step you should also add the scoop shims to your path so you can access your scoop packages from msys2 bash
 
 ## Build toolchain
 ```bash
@@ -40,7 +52,7 @@ make
 
 ## Setup filesystem
 ```bash
-./fs_setup.sh # needs root priv to mount fs
+fs_scripts/fs_setup.sh # needs root/administrator priv to mount fs
 ```
 
 ## Run

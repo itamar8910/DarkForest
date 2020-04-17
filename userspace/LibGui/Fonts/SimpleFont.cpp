@@ -1,6 +1,6 @@
 #include "SimpleFont.h"
 #include "asserts.h"
-#include "string.h"
+#include "cstring.h"
 #include "stdio.h"
 #include "SimpleFontSymbols.h"
 

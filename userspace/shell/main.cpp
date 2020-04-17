@@ -2,7 +2,7 @@
 #include "stdio.h"
 #include "asserts.h"
 #include "mman.h"
-#include "string.h"
+#include "cstring.h"
 #include "malloc.h"
 #include "types/vector.h"
 #include "types/String.h"

@@ -1,0 +1,2 @@
+select vdisk file="%USERPROFILE%\darkforest_disk.vhdx"
+attach vdisk

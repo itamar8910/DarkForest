@@ -1,5 +1,5 @@
 #include "types/String.h"
-#include "string.h"
+#include "cstring.h"
 #include "asserts.h"
 #include "logging.h"
 

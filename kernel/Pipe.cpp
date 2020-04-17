@@ -1,6 +1,6 @@
 #include "Pipe.h"
 #include "asserts.h"
-#include "string.h"
+#include "cstring.h"
 #include "Math.h"
 #include "TaskBlocker.h"
 #include "Scheduler.h"
