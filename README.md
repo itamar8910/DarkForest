@@ -16,6 +16,7 @@ A work in progress x86 operating system
 - Fat32 (missing some features)
 - userspace shell (cd, ls, cat, touch, mkdir)
 - shared memory
+- Graphical Window Server
 
 ## Build prerequisites
 
