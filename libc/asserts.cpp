@@ -9,7 +9,7 @@
 #endif
 #ifdef USERSPACE
 #include "stdio.h"
-#include "unistd.h"
+#include "df_unistd.h"
 #endif
 
 

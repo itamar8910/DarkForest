@@ -78,7 +78,7 @@ int itoa(int num, char* out, u32 out_len)
 
 #ifndef KERNEL
 #include "types.h"
-#include "unistd.h"
+#include "df_unistd.h"
 void* operator new(size_t size) {
     return malloc(size);
 }

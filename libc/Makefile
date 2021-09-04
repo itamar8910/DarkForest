@@ -20,6 +20,7 @@ LIBC_OBJS := \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
+	df_unistd.o \
 	stdio.o \
 
 ifeq ($(LIBCMODE), USERSPACE)

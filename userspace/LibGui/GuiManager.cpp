@@ -1,6 +1,6 @@
 #include "GuiManager.h"
 #include "kernel/errs.h"
-#include "unistd.h"
+#include "df_unistd.h"
 #include "asserts.h"
 #include "LibWindowServer/IPC.h"
 #include "Fonts/SimpleFont.h"
