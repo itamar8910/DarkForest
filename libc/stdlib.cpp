@@ -97,3 +97,23 @@ void operator delete[](void* addr) {
 #endif
 
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+int abs(int j)
+{
+    return j >= 0 ? j : -j;
+}
+
+double atof(const char *nptr)
+{
+    (void)nptr;
+    ASSERT_NOT_REACHED();
+}
+
+#ifdef __cplusplus
+}
+#endif

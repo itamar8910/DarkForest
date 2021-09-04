@@ -22,6 +22,7 @@ LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
 	df_unistd.o \
 	stdio.o \
+	strings.o \
 
 ifeq ($(LIBCMODE), USERSPACE)
 LIBC_OBJS += $(LIBC_USERSPACE_ONLY_OBJS)

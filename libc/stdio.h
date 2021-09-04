@@ -17,12 +17,21 @@ static const size_t stderr = STDERR;
 #define SEEK_CUR 1
 #define SEEK_END 2
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void puts(const char* str);
 void putc(char);
 void kputc(char c);
 void printf(const char* fmt, ...);
-void kprintf(const char* fmt, ...);
 int getchar();
+
+#ifdef __cplusplus
+}
+#endif
+
+void kprintf(const char* fmt, ...);
 
 #define dbgprintf kprintf
 

@@ -5,6 +5,10 @@
 #include "df_unistd.h"
 #include "cstring.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void puts(const char* str) {
     std::write(STDOUT, str, strlen(str));
 }
@@ -25,13 +29,6 @@ void printf(const char* fmt, ...) {
 
 }
 
-void kprintf(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    printf_internal(kputc, fmt, args);
-    va_end(args);
-
-}
 
 int getchar() {
     char c;
@@ -40,4 +37,15 @@ int getchar() {
         return rc;
     }
     return c;
+}
+#ifdef __cplusplus
+}
+#endif
+
+void kprintf(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    printf_internal(kputc, fmt, args);
+    va_end(args);
+
 }

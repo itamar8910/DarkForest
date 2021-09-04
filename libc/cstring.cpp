@@ -84,6 +84,26 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 
 }
 
+char *strchr(const char *, int )
+{
+	ASSERT_NOT_REACHED();
+}
+char *strrchr(const char *, int )
+{
+	ASSERT_NOT_REACHED();
+}
+
+
+char *strdup(const char *)
+{
+	ASSERT_NOT_REACHED();
+}
+
+char *strstr(const char *, const char *)
+{
+	ASSERT_NOT_REACHED();
+}
+
 }
 void ascii_to_unicode(char* dst, const char* src, size_t num_chars)
 {
