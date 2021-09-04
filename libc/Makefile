@@ -16,6 +16,7 @@ LIBC_OBJS := \
 	PS2KeyboardCommon.o \
 	Math.o \
 	Geometry.o \
+	errno.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
