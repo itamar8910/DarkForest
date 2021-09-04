@@ -18,7 +18,7 @@ File* PtsFS::open(const Path& path)
         return nullptr;
     }
 
-    const int idx = atoi(path.get_part(0).c_str());
+    const int idx = df_atoi(path.get_part(0).c_str(), 10);
     const String type = path.get_part(1); 
 
     if(!used_map[idx])

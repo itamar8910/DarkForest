@@ -40,7 +40,7 @@ int atoi_16(const char* str) {
     return sum * sign;
 }
 
-int atoi(const char* str, size_t base) {
+int df_atoi(const char* str, size_t base) {
     switch(base) {
         case 10:
             return atoi_10(str);
@@ -48,6 +48,10 @@ int atoi(const char* str, size_t base) {
             return atoi_16(str);
     }
     ASSERT_NOT_REACHED();
+}
+
+int atoi(const char* str) {
+    return atoi_10(str);
 }
 
 int itoa(int num, char* out, u32 out_len)

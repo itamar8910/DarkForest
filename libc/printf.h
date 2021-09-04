@@ -4,6 +4,7 @@
 #include "asserts.h"
 #include "stdlib.h"
 #include "types.h"
+#include "stdlib.h"
 
 const char digits_dec[] = "0123456789";
 const char digits_hex[] = "0123456789abcdef";
@@ -111,7 +112,7 @@ static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
         fill_number[i] = fmt_start[i];
     }
     fill_number[i] = 0;
-    min_chars = atoi(fill_number);
+    min_chars = df_atoi(fill_number, 10);
     return 0;
 }
 
