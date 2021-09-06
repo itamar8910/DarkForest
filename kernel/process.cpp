@@ -106,6 +106,18 @@ int Process::syscall_write(size_t fd, char* buff, size_t count) {
 
 }
 
+int Process::syscall_lseek(int fd, int offset, int whence)
+{
+    if(fd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+    auto* file = m_file_descriptors[fd];
+    if(file == nullptr)
+    {
+        return -E_NOTFOUND;
+    }
+    return file->lseek(offset, whence);
+}
+
 UserspaceLoaderData userspace_loader_data;
 bool glob_userspace_loader_locked = false;
 
@@ -235,6 +247,8 @@ int Process::syscall_get_current_directory(char* buff, size_t* count)
 
 String Process::get_full_path(const String& path)
 {
+    kprintf("get_full_path: %s\n", path.c_str());
+    kprintf("current directory: %s\n", m_current_directory.c_str());
     // TODO: Do this better, perhaps add a get_current_directory call, or that every directory will have a "." file that will represent the directory
     if (path == String("."))
     {

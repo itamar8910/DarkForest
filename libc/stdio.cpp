@@ -4,6 +4,12 @@
 #include "printf.h"
 #include "df_unistd.h"
 #include "cstring.h"
+#include "unistd.h"
+
+struct FILE
+{
+    int fd;
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,33 +51,46 @@ int getchar() {
     return c;
 }
 
-int fclose(FILE *)
+int fclose(FILE * f)
 {
-    ASSERT_NOT_REACHED();
+    // TODO: close fd 
+    delete f;
+    return 0;
 }
-FILE *fopen(const char *, const char *)
+FILE *fopen(const char *path, const char * mode)
 {
-    ASSERT_NOT_REACHED(); }
+    (void)mode;
+    int fd = std::open(path);
+    if (fd < 0) {
+        return nullptr;
+    }
+    return new FILE {fd};
+}
 
 int fprintf(FILE *, const char *, ...)
 {
     ASSERT_NOT_REACHED();
 }
-size_t fread(void *, size_t , size_t , FILE *)
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 {
-    ASSERT_NOT_REACHED();
+    // static size_t cnt = 0;
+    // if (cnt++ > 15) {
+    //     ASSERT_NOT_REACHED();
+    // }
+
+    return std::read(stream->fd, (char*)ptr, size*nmemb);
 }
 size_t fwrite(const void *, size_t , size_t , FILE *)
 {
     ASSERT_NOT_REACHED();
 }
-int fseek(FILE *, long , int )
+int fseek(FILE * f, long offset, int whence)
 {
-    ASSERT_NOT_REACHED();
+    return lseek(f->fd, offset, whence);
 }
-long ftell(FILE *)
+long ftell(FILE * f)
 {
-    ASSERT_NOT_REACHED();
+    return lseek(f->fd, 0, SEEK_CUR);
 }
 int fflush(FILE *)
 {
@@ -175,11 +194,6 @@ int vfprintf(FILE *, const char *, va_list)
 {
     ASSERT_NOT_REACHED();
 }
-
-#ifdef __cplusplus
-}
-#endif
-
 void kprintf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -187,3 +201,8 @@ void kprintf(const char* fmt, ...) {
     va_end(args);
 
 }
+
+#ifdef __cplusplus
+}
+#endif
+

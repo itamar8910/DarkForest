@@ -1,17 +1,12 @@
 #include "strings.h"
 #include "asserts.h"
+#include "ctype.h"
 
 extern "C"{
 
 
 static int isalpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
-}
-
-static char tolower(char c) {
-    if (c >= 'A' && c <= 'Z')
-        return c + ('a'-'A');
-    return c;
 }
 
 /// Taken from SerenityOS's LibC
@@ -32,12 +27,20 @@ int strcasecmp(const char* s1, const char* s2)
     return foldcase(*(const unsigned char*)s1) < foldcase(*(const unsigned char*)s2) ? -1 : 1;
 }
 
-///
 
-int strncasecmp(const char *, const char *, size_t )
+int strncasecmp(const char * s1, const char *s2, size_t n)
 {
-
-    ASSERT_NOT_REACHED();
+    if (!n)
+        return 0;
+    do {
+        if (foldcase(*s1) != foldcase(*s2++))
+            return foldcase(*(const unsigned char*)s1) - foldcase(*(const unsigned char*)--s2);
+        if (*s1++ == 0)
+            break;
+    } while (--n);
+    return 0;
 }
+
+///
 
 }

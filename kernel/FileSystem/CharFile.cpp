@@ -3,31 +3,36 @@
 #include "constants.h"
 #include "BigBuffer.h"
 #include "Math.h"
-
+#include "unix.h"
 
 int CharFile::read(size_t count, void* buf) {
-    kprintf("charfile read: count: %d\n", count);
+    kprintf("file: %s, read count: %d\n", m_dir_entry.path().to_string().c_str(), count);
     if(count == 0)
         return 0;
     // NOTE: we reading the entire file even though
     // the request could be for only a small chunk of it
-    auto buffer = BigBuffer::allocate(Math::round_up(m_size, m_fs.cluster_size()));
-    bool rc = m_fs.read_file(m_dir_entry, buffer->data());
-    if(rc == false)
-    {
-        return 0;
+    // FIXME: m_content_cache is not safe in case multiple File objects write to the same file concurrently
+    //        move this cache to the filesystem?
+    if (!m_content_cache.get()) {
+        m_content_cache = BigBuffer::allocate(Math::round_up(m_size, m_fs.cluster_size()));
+        bool rc = m_fs.read_file(m_dir_entry, m_content_cache->data());
+        if(rc == false)
+        {
+            return 0;
+        }
     }
     if(count > (m_size - m_idx)) {
         kprintf("CharFile::Read too big: count: %d. size: %d, m_idx: %d\n", count, m_size, m_idx);
         return -E_TOO_BIG;
     }
-    memcpy(buf, buffer->data()+m_idx, count);
+    memcpy(buf, m_content_cache->data()+m_idx, count);
     m_idx += count;
     return count;
 }
 
 int CharFile::write(char* data, size_t count) {
     kprintf("CharFile::write with size: %d\n", count);
+    m_content_cache.reset();
     // if(count > (m_size - m_idx)) {
     //     return E_TOO_BIG;
     // }
@@ -54,4 +59,25 @@ char* CharFile::get_content() {
     read(size(), buff);
     buff[sz] = 0;
     return buff;
+}
+
+int CharFile::lseek(int offset, int whence) 
+{
+    kprintf("file: %s, lseek: %d\n", m_dir_entry.path().to_string().c_str(), offset);
+    switch (whence) {
+        case SEEK_CUR:
+            m_idx += offset;
+            break;
+        case SEEK_SET:
+            m_idx = offset;
+            break;
+        case SEEK_END:
+            ASSERT(offset <= 0);
+            m_idx = m_size + offset;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+    }
+    ASSERT(m_idx <= m_size);
+    return m_idx;
 }

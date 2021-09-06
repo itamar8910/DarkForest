@@ -579,7 +579,7 @@ bool Fat32FS::create_entry(const Path& path, DirectoryEntry::Type type)
 {
     kprintf("Fat32::create entry: %s\n", path.to_string().c_str());
     Path dirname = path.dirname();
-    kprintf("create_file: parent directory: %s", dirname.to_string().c_str());
+    kprintf("create_file: parent directory: %s\n", dirname.to_string().c_str());
     FatDirectoryEntry res;
     bool rc = find_directory(dirname, res);
     if(!rc)

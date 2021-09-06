@@ -2,6 +2,8 @@
 #include "malloc.h"
 #include "asserts.h"
 #include "printf.h"
+#include "Math.h"
+#include "string.h"
 
 int atoi_10(const char* str) {
     int sum = 0;
@@ -109,14 +111,36 @@ double atof(const char *nptr)
     ASSERT_NOT_REACHED();
 }
 
-void *calloc(size_t , size_t )
+void *calloc(size_t nmemb, size_t size)
 {
-    ASSERT_NOT_REACHED();
+    void* res = malloc(nmemb * size);
+    if (!res)
+        return res;
+    memset(res, 0, nmemb*size);
+    return res;
 }
 
-void *realloc(void *, size_t )
+void *realloc(void * ptr, size_t size)
 {
-    ASSERT_NOT_REACHED();
+    // return nullptr;
+    if (!size) {
+        free(ptr);
+        return nullptr;
+    }
+
+    auto new_ptr = malloc(size);
+    ASSERT(new_ptr);
+    if (!ptr)
+        return new_ptr;
+    
+    
+
+    u32 old_size = UserspaceHeapAllocator::the().size_of_block(ptr);
+    ASSERT(old_size);
+
+    memcpy(new_ptr, ptr, Math::min(old_size, size));
+    free(ptr);
+    return new_ptr;
 }
 
 }

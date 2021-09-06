@@ -5,6 +5,7 @@
 #include "shared_ptr.h"
 #include "FileSystem/DirectoryEntry.h"
 #include "FileSystem/CharFileSystem.h"
+#include "BigBuffer.h"
 
 class CharFile : public File {
 public:
@@ -18,6 +19,7 @@ public:
 
     virtual int read(size_t count, void* buf) override;
     virtual int write(char* data, size_t count) override;
+    virtual int lseek(int offset, int whence) override;
 
     size_t size(){return m_size;}
 
@@ -29,4 +31,6 @@ private:
     CharDirectoryEntry m_dir_entry;
     size_t m_size;
     size_t m_idx;
+
+    shared_ptr<BigBuffer> m_content_cache;
 };

@@ -140,6 +140,15 @@ void HeapAllocator::free(void* addr) {
     add_mem_block(block);
 }
 
+u32 HeapAllocator::size_of_block(void* addr)
+{
+    // MemBlock should be stored before address
+    MemBlock* block = (MemBlock*)((u32)addr - sizeof(MemBlock));
+    if (!block->is_magic_used())
+        return 0;
+    return block->size;
+}
+
 MemBlock* MemBlock::initialize(void* struct_addr,
                                 MemBlock* next,
                                 void* addr,

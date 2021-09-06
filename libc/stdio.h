@@ -7,7 +7,7 @@ static const size_t STDIN = 0;
 static const size_t STDOUT = 1;
 static const size_t STDERR = 2;
 
-typedef size_t FILE;
+typedef struct FILE FILE;
 
 static const size_t stdin = STDIN;
 static const size_t stdout = STDOUT;
@@ -46,13 +46,12 @@ int sscanf(const char *str, const char *format, ...);
 int vprintf(const char *format, va_list ap);
 int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 int vfprintf(FILE *stream, const char *format, va_list ap);
-
+void kprintf(const char* fmt, ...);
 
 #ifdef __cplusplus
 }
 #endif
 
-void kprintf(const char* fmt, ...);
 
 #define dbgprintf kprintf
 

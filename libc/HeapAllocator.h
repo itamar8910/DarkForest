@@ -36,6 +36,8 @@ public:
     u32 current_free_space() {u32 x = 0; return current_free_space(x);}
     void heap_statistics(u32& free_space, u32& num_blocks, u32& allocated_pages);
 
+    u32 size_of_block(void* addr);
+
 protected:
     HeapAllocator(void* addr, u32 size);
     void exapnd_heap(u32 num_pages);

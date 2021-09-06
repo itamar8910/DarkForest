@@ -88,9 +88,17 @@ char *strchr(const char *, int )
 {
 	ASSERT_NOT_REACHED();
 }
-char *strrchr(const char *, int )
+
+char *strrchr(const char * str, int c)
 {
-	ASSERT_NOT_REACHED();
+	while(*str) {
+		if (*str ==c)
+			return (char*) str;
+		++str;
+	}
+	if (c == '\0')
+		return (char*)str;
+	return nullptr;
 }
 
 
