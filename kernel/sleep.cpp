@@ -17,3 +17,9 @@ void sleep_ms(u32 ms) {
     SleepBlocker* blocker = new SleepBlocker(sleep_until_sec, leftover_ms);
     Scheduler::the().block_current(blocker);
 }
+
+u32 time_since_boot_ms()
+{
+    ASSERT(TICKS_PER_SECOND == 1000);
+    return PIT::seconds_since_boot()*TICKS_PER_SECOND + PIT::ticks_this_second();
+}

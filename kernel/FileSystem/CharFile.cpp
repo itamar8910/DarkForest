@@ -6,7 +6,7 @@
 #include "unix.h"
 
 int CharFile::read(size_t count, void* buf) {
-    kprintf("file: %s, read count: %d\n", m_dir_entry.path().to_string().c_str(), count);
+    // kprintf("file: %s, read count: %d\n", m_dir_entry.path().to_string().c_str(), count);
     if(count == 0)
         return 0;
     // NOTE: we reading the entire file even though
@@ -63,7 +63,7 @@ char* CharFile::get_content() {
 
 int CharFile::lseek(int offset, int whence) 
 {
-    kprintf("file: %s, lseek: %d\n", m_dir_entry.path().to_string().c_str(), offset);
+    // kprintf("file: %s, lseek: %d\n", m_dir_entry.path().to_string().c_str(), offset);
     switch (whence) {
         case SEEK_CUR:
             m_idx += offset;

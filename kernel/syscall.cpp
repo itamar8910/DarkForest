@@ -117,6 +117,8 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_create_terminal((char*)arg1);
         case Syscall::Lseek:
             return Scheduler::the().current().syscall_lseek(arg1, (int) arg2, arg3);
+        case Syscall::TimeSinceBootMs:
+            return time_since_boot_ms();
 
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
