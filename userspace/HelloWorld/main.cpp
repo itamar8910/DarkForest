@@ -11,6 +11,7 @@ static_assert(0);
 
 int main() {
     kprintf("hello, world!\n");
+    printf("hello: %.3d\n", 5);
 
     FILE* f = fopen("/stuff/a.txt", "r");
     int savedpos;

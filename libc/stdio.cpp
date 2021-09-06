@@ -154,9 +154,13 @@ int rename(const char *, const char *)
     ASSERT_NOT_REACHED();
 }
 
-int snprintf(char *, size_t , const char *, ...)
+int snprintf(char * str, size_t n, const char * fmt, ...)
 {
-    ASSERT_NOT_REACHED();
+    va_list args;
+    va_start(args, fmt);
+    int rc = vsnprintf(str, n, fmt, args);
+    va_end(args);
+    return rc;
 }
 
 int sscanf(const char *, const char *, ...)

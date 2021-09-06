@@ -81,7 +81,7 @@ inline bool is_digit(char c) {
  */ 
 static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
     ASSERT(is_numeric_format_type_specifier(*fmt));
-
+    fill_char = '\0';
     char fill_number[MAX_FILL_NUMBER_LEN];
     const char* fmt_start = fmt;
     // find '%'
@@ -89,19 +89,25 @@ static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
         fmt_start --;
     }
     fmt_start++;
-    // if not fill info, e.g just a simple '%d'
-    if(!is_digit(*fmt_start)) {
-        min_chars = 0;
-        fill_char = 0;
-        return 0;
-    }
-    // we fill with 0s if number starts with '0' (e.g '%05d'),
-    // otherwise we fill with ' ' (e.g '%5d')
-    if(*fmt_start == '0') { // zero fill
+    if (*fmt_start == '.') {
+        // e.g '%.3d' - we fill with zeroes
         fill_char = '0';
         fmt_start++;
-    } else{
-        fill_char = ' ';
+    } else {
+        // if not fill info, e.g just a simple '%d'
+        if(!is_digit(*fmt_start)) {
+            min_chars = 0;
+            fill_char = 0;
+            return 0;
+        }
+        // we fill with 0s if number starts with '0' (e.g '%05d'),
+        // otherwise we fill with ' ' (e.g '%5d')
+        if(*fmt_start == '0') { // zero fill
+            fill_char = '0';
+            fmt_start++;
+        } else{
+            fill_char = ' ';
+        }
     }
     int i = 0;
     for(; is_digit(fmt_start[i]); i++) {
@@ -126,7 +132,7 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
             fmt++;
             int min_chars = 0;
             char fill_char = 0;
-            while(*fmt >= '0' && *fmt <= '9') { // skip digits
+            while((*fmt >= '0' && *fmt <= '9') || (*fmt == '.')) { // skip digits
                 fmt++;
             }
             switch(*fmt) {
