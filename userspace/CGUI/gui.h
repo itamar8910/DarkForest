@@ -12,9 +12,16 @@ typedef void* DF_WINDOW;
 
 DF_WINDOW cgui_create_window(uint16_t width, uint16_t height);
 
-int cgui_has_pending_message();
 
 void cgui_draw_window(DF_WINDOW window, uint32_t* buffer);
+
+typedef struct __attribute__((packed))
+{
+    int pressed;
+    uint8_t key;
+} CGUI_KeyEvent ;
+
+int cgui_get_key_event(CGUI_KeyEvent* out_event);
 
 #ifdef __cplusplus
 }

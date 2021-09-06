@@ -15,11 +15,6 @@ DF_WINDOW cgui_create_window(u16 width, u16 height)
     return window;
 }
 
-int cgui_has_pending_message()
-{
-    return std::has_pending_message();
-}
-
 void cgui_draw_window(DF_WINDOW window_handle, uint32_t* buffer)
 {
     (void)buffer;
@@ -27,6 +22,22 @@ void cgui_draw_window(DF_WINDOW window_handle, uint32_t* buffer)
     window->copy_to_buffer(buffer);
     // TODO: set framebuffer
     GuiManager::the().draw(*window);
+}
+
+int cgui_get_key_event(CGUI_KeyEvent* out_event)
+{
+    if (!std::has_pending_message())
+        return false;
+
+    IOEvent io_event = GuiManager::the().get_io_event(); 
+    if (io_event.type != IOEvent::Type::KeyEvent)
+        return false;
+
+    KeyEvent key_event = io_event.as_key_event();
+    out_event->pressed = key_event.released ? 0 : 1;
+    // out_event->key = key_event.to_ascii();
+    out_event->key = key_event.keycode.data;
+    return true;
 }
 
 }
