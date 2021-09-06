@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "PS2KeyboardCommon.h"
+#include "lock.h"
 
 // the longer getcode has 6 bytes
 #define MAX_NUM_KEYCODE_BYTES 6
@@ -34,7 +35,8 @@ private:
 
     // circuler buffer that stores KeyEvents
     KeyEvent m_events_buffer[KEYCODES_BUFFER_LEN];
-    u8 m_events_buffer_idx {0};
+    u8 m_events_buffer_head {0};
+    u8 m_events_buffer_tail {0};
     u8 m_events_pending {0};
 
 
@@ -43,6 +45,8 @@ private:
 
     u8 m_current_keycode_bytes[MAX_NUM_KEYCODE_BYTES];
     u8 m_current_keycode_byte_idx {0};
+
+    Lock m_lock;
 
 
 };

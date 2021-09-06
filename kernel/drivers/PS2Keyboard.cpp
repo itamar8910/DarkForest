@@ -131,7 +131,9 @@ PS2Keyboard& PS2Keyboard::the() {
 
 }
 
-PS2Keyboard::PS2Keyboard() {}
+PS2Keyboard::PS2Keyboard()
+    : m_lock("PS2Keyboard")
+ {}
 
 
 void PS2Keyboard::on_scan_byte(u8 val) {
@@ -196,19 +198,22 @@ KeyCode KeyCode::from_single(u8 val) {
 
 
 void PS2Keyboard::insert_key_state(KeyEvent key_state) {
+    LOCKER(m_lock);
     m_events_pending += 1;
-    m_events_buffer[m_events_buffer_idx++] = key_state;
-    m_events_buffer_idx %= KEYCODES_BUFFER_LEN;
+    m_events_buffer[m_events_buffer_tail++] = key_state;
+    m_events_buffer_tail %= KEYCODES_BUFFER_LEN;
 }
 
 KeyEvent PS2Keyboard::consume() {
+    LOCKER(m_lock);
     ASSERT(m_events_pending>0);
     m_events_pending -= 1;
-    m_events_buffer_idx = (m_events_buffer_idx-1) % KEYCODES_BUFFER_LEN;
-    auto event = m_events_buffer[m_events_buffer_idx];
+    auto event = m_events_buffer[m_events_buffer_head];
+    m_events_buffer_head = (m_events_buffer_head+1) % KEYCODES_BUFFER_LEN;
     return event;
 }
 
 bool PS2Keyboard::can_consume() {
+    LOCKER(m_lock);
     return m_events_pending != 0;
 }
