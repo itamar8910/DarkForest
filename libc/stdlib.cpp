@@ -96,12 +96,7 @@ void operator delete[](void* addr) {
 }
 #endif
 
-
-
-#ifdef __cplusplus
 extern "C" {
-#endif
-
 
 int abs(int j)
 {
@@ -114,6 +109,14 @@ double atof(const char *nptr)
     ASSERT_NOT_REACHED();
 }
 
-#ifdef __cplusplus
+void *calloc(size_t , size_t )
+{
+    ASSERT_NOT_REACHED();
 }
-#endif
+
+void *realloc(void *, size_t )
+{
+    ASSERT_NOT_REACHED();
+}
+
+}

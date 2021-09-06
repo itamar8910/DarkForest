@@ -34,6 +34,9 @@ cp $USERSPACE_BINARIES mnt/bin
 mkdir -p mnt/init
 cp init_files/* mnt/init
 
+cp /home/itamar/dump/doomgeneric/doomgeneric/doomgeneric mnt/bin/doom.app
+cp /home/itamar/dump/doomgeneric/doomgeneric/doom1.wad mnt/stuff/
+
 # temp fixes
 rm mnt/init/kernel_*
 

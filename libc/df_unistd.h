@@ -9,6 +9,7 @@
 
 namespace std
 {
+
 [[noreturn]] void exit(int status);
 
 void sleep_ms(u32 ms);

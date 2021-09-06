@@ -23,7 +23,10 @@ int main() {
         char c = getchar();
         kprintf("shell: getchar: %c\n", c);
         if(c == '\n') {
-            shell.process_command(String(command.data(), command.size()));
+            String cmd(command.data(), command.size());
+            if (cmd == "doom-wad")
+                cmd = "doom -iwad stuff/doom1.wad";
+            shell.process_command(cmd);
 
             command.clear();
         }

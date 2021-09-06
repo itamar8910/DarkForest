@@ -2,6 +2,7 @@
 #pragma once
 
 #include "types.h"
+#include "stdlib.h"
 #include "HeapAllocator.h"
 
 class UserspaceHeapAllocator : public HeapAllocator {
@@ -14,6 +15,3 @@ protected:
     void allocate_page(void* addr) override;
 };
 
-
-void* malloc(size_t size);
-void free(void* addr);

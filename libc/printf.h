@@ -55,7 +55,7 @@ int print_int_hex(PutcFunc putc_f, uint32_t val, int min_chars = 0, char fill_ch
 }
 
 template <typename PutcFunc>
-int print_string(PutcFunc putc_f, char* str) {
+int print_string(PutcFunc putc_f, const char* str) {
     int ret = 0;
     while(*str) {
         putc_f(*(str++));
@@ -65,7 +65,7 @@ int print_string(PutcFunc putc_f, char* str) {
 }
 
 inline bool is_numeric_format_type_specifier(char c) {
-    return c == 'd' || c == 'x';
+    return c == 'd' || c == 'x' || c == 'i';
 }
 
 inline bool is_digit(char c) {
@@ -130,12 +130,18 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
                 fmt++;
             }
             switch(*fmt) {
+                case 'i':
+                    [[fallthrough]];
                 case 'd':
                     ASSERT(!get_fill_data(fmt, min_chars, fill_char));
                     ret += print_int_dec(putc_f, va_arg(args, int), min_chars, fill_char);
                     break;
                 case 'x':
                     ASSERT(!get_fill_data(fmt, min_chars, fill_char));
+                    ret += print_int_hex(putc_f, va_arg(args, uint32_t), min_chars, fill_char);
+                    break;
+                case 'p':
+                    ret += print_string(putc_f, "0x");
                     ret += print_int_hex(putc_f, va_arg(args, uint32_t), min_chars, fill_char);
                     break;
                 case 's':

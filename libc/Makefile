@@ -17,12 +17,15 @@ LIBC_OBJS := \
 	Math.o \
 	Geometry.o \
 	errno.o \
+	ctype.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
 	df_unistd.o \
 	stdio.o \
 	strings.o \
+	math.o \
+	sys/stat.o \
 
 ifeq ($(LIBCMODE), USERSPACE)
 LIBC_OBJS += $(LIBC_USERSPACE_ONLY_OBJS)
