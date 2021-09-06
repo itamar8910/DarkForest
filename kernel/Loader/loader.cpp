@@ -85,11 +85,11 @@ void load_and_jump_userspace(shared_ptr<BigBuffer> elf_data_ptr,
          void* segment_data = (void*) ((u32)elf_data + program_header->offset);
          void* segment_virtual_address = (void*) (program_header->virtual_address);
          u32 segment_mem_size = program_header->size_in_memory;
-         ASSERT((u32)segment_virtual_address % PAGE_SIZE == 0);
+         // ASSERT((u32)segment_virtual_address % PAGE_SIZE == 0);
          bool writable = get_bit(program_header->flags, Elf::ProgramHeaderFlags::Writable);
          u32 page_index = 0;
          for(u32 size = 0; size < segment_mem_size; size += PAGE_SIZE, ++page_index) {
-            MemoryManager::the().allocate((u32)segment_virtual_address + page_index*PAGE_SIZE,
+            MemoryManager::the().allocate(((u32)segment_virtual_address & ~0xfff) + page_index*PAGE_SIZE,
             writable ? PageWritable::YES : PageWritable::NO,
             UserAllowed::YES
             );
@@ -97,7 +97,8 @@ void load_and_jump_userspace(shared_ptr<BigBuffer> elf_data_ptr,
          // copy data from file
          memcpy(segment_virtual_address, segment_data, program_header->size_in_file);
          // zero leftover
-         memset((void*)((u32)segment_virtual_address + program_header->size_in_file), 0, (page_index*PAGE_SIZE) - program_header->size_in_file);
+         dbgprintf("base: %p, allocated size: %p, zero size: %p\n", segment_virtual_address, page_index*PAGE_SIZE, (page_index*PAGE_SIZE) - program_header->size_in_file - ((u32)segment_virtual_address & 0xfff));
+         memset((void*)((u32)segment_virtual_address + program_header->size_in_file), 0, (page_index*PAGE_SIZE) - program_header->size_in_file - ((u32)segment_virtual_address & 0xfff));
    }
 
    u32 entry = header->entry;
