@@ -30,7 +30,7 @@ OBJS_TO_LINK := $(OBJS) $(LIBC_OBJ) $(LIB_WINDOW_SERVER_OBJ) $(LIBGUI_OBJ)
 
 export INCLUDE := -I$(LIBC_DIR) -I$(CURRENT_DIR) -I$(GLOBAL_DIR)
 
-all: libc lib_gui lib_windowserver start.ao apps
+all: libc lib_gui lib_windowserver lib_cgui start.ao apps
 
 libc:
 	make -C $(LIBC_DIR) clean
@@ -41,6 +41,9 @@ lib_gui:
 
 lib_windowserver:
 	make -C $(LIB_WINDOW_SERVER_DIR)
+
+lib_cgui:
+	make -C CGUI
 
 apps: $(APPS)
 

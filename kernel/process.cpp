@@ -382,6 +382,12 @@ int Process::syscall_get_message(char* msg, u32 size, u32* pid)
     return consume_message(msg, size, pid);
 }
 
+int Process::syscall_has_pending_message() {
+    if (has_pending_message())
+        return 1;
+    return 0;
+}
+
 int Process::consume_message(char* msg, u32 size, u32* pid)
 {
     Message m;

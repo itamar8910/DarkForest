@@ -30,8 +30,11 @@ public:
     void set_background_color(const u32 color) {m_background_color = color;}
 
     void add_widget(shared_ptr<Widget> w);
+    void set_raw_mode(bool raw) { m_raw_mode = raw; }
+    void copy_to_buffer(void* data);
 
 private:
+    bool m_raw_mode {false};
     u32 m_window_id;
     u32 m_buff_guid;
     void* m_buff_addr;

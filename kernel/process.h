@@ -46,6 +46,7 @@ public:
     int syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_idx);
     int syscall_create_terminal(char* name_out);
     int syscall_lseek(int fd, int offset, int whence);
+    int syscall_has_pending_message();
 
 private:
     struct Message

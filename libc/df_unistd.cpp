@@ -203,4 +203,9 @@ int create_terminal(char* name_out)
     return Syscall::invoke(Syscall::CreateTerminal, reinterpret_cast<u32>(name_out));
 }
 
+int has_pending_message()
+{
+    return Syscall::invoke(Syscall::HasPendingMessage);
+}
+
 }
