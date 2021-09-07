@@ -24,8 +24,10 @@ int main() {
         kprintf("shell: getchar: %c\n", c);
         if(c == '\n') {
             String cmd(command.data(), command.size());
-            if (cmd == "doom-wad")
+            if (cmd == "doom-wad") {
+                ASSERT(std::is_file("stuff/doom1.wad"));
                 cmd = "doom -iwad stuff/doom1.wad";
+            }
             shell.process_command(cmd);
 
             command.clear();

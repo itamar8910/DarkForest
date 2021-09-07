@@ -1,0 +1,224 @@
+diff --git a/doomgeneric/.gitignore b/doomgeneric/.gitignore
+new file mode 100644
+index 0000000..aa5da7e
+--- /dev/null
++++ b/doomgeneric/.gitignore
+@@ -0,0 +1,5 @@
++build/
++doom1.wad
++doomgeneric
++doomgeneric.map
++
+diff --git a/doomgeneric/Makefile b/doomgeneric/Makefile
+index ceecc57..eaf20b2 100644
+--- a/doomgeneric/Makefile
++++ b/doomgeneric/Makefile
+@@ -12,17 +12,20 @@ else
+ endif
+ 
+ 
+-CC=clang  # gcc or g++
++CC=../../../toolchain/cross/bin/i686-elf-gcc
++CFLAGS+=-I../../../libc/ -I../../../ -I../../../userspace -I../../../toolchain/cross/lib/gcc/i686-elf/9.2.0/include/
++CFLAGS+=-ffreestanding -nostdlib
+ CFLAGS+=-ggdb3 -Os
+ LDFLAGS+=-Wl,--gc-sections
+-CFLAGS+=-ggdb3 -Wall -DNORMALUNIX -DLINUX -DSNDSERV -D_DEFAULT_SOURCE # -DUSEASM
+-LIBS+=-lm -lc -lX11
++CFLAGS+=-ggdb3 -Wall -DSNDSERV -D_DEFAULT_SOURCE # -DUSEASM
++# LIBS+=-lc
++LIBS+=../../../libc/libc.o ../../../userspace/start.ao ../../../userspace/LibGui/LibGui.o ../../../userspace/LibWindowServer/LibWindowServer.o ../../../userspace/CGUI/cgui.o
+ 
+ # subdirectory for objects
+ OBJDIR=build
+ OUTPUT=doomgeneric
+ 
+-SRC_DOOM = i_main.o dummy.o am_map.o doomdef.o doomstat.o dstrings.o d_event.o d_items.o d_iwad.o d_loop.o d_main.o d_mode.o d_net.o f_finale.o f_wipe.o g_game.o hu_lib.o hu_stuff.o info.o i_cdmus.o i_endoom.o i_joystick.o i_scale.o i_sound.o i_system.o i_timer.o memio.o m_argv.o m_bbox.o m_cheat.o m_config.o m_controls.o m_fixed.o m_menu.o m_misc.o m_random.o p_ceilng.o p_doors.o p_enemy.o p_floor.o p_inter.o p_lights.o p_map.o p_maputl.o p_mobj.o p_plats.o p_pspr.o p_saveg.o p_setup.o p_sight.o p_spec.o p_switch.o p_telept.o p_tick.o p_user.o r_bsp.o r_data.o r_draw.o r_main.o r_plane.o r_segs.o r_sky.o r_things.o sha1.o sounds.o statdump.o st_lib.o st_stuff.o s_sound.o tables.o v_video.o wi_stuff.o w_checksum.o w_file.o w_main.o w_wad.o z_zone.o w_file_stdc.o i_input.o i_video.o doomgeneric.o doomgeneric_xlib.o
++SRC_DOOM = i_main.o dummy.o am_map.o doomdef.o doomstat.o dstrings.o d_event.o d_items.o d_iwad.o d_loop.o d_main.o d_mode.o d_net.o f_finale.o f_wipe.o g_game.o hu_lib.o hu_stuff.o info.o i_cdmus.o i_endoom.o i_joystick.o i_scale.o i_sound.o i_system.o i_timer.o memio.o m_argv.o m_bbox.o m_cheat.o m_config.o m_controls.o m_fixed.o m_menu.o m_misc.o m_random.o p_ceilng.o p_doors.o p_enemy.o p_floor.o p_inter.o p_lights.o p_map.o p_maputl.o p_mobj.o p_plats.o p_pspr.o p_saveg.o p_setup.o p_sight.o p_spec.o p_switch.o p_telept.o p_tick.o p_user.o r_bsp.o r_data.o r_draw.o r_main.o r_plane.o r_segs.o r_sky.o r_things.o sha1.o sounds.o statdump.o st_lib.o st_stuff.o s_sound.o tables.o v_video.o wi_stuff.o w_checksum.o w_file.o w_main.o w_wad.o z_zone.o w_file_stdc.o i_input.o i_video.o doomgeneric.o doomgeneric_darkforest.o
+ OBJS += $(addprefix $(OBJDIR)/, $(SRC_DOOM))
+ 
+ all:	 $(OUTPUT)
+diff --git a/doomgeneric/d_main.c b/doomgeneric/d_main.c
+index c7cf977..471f30a 100644
+--- a/doomgeneric/d_main.c
++++ b/doomgeneric/d_main.c
+@@ -24,6 +24,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <asserts.h>
+ 
+ #include "config.h"
+ #include "deh_main.h"
+@@ -1757,7 +1758,8 @@ void D_DoomMain (void)
+ 
+     DEH_printf("M_Init: Init miscellaneous info.\n");
+     M_Init ();
+-
++    
++    // ASSERT_NOT_REACHED();
+     DEH_printf("R_Init: Init DOOM refresh daemon - ");
+     R_Init ();
+ 
+diff --git a/doomgeneric/doomgeneric.h b/doomgeneric/doomgeneric.h
+index c2dc4b5..3778b48 100644
+--- a/doomgeneric/doomgeneric.h
++++ b/doomgeneric/doomgeneric.h
+@@ -3,9 +3,10 @@
+ 
+ #include <stdlib.h>
+ #include <stdint.h>
+-
+ #define DOOMGENERIC_RESX 640
+ #define DOOMGENERIC_RESY 400
++// #define DOOMGENERIC_RESX 320
++// #define DOOMGENERIC_RESY 200
+ 
+ 
+ extern uint32_t* DG_ScreenBuffer;
+diff --git a/doomgeneric/doomgeneric_darkforest.c b/doomgeneric/doomgeneric_darkforest.c
+new file mode 100644
+index 0000000..d09743c
+--- /dev/null
++++ b/doomgeneric/doomgeneric_darkforest.c
+@@ -0,0 +1,81 @@
++#include "doomgeneric.h"
++#include "asserts.h"
++#include "stdio.h"
++#include "unistd.h"
++#include "doomkeys.h"
++
++#include "CGUI/gui.h"
++
++u32 boot_time_ms = 0;
++
++DF_WINDOW g_window;
++
++void DG_Init()
++{
++    printf("DG_Init DarkForest\n");
++    boot_time_ms = df_time_since_boot_ms();
++    dbgprintf("time since boot ms: %d\n", boot_time_ms);
++
++    g_window = cgui_create_window(DOOMGENERIC_RESX, DOOMGENERIC_RESY);
++
++}
++
++void DG_DrawFrame()
++{
++    cgui_draw_window(g_window, DG_ScreenBuffer);
++}
++
++void DG_SleepMs(uint32_t ms)
++{
++    df_sleep_ms(ms);
++}
++
++uint32_t DG_GetTicksMs()
++{
++    return df_time_since_boot_ms() - boot_time_ms;
++}
++
++static unsigned char convert_to_doom_key(uint8_t key);
++
++int DG_GetKey(int* pressed, unsigned char* key)
++{
++    // CGUI_KeyEvent
++    CGUI_KeyEvent event = {0};
++    int rc = cgui_get_key_event(&event);
++    if (!rc)
++        return 0;
++
++    *pressed = event.pressed;
++    *key = convert_to_doom_key(event.key);
++
++    return 1; // TODO
++}
++
++unsigned char convert_to_doom_key(uint8_t key)
++{
++    switch (key) {
++        case (uint8_t)'\n':
++            return KEY_ENTER;
++        case (uint8_t)'w':
++            return KEY_UPARROW;
++        case (uint8_t)'a':
++            return KEY_LEFTARROW;
++        case (uint8_t)'s':
++            return KEY_DOWNARROW;
++        case (uint8_t)'d':
++            return KEY_RIGHTARROW;
++        case (uint8_t)' ':
++            return KEY_FIRE;
++        case 140: // Left CTRL
++            return KEY_USE;
++        case 128: // Left ESC
++            return KEY_ESCAPE;
++        default:
++            return key;
++    }
++}
++
++void DG_SetWindowTitle(const char * title)
++{
++    (void)title;
++}
+diff --git a/doomgeneric/doomtype.h b/doomgeneric/doomtype.h
+index aab7cbe..9976d23 100644
+--- a/doomgeneric/doomtype.h
++++ b/doomgeneric/doomtype.h
+@@ -70,6 +70,10 @@ typedef bool boolean;
+ 
+ #else
+ 
++// DF: hack
++#undef false
++#undef true
++
+ typedef enum 
+ {
+     false	= 0,
+diff --git a/doomgeneric/i_main.c b/doomgeneric/i_main.c
+index b192227..8386ef2 100644
+--- a/doomgeneric/i_main.c
++++ b/doomgeneric/i_main.c
+@@ -39,6 +39,13 @@ void dg_Create();
+ 
+ int main(int argc, char **argv)
+ {
++    // argc/argv is the other way around in DarkForest: )
++    char** actual_argv = (char**)argc;
++
++    argc = (int)argv;
++    argv = actual_argv;
++
++    printf("argc: %d", argc);
+     // save arguments
+ 
+     myargc = argc;
+diff --git a/doomgeneric/i_system.c b/doomgeneric/i_system.c
+index 5d00091..85b7686 100644
+--- a/doomgeneric/i_system.c
++++ b/doomgeneric/i_system.c
+@@ -271,7 +271,8 @@ void I_Quit (void)
+ 
+ static int ZenityAvailable(void)
+ {
+-    return system(ZENITY_BINARY " --help >/dev/null 2>&1") == 0;
++    return 0;
++    // return system(ZENITY_BINARY " --help >/dev/null 2>&1") == 0;
+ }
+ 
+ // Escape special characters in the given string so that they can be
+diff --git a/doomgeneric/m_misc.c b/doomgeneric/m_misc.c
+index 53b86db..5b57935 100644
+--- a/doomgeneric/m_misc.c
++++ b/doomgeneric/m_misc.c
+@@ -23,6 +23,7 @@
+ #include <string.h>
+ #include <ctype.h>
+ #include <errno.h>
++#include <fcntl.h>
+ 
+ #ifdef _WIN32
+ #define WIN32_LEAN_AND_MEAN

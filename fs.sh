@@ -34,8 +34,16 @@ cp $USERSPACE_BINARIES mnt/bin
 mkdir -p mnt/init
 cp init_files/* mnt/init
 
-cp /home/itamar/dump/doomgeneric/doomgeneric/doomgeneric mnt/bin/doom.app
-cp /home/itamar/dump/doomgeneric/doomgeneric/doom1.wad mnt/stuff/
+DOOM_EXEC=doom/doomgeneric/doomgeneric/doomgeneric 
+DOOM_WAD=doom/doomgeneric/doomgeneric/doom1.wad 
+if [ -f $DOOM_EXEC ]; then
+    echo "Copying doom executable.."
+    cp $DOOM_EXEC mnt/bin/doom.app
+fi
+if [ -f $DOOM_WAD ]; then
+    echo "Copying doom WAD.."
+    cp $DOOM_WAD mnt/stuff/
+fi
 
 # temp fixes
 rm mnt/init/kernel_*
