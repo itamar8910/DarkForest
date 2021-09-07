@@ -35,7 +35,6 @@ int cgui_get_key_event(CGUI_KeyEvent* out_event)
 
     KeyEvent key_event = io_event.as_key_event();
     out_event->pressed = key_event.released ? 0 : 1;
-    // out_event->key = key_event.to_ascii();
     out_event->key = key_event.keycode.data;
     return true;
 }

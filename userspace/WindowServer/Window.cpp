@@ -37,8 +37,8 @@ Window::Window(const WindowServerIPC::CreateWindowRequest& request, u32 pid) :
     // TODO this is just for testing purposes
     m_x += x_offset;
     m_y += y_offset;
-    x_offset += 15;
-    y_offset += 10;
+    x_offset += 150;
+    y_offset += 50;
 }
 
 Rectangle Window::rectangle() const
