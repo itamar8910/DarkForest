@@ -1,5 +1,5 @@
 #include "VgaTTY.h"
-#include "unistd.h"
+#include "df_unistd.h"
 #include "asserts.h"
 
 VgaTTY* s_the = nullptr;

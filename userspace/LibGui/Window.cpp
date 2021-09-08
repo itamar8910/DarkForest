@@ -1,6 +1,6 @@
 #include "Window.h"
 #include "LibWindowServer/IPC.h"
-#include "unistd.h"
+#include "df_unistd.h"
 #include "asserts.h"
 #include "kernel/errs.h"
 
@@ -38,6 +38,9 @@ void Window::clear()
 
 void Window::update()
 {
+    if (m_raw_mode)
+        return;
+
     clear();
     for(auto& widget : m_widgets)
     {
@@ -48,4 +51,9 @@ void Window::update()
 void Window::add_widget(shared_ptr<Widget> w)
 {
     m_widgets.append(w);
+}
+
+void Window::copy_to_buffer(void* data)
+{
+    memcpy(buff_addr(), data, buff_size());
 }

@@ -1,5 +1,5 @@
 #include "WindowServerHandler.h"
-#include "unistd.h"
+#include "df_unistd.h"
 #include "LibWindowServer/IPC.h"
 #include "stdio.h"
 #include "kernel/errs.h"
@@ -177,6 +177,7 @@ void WindowServerHandler::handle_message_code(u32 code, u32 pid)
             ASSERT(rc);
 
             m_windows.append(w);
+            set_focused_window(m_windows.size() - 1);
 
             if(m_current_focused_window_idx == -1)
             {

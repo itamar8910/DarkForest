@@ -65,7 +65,7 @@ public:
             auto symbol_str = line.substr(line.find(' ') + 1);
             SymbolAndAddress entry{
                 symbol_str,
-                static_cast<u32>(atoi(addr_str.c_str(), 16)),
+                static_cast<u32>(df_atoi(addr_str.c_str(), 16)),
             };
             m_entries.append(entry);
         }
@@ -91,8 +91,8 @@ public:
             ASSERT(vals.size() == 3);
             SourceAndAddress entry{
                 vals[1],
-                static_cast<u32>(atoi(vals[2].c_str())),
-                static_cast<u32>(atoi(vals[0].c_str(), 16)),
+                static_cast<u32>(df_atoi(vals[2].c_str(), 10)),
+                static_cast<u32>(df_atoi(vals[0].c_str(), 16)),
             };
             m_entries.append(entry);
         }

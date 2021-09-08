@@ -1,5 +1,5 @@
 #include "Vga.h"
-#include "unistd.h"
+#include "df_unistd.h"
 #include "ioctl_common.h"
 #include "asserts.h"
 #include "kernel/errs.h"
@@ -52,6 +52,8 @@ void VGA::draw(u32* window_buffer, u16 x, u16 y, u16 width, u16 height)
         )
         {
             kprintf("VGA::draw out of bounds\n");
+            kprintf("request: (%d,%d), bounds: (%d,%d)\n", x+width, y+height, m_width, m_height);
+            kprintf("invoked for: %d,%d,%d,%d\n", x, y, width, height);
             ASSERT_NOT_REACHED();
         }
     // kprintf("drawing: (x,y,width,height)=(%d,%d,%d,%d)\n", x, y, width, height);

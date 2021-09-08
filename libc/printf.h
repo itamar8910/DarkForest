@@ -4,6 +4,7 @@
 #include "asserts.h"
 #include "stdlib.h"
 #include "types.h"
+#include "stdlib.h"
 
 const char digits_dec[] = "0123456789";
 const char digits_hex[] = "0123456789abcdef";
@@ -54,7 +55,7 @@ int print_int_hex(PutcFunc putc_f, uint32_t val, int min_chars = 0, char fill_ch
 }
 
 template <typename PutcFunc>
-int print_string(PutcFunc putc_f, char* str) {
+int print_string(PutcFunc putc_f, const char* str) {
     int ret = 0;
     while(*str) {
         putc_f(*(str++));
@@ -64,7 +65,7 @@ int print_string(PutcFunc putc_f, char* str) {
 }
 
 inline bool is_numeric_format_type_specifier(char c) {
-    return c == 'd' || c == 'x';
+    return c == 'd' || c == 'x' || c == 'i';
 }
 
 inline bool is_digit(char c) {
@@ -80,7 +81,7 @@ inline bool is_digit(char c) {
  */ 
 static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
     ASSERT(is_numeric_format_type_specifier(*fmt));
-
+    fill_char = '\0';
     char fill_number[MAX_FILL_NUMBER_LEN];
     const char* fmt_start = fmt;
     // find '%'
@@ -88,19 +89,25 @@ static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
         fmt_start --;
     }
     fmt_start++;
-    // if not fill info, e.g just a simple '%d'
-    if(!is_digit(*fmt_start)) {
-        min_chars = 0;
-        fill_char = 0;
-        return 0;
-    }
-    // we fill with 0s if number starts with '0' (e.g '%05d'),
-    // otherwise we fill with ' ' (e.g '%5d')
-    if(*fmt_start == '0') { // zero fill
+    if (*fmt_start == '.') {
+        // e.g '%.3d' - we fill with zeroes
         fill_char = '0';
         fmt_start++;
-    } else{
-        fill_char = ' ';
+    } else {
+        // if not fill info, e.g just a simple '%d'
+        if(!is_digit(*fmt_start)) {
+            min_chars = 0;
+            fill_char = 0;
+            return 0;
+        }
+        // we fill with 0s if number starts with '0' (e.g '%05d'),
+        // otherwise we fill with ' ' (e.g '%5d')
+        if(*fmt_start == '0') { // zero fill
+            fill_char = '0';
+            fmt_start++;
+        } else{
+            fill_char = ' ';
+        }
     }
     int i = 0;
     for(; is_digit(fmt_start[i]); i++) {
@@ -111,7 +118,7 @@ static int get_fill_data(const char* fmt, int& min_chars, char& fill_char) {
         fill_number[i] = fmt_start[i];
     }
     fill_number[i] = 0;
-    min_chars = atoi(fill_number);
+    min_chars = df_atoi(fill_number, 10);
     return 0;
 }
 
@@ -125,16 +132,22 @@ int printf_internal(PutcFunc putc_f, const char* fmt, va_list args) {
             fmt++;
             int min_chars = 0;
             char fill_char = 0;
-            while(*fmt >= '0' && *fmt <= '9') { // skip digits
+            while((*fmt >= '0' && *fmt <= '9') || (*fmt == '.')) { // skip digits
                 fmt++;
             }
             switch(*fmt) {
+                case 'i':
+                    [[fallthrough]];
                 case 'd':
                     ASSERT(!get_fill_data(fmt, min_chars, fill_char));
                     ret += print_int_dec(putc_f, va_arg(args, int), min_chars, fill_char);
                     break;
                 case 'x':
                     ASSERT(!get_fill_data(fmt, min_chars, fill_char));
+                    ret += print_int_hex(putc_f, va_arg(args, uint32_t), min_chars, fill_char);
+                    break;
+                case 'p':
+                    ret += print_string(putc_f, "0x");
                     ret += print_int_hex(putc_f, va_arg(args, uint32_t), min_chars, fill_char);
                     break;
                 case 's':

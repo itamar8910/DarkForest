@@ -187,6 +187,7 @@ private:
     u32 sectors_per_cluster {0};
     u32 bytes_per_sector {0};
     u32 root_cluster {0};
+
 };
 
 template<typename F>

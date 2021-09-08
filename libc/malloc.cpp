@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "asserts.h"
 #include "std_misc.h"
+#include "stdio.h"
 
 void* USERSPACE_HEAP_START = (void*) 0x70000000;
 static UserspaceHeapAllocator* s_the = nullptr;
@@ -33,5 +34,9 @@ void* malloc(size_t size) {
 }
 
 void free(void* addr) {
+    if (!addr)
+        return;
+
+    // dbgprintf("free: %p", addr);
     UserspaceHeapAllocator::the().free(addr);
 }

@@ -172,7 +172,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	// Scheduler::the().add_process(Process::create(terminal_userspace, "TerminalUser"));
     Scheduler::the().add_process(Process::create(start_windowserver, "WindowServer"));
 	Scheduler::the().add_process(Process::create(start_gui_terminal, "GuiTerminal"));
-	Scheduler::the().add_process(Process::create(start_gui2, "gui2"));
+	// Scheduler::the().add_process(Process::create(start_gui2, "gui2"));
 
 	// VGA::init();
 

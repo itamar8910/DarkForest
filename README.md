@@ -53,12 +53,28 @@ make
 
 ## Setup filesystem
 ```bash
+# create disk image
 fs_scripts/fs_setup.sh # needs root/administrator priv to mount fs
+# copy files to it
+./fs.sh
 ```
 
 ## Run
 ```bash
 ./run.sh
+```
+
+## Doom
+There's a port of [doomgeneric](https://github.com/ozkl/doomgeneric).
+To build the port:
+```bash
+cd doom/
+./build.sh
+# Download a WAD file (you can download the shareware version, `doom1.wad`) and put it in `doom/doomgeneric/doomgeneric`.
+# sync file system image
+./fs.sh
+# Boot the system and type doom-wad in the terminal
+# Play Doom :)
 ```
 
 

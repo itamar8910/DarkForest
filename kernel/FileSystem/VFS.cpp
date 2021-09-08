@@ -108,9 +108,12 @@ FileSystem* VFS::get_fs(const Path& path, Path& path_inside_fs)
 
 bool VFS::create_entry(const Path& path, DirectoryEntry::Type type)
 {
+    kprintf("VFS::create_entry: %s\n", path.to_string().c_str());
     Path inside_path("/");
     FileSystem* fs = get_fs(path, inside_path);
-    if(fs == nullptr)
+    if(fs == nullptr) {
+        kprintf("no matching FS for path: %s\n", path.to_string().c_str());
         return false;
+    }
     return fs->create_entry(inside_path, type);
 }

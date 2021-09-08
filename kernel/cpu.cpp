@@ -196,6 +196,19 @@ void kernel_panic(T regs) {
    cpu_hang();
 }
 
+static void print_backtrace(uint32_t** ebp){
+    dbgprintf("BACKTRACE:\n");
+    uint32_t* eip = 0;
+
+    while (ebp && (uint32_t)ebp < 0xc0000000) {
+        eip = ebp[1];
+        dbgprintf("%p (llvm-addr2line-10 -e doomgeneric %p)\n", eip, eip);
+        if (!eip)
+            break;
+        ebp = (uint32_t**)ebp[0];
+    }
+
+}
 
 // Page fault
 ISR_EXCEPTION_WITH_ERRCODE(14);
@@ -204,6 +217,7 @@ void isr_14_handler(RegisterDumpWithErrCode& regs) {
    kprint("##### Page Fault #####\n");
    kprintf("Address that generated Fault: 0x%x\n", get_cr2());
    print_register_dump(regs);
+   print_backtrace((uint32_t**)regs.ebp);
    if(is_selector_ring3(regs.ds)) {
       kprintf("(From userspace)\n");
       Scheduler::the().terminate_current();

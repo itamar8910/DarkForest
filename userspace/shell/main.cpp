@@ -1,4 +1,4 @@
-#include "unistd.h"
+#include "df_unistd.h"
 #include "stdio.h"
 #include "asserts.h"
 #include "mman.h"
@@ -23,7 +23,12 @@ int main() {
         char c = getchar();
         kprintf("shell: getchar: %c\n", c);
         if(c == '\n') {
-            shell.process_command(String(command.data(), command.size()));
+            String cmd(command.data(), command.size());
+            if (cmd == "doom-wad") {
+                ASSERT(std::is_file("stuff/doom1.wad"));
+                cmd = "doom -iwad stuff/doom1.wad";
+            }
+            shell.process_command(cmd);
 
             command.clear();
         }
