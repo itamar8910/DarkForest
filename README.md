@@ -2,6 +2,10 @@
 
 A work in progress x86 operating system
 
+Screenshot:
+
+![Screenshot](images/screenshot.png "Screenshot")
+
 ## Current features
 
 - Preemptive Multiprocessing
