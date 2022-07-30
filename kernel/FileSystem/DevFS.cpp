@@ -43,9 +43,11 @@ File* DevFS::open(const Path& path) {
 
 bool DevFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
-    (void)path;
-    (void)res;
-    return false;
+    for (auto dev : devices)
+    {
+        res.append(DirectoryEntry(dev->path(), DirectoryEntry::Type::File));
+    }
+    return true;
 }
 
 bool DevFS::is_directory(const Path& path)
