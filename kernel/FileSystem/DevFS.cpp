@@ -45,7 +45,15 @@ bool DevFS::list_directory(const Path& path, Vector<DirectoryEntry>& res)
 {
     for (auto dev : devices)
     {
-        res.append(DirectoryEntry(dev->path(), DirectoryEntry::Type::File));
+        if (path.num_parts() == 0)
+        {
+            res.append(DirectoryEntry(dev->path(), DirectoryEntry::Type::File));
+            continue;
+        }
+        if (path.to_string() == dev->path().to_string())
+        {
+            res.append(DirectoryEntry(dev->path(), DirectoryEntry::Type::File));
+        }
     }
     return true;
 }
