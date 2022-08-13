@@ -84,6 +84,29 @@ Frame MemoryManager::get_free_frame(Err& err, bool set_used) {
     return 0;
 }
 
+bool MemoryManager::get_contigous_free_physical_frames(uint32_t num_pages, uint32_t& out_address)
+{
+    for(u32 i = 0; i < N_FRAME_BITMAP_ENTRIES; i++) {
+        u32 avail_entry = m_frames_avail_bitmap[i];
+        if(!avail_entry)
+            continue;
+        int set_bit_i = get_on_bit_idx_consecutive(avail_entry, num_pages);
+        if(set_bit_i < 0)
+            continue;
+
+        for (u32 page_i = 0; page_i < num_pages; ++page_i)
+        {
+            auto frame = Frame::from_bitmap_entry(BitmapEntry{i, (u32)set_bit_i+page_i});
+            set_frame_used(frame);
+        }
+        auto frame = Frame::from_bitmap_entry(BitmapEntry{i, (u32)set_bit_i});
+        out_address = frame;
+        return true;
+    }
+    return false;
+
+}
+
 void MemoryManager::set_frame_used(const Frame& frame) {
     auto bmp_entry = frame.get_bitmap_entry();
     set_bit(m_frames_avail_bitmap[bmp_entry.m_entry_idx], bmp_entry.m_entry_bit, false);
@@ -191,6 +214,22 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bo
     auto pte = page_table.get_pte(addr);
     return pte;
 
+}
+
+PhysicalAddress MemoryManager::get_physical_address(VirtualAddress virt_addr)
+{
+    auto pde = m_page_directory.get_pde(virt_addr);
+    ASSERT(pde.is_present());
+    VirtualAddress pt_addr = pde.addr();
+
+    pt_addr = temp_map(pt_addr); // map page table so we can access it
+
+    auto page_table = PageTable(pt_addr);
+
+    auto pte = page_table.get_pte(virt_addr);
+    auto addr = pte.addr();
+    un_temp_map();
+    return addr;
 }
 
 void MemoryManager::disable_page(Frame frame) {

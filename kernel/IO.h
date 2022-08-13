@@ -39,4 +39,15 @@ namespace IO {
                     : "Nd"(port) );
         return ret;
     }
+
+    static inline void out32(uint16_t port, uint32_t val) {
+        asm volatile ( "outl %0, %1" : : "a"(val), "Nd"(port) );
+    }
+
+    static inline uint32_t in32(uint16_t port) {
+        uint32_t value;
+        asm volatile("inl %1, %0" : "=a"(value) : "Nd"(port));
+        return value;
+    }
+
 }

@@ -33,5 +33,21 @@ static inline int get_on_bit_idx(u32 num) {
     return -1;
 }
 
+static inline int get_on_bit_idx_consecutive(u32 num, u32 num_consecutive) {
+    if(!num) // if num has no bits set
+        return -1;
+    if (num_consecutive >= 32 || num_consecutive == 0)
+        return -1;
+
+    for(int i = 0; i < 32; i++, num>>=1) {
+        uint32_t mask = 0xFFFFFFFF >> (32-num_consecutive);
+        if((num & mask) == mask) {
+            return i;
+        }
+    }
+    
+    return -1;
+}
+
 #define LSB(x) ((x)&0xFF)
 #define MSB(x) (((x) >> 8) & 0xFF)

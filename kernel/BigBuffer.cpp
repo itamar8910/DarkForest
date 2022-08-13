@@ -12,7 +12,7 @@ Lock& big_buffer_lock()
     return lock;
 }
 
-shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
+shared_ptr<BigBuffer> BigBuffer::allocate(u32 size, bool verify_contiguous)
 {
     LOCKER(big_buffer_lock());
     ASSERT(size>0);
@@ -45,11 +45,29 @@ shared_ptr<BigBuffer> BigBuffer::allocate(u32 size)
 #ifdef BIGBUFFER_DBG
             kprintf("BigBuffer: allocated base addr: 0x%x\n", ADDR_START + (i*PAGE_SIZE));
 #endif
-            return shared_ptr<BigBuffer>(new BigBuffer(
+            auto big_buffer = shared_ptr<BigBuffer>(new BigBuffer(
                 size,
                 ADDR_START + (i*PAGE_SIZE),
                 ADDR_START + ((i+n_pages_required-1)*PAGE_SIZE)
             ));
+
+            if (verify_contiguous) {
+                uint32_t current_phsyical_address = 0;
+                for (size_t page_i = 0; page_i < n_pages_required; ++page_i)
+                {
+                    auto virtual_addr = big_buffer->m_first_page + page_i*PAGE_SIZE;
+                    auto addr = MemoryManager::the().get_physical_address(virtual_addr);
+                    kprintf("verify_contiguous: virtual addr is %p, physical addr is %p\n", virtual_addr, addr);
+                    if (!current_phsyical_address) {
+                        current_phsyical_address = addr;
+                        continue;
+                    }
+                    // TODO: Instead of "verify_continuous", implement actual "continues physical memory allocation".
+                    ASSERT(addr == current_phsyical_address + PAGE_SIZE);
+                    current_phsyical_address = addr;
+                }
+            }
+            return big_buffer;
         }
     }
     kprintf("WARNING: Couldn't allocate BigBuffer with size: %d\n", size);
