@@ -25,5 +25,6 @@ $qemu -kernel $image \
     -m $memory \
     -d guest_errors \
     -hda disk_img.bin \
-    -device VGA,vgamem_mb=64 $debug
+    -device VGA,vgamem_mb=64 $debug \
+    -device rtl8139
 

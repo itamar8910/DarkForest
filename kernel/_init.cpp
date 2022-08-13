@@ -32,6 +32,8 @@
 #include "lock.h"
 #include "FileSystem/PtsFS.h"
 #include "drivers/PS2Mouse.h"
+#include "drivers/PCIBus.h"
+#include "drivers/RTL8139NetworkCard.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -147,6 +149,10 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 	PS2Keyboard::initialize();
 	PS2Mouse::initialize();
 	ATADisk::initialize();
+
+	kprintf("Initializing PCI\n");
+	PCIBus::initialize();
+	RTL8139NetworkCard::initialize();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
 	DevFS::initiailize();

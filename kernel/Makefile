@@ -30,6 +30,8 @@ DRIV_OBJS := \
 	$(DRIVERS_DIR)/PS2Keyboard.o \
 	$(DRIVERS_DIR)/ATADisk.o \
 	$(DRIVERS_DIR)/PS2Mouse.o \
+	$(DRIVERS_DIR)/PCIBus.o \
+	$(DRIVERS_DIR)/RTL8139NetworkCard.o \
 
 MM_DIR := MM
 MM_OBJS := \
