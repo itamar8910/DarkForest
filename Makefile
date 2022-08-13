@@ -32,9 +32,6 @@ kernel:
 userspace:
 	make -C $(USERSPACE_DIR)/
 
-fs:
-	./fs.sh
-
 clean:
 	make -C $(KERNEL_DIR)/ clean
 	make -C $(LIBC_DIR)/ clean

@@ -52,15 +52,13 @@ cd toolchain
 export LOCATION_OF_DARKFOREST_REPO=$HOME/DarkForest # change this to where you have placed the repo
 export PATH="$LOCATION_OF_DARKFOREST_REPO/toolchain/cross/bin:$PATH"
 
-make
-```
-
-## Setup filesystem
-```bash
-# create disk image
+# create filesystem image
 fs_scripts/fs_setup.sh # needs root/administrator priv to mount fs
-# copy files to it
-./fs.sh
+
+make
+
+# copy files to filesystem image
+./fs.sh # root/administrator priv
 ```
 
 ## Run
