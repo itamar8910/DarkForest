@@ -6,6 +6,7 @@
 #include "MM/MemoryManager.h"
 #include "PIC.h"
 #include "cpu.h"
+#include "cstring.h"
 
 #define VENDOR_ID 0x10EC
 #define DEVICE_ID 0x8139
@@ -38,9 +39,32 @@ void RTL8139NetworkCard::initialize()
 ISR_HANDLER(rtl8139)
 void isr_rtl8139_handler(RegisterDump& regs) {
     (void)regs;
-    kprintf("isr_rtl8139_handler interrupt!");
+    kprintf("isr_rtl8139_handler interrupt!\n~~~~~~~\n");
+
+    auto interrupt_status = IO::in16(RTL8139NetworkCard::the().io_base_address() + 0x3E);
+    kprintf("interrupt status: 0x%x\n", interrupt_status);
+
+    if (interrupt_status & 0x4) {
+        kprintf("Transmit OK\n");
+    }
+    if (interrupt_status & 0x1) {
+        kprintf("Recv OK\n");
+        RTL8139NetworkCard::recv_packet_static();
+    }
+
+    IO::out16(RTL8139NetworkCard::the().io_base_address() + 0x3E, 0x5);
     PIC::eoi(RTL8139NetworkCard::the().irq_number());
-    IO::out32(RTL8139NetworkCard::the().io_base_address() + 0x3E, 0x5);
+}
+
+void RTL8139NetworkCard::recv_packet_static()
+{
+
+    RTL8139NetworkCard::the().recv_packet();
+}
+
+void RTL8139NetworkCard::recv_packet()
+{
+    print_hexdump(m_recv_buffer->data(), 1500);
 }
 
 
@@ -56,18 +80,39 @@ RTL8139NetworkCard::RTL8139NetworkCard(PCIBus::PciDeviceMetadata device_metadata
    turn_on();
    software_reset();
    init_recv_buffer();
-   kprintf("a1\n");
    setup_interrupt_mask();
-   kprintf("a2\n");
    configure_receive();
-   kprintf("a3\n");
    enable_receive_transmit();
-   kprintf("a4\n");
-    register_interrupt_handler(IRQ_ISRS_BASE + device_metadata.irq_number, isr_rtl8139_entry);
+   register_interrupt_handler(IRQ_ISRS_BASE + device_metadata.irq_number, isr_rtl8139_entry);
 
     PIC::enable_irq(device_metadata.irq_number);
 
 
+    auto transmit_buffer = BigBuffer::allocate(PAGE_SIZE);
+    char message[] = {1,2,3,4,5};
+    memcpy(transmit_buffer->data(), message, 5);
+
+    auto transmit_buffer_physical_addr = MemoryManager::the().get_physical_address((u32)(transmit_buffer->data()));
+    kprintf("message buffer physical addr: %p\n", transmit_buffer_physical_addr);
+    kprintf("message buffer content: 0x%x\n", *((uint32_t*)transmit_buffer->data()));
+
+    IO::out32(m_device_metadata.io_base_address + 0x20, transmit_buffer_physical_addr);
+
+    auto current_status = IO::in32(m_device_metadata.io_base_address + 0x10);
+    kprintf("current send status: 0x%x\n", current_status);
+    current_status = (current_status & 0xfffff000) | 0x5; // size = 5
+    current_status = set_bit(current_status, 13, 0); // begin transmit
+
+    kprintf("beginning to transmit\n");
+    IO::out32(m_device_metadata.io_base_address + 0x10, current_status);
+
+    while (get_bit(IO::in32(m_device_metadata.io_base_address + 0x10), 15) != 1) {
+        kprintf("waiting for transmit\n");
+    }
+    kprintf("transmit done\n");
+
+    current_status = IO::in32(m_device_metadata.io_base_address + 0x10);
+    kprintf("current send status: 0x%x\n", current_status);
 }
 
 void RTL8139NetworkCard::enable_receive_transmit()
@@ -89,17 +134,23 @@ void RTL8139NetworkCard::setup_interrupt_mask()
 
 void RTL8139NetworkCard::init_recv_buffer()
 {
-    uint32_t receive_buffer {0};
     // We want 8K + 16 + 1500 (for no-wrap mode), so 3 pages.
     const uint32_t num_pages = 3;
-    if (!MemoryManager::the().get_contigous_free_physical_frames(num_pages, receive_buffer))
-    {
-        kprintf("Failed to allocate memory for receive buffer\n");
-        ASSERT_NOT_REACHED();
-    }
-    kprintf("receive buffer: %p\n", receive_buffer);
-    IO::out32(m_device_metadata.io_base_address + RECEIVEBUFFER_START_REG, receive_buffer);
-    m_recv_buffer = reinterpret_cast<uint8_t*>(receive_buffer);
+
+
+    // NOTE: Terrible hack.
+    // Allocate twice to actually get contiguous physical memory
+    // (by luck, since in the 2nd time around we don't need to allocate a frame for the page table)
+
+    auto temp_buffer = BigBuffer::allocate(num_pages * PAGE_SIZE, false);
+    m_recv_buffer = BigBuffer::allocate(num_pages * PAGE_SIZE, true);
+
+    auto physical_address_of_recv_buffer = MemoryManager::the().get_physical_address((u32)(m_recv_buffer->data()));
+
+    IO::out32(m_device_metadata.io_base_address + RECEIVEBUFFER_START_REG, physical_address_of_recv_buffer);
+    // kprintf("receive buffer: %p\n", m_recv_buffer->data());
+    // m_recv_buffer->data()[0] = 1;
+    // kprintf("receive buffer[0]: %d\n", m_recv_buffer->data()[0]);
 }
 
 

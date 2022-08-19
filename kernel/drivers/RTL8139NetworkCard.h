@@ -3,6 +3,7 @@
 #include "types.h"
 #include "constants.h"
 #include "PCIBus.h"
+#include "BigBuffer.h"
 
 class RTL8139NetworkCard
 {
@@ -16,6 +17,8 @@ public:
 
     ~RTL8139NetworkCard() = default;
 
+    static void recv_packet_static();
+
 private:
     RTL8139NetworkCard(PCIBus::PciDeviceMetadata);
 
@@ -26,9 +29,10 @@ private:
     void setup_interrupt_mask();
     void configure_receive();
     void enable_receive_transmit();
+    void recv_packet();
 
     const PCIBus::PciDeviceMetadata m_device_metadata {};
-    uint8_t* m_recv_buffer {0};
+    shared_ptr<BigBuffer> m_recv_buffer {0};
     uint16_t m_irq_nuber {0};
 
 };

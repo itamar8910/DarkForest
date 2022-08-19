@@ -216,6 +216,22 @@ PTE MemoryManager::ensure_pte(VirtualAddress addr, bool create_new_PageTable, bo
 
 }
 
+PhysicalAddress MemoryManager::get_physical_address(VirtualAddress virt_addr)
+{
+    auto pde = m_page_directory.get_pde(virt_addr);
+    ASSERT(pde.is_present());
+    VirtualAddress pt_addr = pde.addr();
+
+    pt_addr = temp_map(pt_addr); // map page table so we can access it
+
+    auto page_table = PageTable(pt_addr);
+
+    auto pte = page_table.get_pte(virt_addr);
+    auto addr = pte.addr();
+    un_temp_map();
+    return addr;
+}
+
 void MemoryManager::disable_page(Frame frame) {
     auto pte = ensure_pte(frame);
     pte.set_addr(frame);

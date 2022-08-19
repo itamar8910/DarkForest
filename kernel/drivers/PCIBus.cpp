@@ -13,7 +13,7 @@ uint16_t config_read_short(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offs
     uint32_t lfunc = (uint32_t)func;
     uint16_t tmp = 0;
  
-    // Create configuration address as per Figure 1
+    // Create configuration address
     address = (uint32_t)((lbus << 16) | (lslot << 11) |
               (lfunc << 8) | (offset & 0xFC) | ((uint32_t)0x80000000));
  
@@ -72,6 +72,9 @@ bool get_device_metadata(uint16_t vendor_id, uint16_t device_id, PciDeviceMetada
             uint32_t base_address_high = config_read_short(bus, device, 0, 0x12);
 
             uint32_t io_base_address = (base_address_high << 16) | base_address_low;
+            kprintf("io base address: %p\n", io_base_address);
+            io_base_address &= 0xff00; // I don't know why, but we're reading 1 in the LSB here and it's causing off-by-1 errors.
+            kprintf("io base address after mask: %p\n", io_base_address);
 
             uint16_t irq_number = config_read_short(bus, device, 0, 0x3c) & 0xFF;
 

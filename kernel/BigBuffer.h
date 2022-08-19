@@ -7,7 +7,7 @@
 class BigBuffer
 {
 public:
-    static shared_ptr<BigBuffer> allocate(u32 size);
+    static shared_ptr<BigBuffer> allocate(u32 size, bool verify_contiguous=false);
     ~BigBuffer();
 
     u8* data();

@@ -108,6 +108,8 @@ public:
 	PDE get_pde(VirtualAddress virt_addr);
 	PTE get_pte(VirtualAddress virt_addr, const PDE& pde);
 
+	PhysicalAddress get_physical_address(VirtualAddress virt_addr);
+
 	Frame get_free_frame(Err&, bool set_used=true);
 	bool get_contigous_free_physical_frames(uint32_t num_pages, uint32_t& out_address);
 	void set_frame_used(const Frame& frame);
