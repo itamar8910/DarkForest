@@ -64,7 +64,17 @@ void RTL8139NetworkCard::recv_packet_static()
 
 void RTL8139NetworkCard::recv_packet()
 {
-    print_hexdump(m_recv_buffer->data(), 16);
+    auto size = IO::in16(RTL8139NetworkCard::the().io_base_address() + 0x34);
+    kprintf("recv size: %d\n", size);
+    auto offset = IO::in16(RTL8139NetworkCard::the().io_base_address() + 0x3a);
+    if (offset < m_recv_buffer_offset) // Wrap around the recv buffer
+    {
+        m_recv_buffer_offset = 0;
+    }
+    auto packet_size = offset - m_recv_buffer_offset;
+    kprintf("recv offset:0x%x, size: %p\n", m_recv_buffer_offset, packet_size);
+    print_hexdump(m_recv_buffer->data() + m_recv_buffer_offset, packet_size);
+    m_recv_buffer_offset = offset;
 }
 
 
