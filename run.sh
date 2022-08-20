@@ -26,5 +26,5 @@ $qemu -kernel $image \
     -d guest_errors \
     -hda disk_img.bin \
     -device VGA,vgamem_mb=64 $debug \
-    -device rtl8139
-
+    -object filter-dump,id=hue,netdev=br0,file=rtl8139.pcap \
+    -netdev tap,ifname=tap0,id=br0 -device rtl8139,netdev=br0

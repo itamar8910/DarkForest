@@ -17,13 +17,25 @@ uint16_t config_read_short(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offs
     address = (uint32_t)((lbus << 16) | (lslot << 11) |
               (lfunc << 8) | (offset & 0xFC) | ((uint32_t)0x80000000));
  
-    // Write out the address
     IO::out32(0xCF8, address);
 
-    // Read in the data
-    // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
+    // (offset & 2) * 8) to read the 2 msb bytes if offset is odd
     tmp = (uint16_t)((IO::in32(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
     return tmp;
+}
+
+void config_write_short(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint16_t value) {
+    uint32_t address = 0;
+    uint32_t lbus  = (uint32_t)bus;
+    uint32_t lslot = (uint32_t)slot;
+    uint32_t lfunc = (uint32_t)func;
+ 
+    // Create configuration address
+    address = (uint32_t)((lbus << 16) | (lslot << 11) |
+              (lfunc << 8) | (offset & 0xFC) | ((uint32_t)0x80000000));
+ 
+    IO::out32(0xCF8, address);
+    IO::out16(0xCFC + (offset & 2), value);
 }
 
 struct PciDeviceIdentifier

@@ -64,7 +64,7 @@ void RTL8139NetworkCard::recv_packet_static()
 
 void RTL8139NetworkCard::recv_packet()
 {
-    print_hexdump(m_recv_buffer->data(), 1500);
+    print_hexdump(m_recv_buffer->data(), 16);
 }
 
 
@@ -157,8 +157,17 @@ void RTL8139NetworkCard::init_recv_buffer()
 void RTL8139NetworkCard::verify_bus_mastering()
 {
     uint16_t config_command_reg = PCIBus::config_read_short(m_device_metadata.pci_bus, m_device_metadata.pci_slot, 0, 0x4);
-    kprintf("config_command: %x\n", config_command_reg);
-    ASSERT(config_command_reg & 0x2); // Ensure "bus mastering" is on
+    kprintf("config_command: 0x%x\n", config_command_reg);
+
+    config_command_reg |= (1 << 0);
+    config_command_reg |= (1 << 2); // Enable "bus mastering"
+
+    PCIBus::config_write_short(m_device_metadata.pci_bus, m_device_metadata.pci_slot, 0, 0x4, config_command_reg);
+
+    config_command_reg = PCIBus::config_read_short(m_device_metadata.pci_bus, m_device_metadata.pci_slot, 0, 0x4);
+    kprintf("config_command after enabling bus mastering: 0x%x\n", config_command_reg);
+
+    ASSERT(config_command_reg & (1<<2)); // Ensure "bus mastering" is on
 }
 
 void RTL8139NetworkCard::turn_on()
