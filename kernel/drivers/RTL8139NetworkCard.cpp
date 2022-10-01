@@ -11,6 +11,7 @@
 #define VENDOR_ID 0x10EC
 #define DEVICE_ID 0x8139
 #define CONFIG_REG_1 0x52
+#define MAC_REG 0x0
 #define COMMAND_REG 0x37
 #define RECEIVEBUFFER_START_REG 0x30
 #define IMR_REG 0x3c
@@ -104,22 +105,36 @@ RTL8139NetworkCard::RTL8139NetworkCard(PCIBus::PciDeviceMetadata device_metadata
    verify_bus_mastering();
    turn_on();
    software_reset();
+   read_mac_address();
    init_recv_buffer();
    setup_interrupt_mask();
    configure_receive();
    enable_receive_transmit();
-
-    for (int i = 0; i< 6; ++i)
-    {
-        auto mac_high = IO::inb(m_device_metadata.io_base_address + i);
-        kprintf("MAC: %x\n", mac_high);
-    }
 
    register_interrupt_handler(IRQ_ISRS_BASE + device_metadata.irq_number, isr_rtl8139_entry);
 
     PIC::enable_irq(device_metadata.irq_number);
 
 
+}
+
+void RTL8139NetworkCard::read_mac_address()
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        m_mac[i] = IO::inb(m_device_metadata.io_base_address + MAC_REG + i);
+    }
+    kprintf("MAC: ");
+
+    for (int i = 0; i < 6; ++i)
+    {
+        kprintf("%x", m_mac[i]);
+        if (i != 5)
+        {
+            kprintf(":");
+        }
+    }
+    kprintf("\n");
 }
 
 void RTL8139NetworkCard::transmit(char* data, size_t size)
