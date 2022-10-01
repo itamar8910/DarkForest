@@ -21,12 +21,15 @@ public:
 
     void transmit(char* data, size_t size);
 
+    const uint8_t* mac() const {return m_mac;}
+
 private:
     RTL8139NetworkCard(PCIBus::PciDeviceMetadata);
 
     void verify_bus_mastering();
     void turn_on();
     void software_reset();
+    void read_mac_address();
     void init_recv_buffer();
     void setup_interrupt_mask();
     void configure_receive();
@@ -37,5 +40,5 @@ private:
     shared_ptr<BigBuffer> m_recv_buffer {0};
     uint32_t m_recv_buffer_offset {0};
     uint16_t m_irq_nuber {0};
-
+    uint8_t m_mac[6] = {};
 };
