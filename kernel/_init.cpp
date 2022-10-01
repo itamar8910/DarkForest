@@ -95,7 +95,7 @@ Lock& get_test_lock()
 
 void network_task()
 {
-	sleep_ms(1000 * 15);
+	sleep_ms(1000);
 	kprintf("***********************\n********************\n");
 	kprintf("network_task transmitting\n");
 
@@ -104,7 +104,17 @@ void network_task()
 "\xff\xff\xff\xff\xff\xff\xc0\xa8\x02\x01\x00\x00\x00\x00\x00\x00" \
 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 
-	kprintf("sizeof data: %d\n", sizeof(data));
+	kprintf("transmit1\n");
+	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	kprintf("transmit2\n");
+	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	kprintf("transmit3\n");
+	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	kprintf("transmit4\n");
+	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	kprintf("transmit5\n");
+	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	kprintf("transmit6\n");
 	RTL8139NetworkCard::the().transmit(data, sizeof(data));
 }
 

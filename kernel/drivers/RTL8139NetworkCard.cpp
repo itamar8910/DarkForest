@@ -17,6 +17,8 @@
 #define IMR_REG 0x3c
 #define RCR_REG 0x44
 #define REG_CAPR 0x38 // Current read address
+#define TRANSMIT_START_ADDRESS_0 0x20
+#define TRANSMIT_STATUS_0 0x10
 
 static RTL8139NetworkCard* s_the = nullptr;
 
@@ -107,6 +109,7 @@ RTL8139NetworkCard::RTL8139NetworkCard(PCIBus::PciDeviceMetadata device_metadata
    software_reset();
    read_mac_address();
    init_recv_buffer();
+   init_send_buffers();
    setup_interrupt_mask();
    configure_receive();
    enable_receive_transmit();
@@ -139,30 +142,34 @@ void RTL8139NetworkCard::read_mac_address()
 
 void RTL8139NetworkCard::transmit(char* data, size_t size)
 {
-    auto transmit_buffer = BigBuffer::allocate(PAGE_SIZE);
-    memcpy(transmit_buffer->data(), data, size);
+    // TODO lock
 
-    auto transmit_buffer_physical_addr = MemoryManager::the().get_physical_address((u32)(transmit_buffer->data()));
-    // kprintf("message buffer physical addr: %p\n", transmit_buffer_physical_addr);
-    // kprintf("message buffer content: 0x%x\n", *((uint32_t*)transmit_buffer->data()));
+    ASSERT(m_current_transmit_index < NUM_SEND_BUFFERS);
 
-    IO::out32(m_device_metadata.io_base_address + 0x20, transmit_buffer_physical_addr);
+    auto buffer = m_send_buffers[m_current_transmit_index];
 
-    auto current_status = IO::in32(m_device_metadata.io_base_address + 0x10);
-    // kprintf("current send status: 0x%x\n", current_status);
+    memcpy(buffer->data(), data, size);
+
+    auto transmit_buffer_physical_addr = MemoryManager::the().get_physical_address((u32)(buffer->data()));
+
+    IO::out32(m_device_metadata.io_base_address + TRANSMIT_START_ADDRESS_0 + m_current_transmit_index*4, transmit_buffer_physical_addr);
+
+    auto current_status = IO::in32(m_device_metadata.io_base_address + TRANSMIT_STATUS_0 + m_current_transmit_index*4);
     current_status = (current_status & 0xfffff000) | size;
     current_status = set_bit(current_status, 13, 0); // begin transmit
 
     kprintf("beginning to transmit\n");
-    IO::out32(m_device_metadata.io_base_address + 0x10, current_status);
+    IO::out32(m_device_metadata.io_base_address + TRANSMIT_STATUS_0 + m_current_transmit_index*4, current_status);
 
-    while (get_bit(IO::in32(m_device_metadata.io_base_address + 0x10), 15) != 1) {
+    while (get_bit(IO::in32(m_device_metadata.io_base_address + TRANSMIT_STATUS_0 + m_current_transmit_index*4), 15) != 1) {
         kprintf("waiting for transmit\n");
     }
     kprintf("transmit done\n");
 
-    current_status = IO::in32(m_device_metadata.io_base_address + 0x10);
+    current_status = IO::in32(m_device_metadata.io_base_address + TRANSMIT_STATUS_0 + m_current_transmit_index*4);
     kprintf("current send status: 0x%x\n", current_status);
+
+    m_current_transmit_index = (m_current_transmit_index + 1) % NUM_SEND_BUFFERS;
 }
 
 void RTL8139NetworkCard::enable_receive_transmit()
@@ -233,4 +240,14 @@ void RTL8139NetworkCard::software_reset()
         kprintf("waiting for reset\n");
     }
     kprintf("done waiting for reset\n");
+}
+
+void RTL8139NetworkCard::init_send_buffers()
+{
+    for (size_t i = 0; i < NUM_SEND_BUFFERS; ++i)
+    {
+        m_send_buffers[i] = BigBuffer::allocate(PAGE_SIZE);
+        ASSERT(m_send_buffers[i].get() != nullptr);
+    }
+    m_current_transmit_index = 0;
 }
