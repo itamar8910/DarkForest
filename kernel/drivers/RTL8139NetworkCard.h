@@ -19,6 +19,8 @@ public:
 
     static void recv_packet_static();
 
+    void transmit(char* data, size_t size);
+
 private:
     RTL8139NetworkCard(PCIBus::PciDeviceMetadata);
 

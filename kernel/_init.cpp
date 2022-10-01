@@ -93,6 +93,25 @@ Lock& get_test_lock()
 	return lock;
 }    
 
+void network_task()
+{
+	sleep_ms(1000 * 15);
+	kprintf("***********************\n********************\n");
+	kprintf("network_task transmitting\n");
+
+	// char data[] = "\xff\xff\xff\xff\xff\xff\x7a\x50\x8d\x2c\x77\x5c\x08\x06\x00\x01\x08\x00\x06\x04\x00\x01\x7a\x50\x8d\x2c\x77\x5c\xc0\xa8\x01\x32\xff\xff\xff\xff\xff\xff\x01\x01\x01\x02\x00";
+	char data[] = "\xff\xff\xff\xff\xff\xff\x7a\x50\x8d\x2c\x77\x5c\x08\x06\x00\x01" \
+"\x08\x00\x06\x04\x00\x01\x7a\x50\x8d\x2c\x77\x5d\xc0\xa8\x02\x14" \
+"\xff\xff\xff\xff\xff\xff\xc0\xa8\x02\x01\x00\x00\x00\x00\x00\x00" \
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+
+
+	// char data[] = {1,2,3,4,5};
+	kprintf("sizeof data: %d\n", sizeof(data));
+	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	// cpu_hang();
+}
+
 void task1()
 {
 	int N = 10;
@@ -182,7 +201,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	// VGA::init();
 
-	// Scheduler::the().add_process(Process::create(task1, "task1"));
+	Scheduler::the().add_process(Process::create(network_task, "network_task"));
 	// Scheduler::the().add_process(Process::create(task2, "task2"));
 
 	kprintf("enableing interrupts\n");
