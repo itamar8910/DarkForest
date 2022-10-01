@@ -108,24 +108,34 @@ RTL8139NetworkCard::RTL8139NetworkCard(PCIBus::PciDeviceMetadata device_metadata
    setup_interrupt_mask();
    configure_receive();
    enable_receive_transmit();
+
+    for (int i = 0; i< 6; ++i)
+    {
+        auto mac_high = IO::inb(m_device_metadata.io_base_address + i);
+        kprintf("MAC: %x\n", mac_high);
+    }
+
    register_interrupt_handler(IRQ_ISRS_BASE + device_metadata.irq_number, isr_rtl8139_entry);
 
     PIC::enable_irq(device_metadata.irq_number);
 
 
+}
+
+void RTL8139NetworkCard::transmit(char* data, size_t size)
+{
     auto transmit_buffer = BigBuffer::allocate(PAGE_SIZE);
-    char message[] = {1,2,3,4,5};
-    memcpy(transmit_buffer->data(), message, 5);
+    memcpy(transmit_buffer->data(), data, size);
 
     auto transmit_buffer_physical_addr = MemoryManager::the().get_physical_address((u32)(transmit_buffer->data()));
-    kprintf("message buffer physical addr: %p\n", transmit_buffer_physical_addr);
-    kprintf("message buffer content: 0x%x\n", *((uint32_t*)transmit_buffer->data()));
+    // kprintf("message buffer physical addr: %p\n", transmit_buffer_physical_addr);
+    // kprintf("message buffer content: 0x%x\n", *((uint32_t*)transmit_buffer->data()));
 
     IO::out32(m_device_metadata.io_base_address + 0x20, transmit_buffer_physical_addr);
 
     auto current_status = IO::in32(m_device_metadata.io_base_address + 0x10);
-    kprintf("current send status: 0x%x\n", current_status);
-    current_status = (current_status & 0xfffff000) | 0x5; // size = 5
+    // kprintf("current send status: 0x%x\n", current_status);
+    current_status = (current_status & 0xfffff000) | size;
     current_status = set_bit(current_status, 13, 0); // begin transmit
 
     kprintf("beginning to transmit\n");
