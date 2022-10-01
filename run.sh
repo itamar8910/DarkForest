@@ -27,4 +27,4 @@ $qemu -kernel $image \
     -hda disk_img.bin \
     -device VGA,vgamem_mb=64 $debug \
     -object filter-dump,id=hue,netdev=br0,file=rtl8139.pcap \
-    -netdev tap,ifname=tap0,id=br0 -device rtl8139,netdev=br0
+    -netdev tap,ifname=tap0,id=br0,script=qemu-ifup-custom.sh -device rtl8139,netdev=br0
