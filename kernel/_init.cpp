@@ -34,6 +34,7 @@
 #include "drivers/PS2Mouse.h"
 #include "drivers/PCIBus.h"
 #include "drivers/RTL8139NetworkCard.h"
+#include "Network/Arp.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -99,23 +100,25 @@ void network_task()
 	kprintf("***********************\n********************\n");
 	kprintf("network_task transmitting\n");
 
-	char data[] = "\xff\xff\xff\xff\xff\xff\x7a\x50\x8d\x2c\x77\x5c\x08\x06\x00\x01" \
+	u8 data[] = "\xff\xff\xff\xff\xff\xff\x7a\x50\x8d\x2c\x77\x5c\x08\x06\x00\x01" \
 "\x08\x00\x06\x04\x00\x01\x7a\x50\x8d\x2c\x77\x5d\xc0\xa8\x02\x14" \
 "\xff\xff\xff\xff\xff\xff\xc0\xa8\x02\x01\x00\x00\x00\x00\x00\x00" \
 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+	(void)data;
 
 	kprintf("transmit1\n");
-	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
+	// RTL8139NetworkCard::the().transmit(data, sizeof(data));
 	kprintf("transmit2\n");
-	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
 	kprintf("transmit3\n");
-	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
 	kprintf("transmit4\n");
-	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
 	kprintf("transmit5\n");
-	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
 	kprintf("transmit6\n");
-	RTL8139NetworkCard::the().transmit(data, sizeof(data));
+	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
 }
 
 void task1()

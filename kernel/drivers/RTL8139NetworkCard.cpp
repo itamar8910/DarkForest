@@ -86,6 +86,9 @@ void RTL8139NetworkCard::recv_packet()
     kprintf("packet:\n");
     print_hexdump(packet, packet_size);
 
+    // TODO:
+    // NetworkManager::the().packet_received(packet);
+
     uint32_t recv_buffer_size = 9708; // 8K + 16 + 1500
 
     m_recv_buffer_offset = ((m_recv_buffer_offset + length + 4 + 3) & ~3);
@@ -140,7 +143,7 @@ void RTL8139NetworkCard::read_mac_address()
     kprintf("\n");
 }
 
-void RTL8139NetworkCard::transmit(char* data, size_t size)
+void RTL8139NetworkCard::transmit(u8* data, size_t size)
 {
     // TODO lock
 
