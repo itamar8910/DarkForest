@@ -63,10 +63,15 @@ HAL_OBJS := \
 	$(HAL_DIR)/VgaDevice.o \
 	$(HAL_DIR)/MouseDevice.o \
 
+NETWORK_DIR := Network
+NETWORK_OBJS := \
+	$(NETWORK_DIR)/Arp.o \
+	$(NETWORK_DIR)/Ethernet.o \
+
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 
 
-OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS) $(HAL_OBJS)
+OBJS := $(KERN_OBJS) $(DRIV_OBJS) $(MM_OBJS) $(FS_OBJS) $(LOADER_OBJS) $(HAL_OBJS) $(NETWORK_OBJS)
 
 HEADERS := $(shell find . -name '*.h')
 
@@ -107,4 +112,4 @@ init: $(CRTI_OBJ) $(CRTN_OBJ)
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -DKERNEL -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -f *.o $(DRIVERS_DIR)/*.o $(MM_DIR)/*.o *.ao init/*.ao $(FS_DIR)/*.o $(LOADER_DIR)/*.o $(HAL_DIR)/*.o $(TARGET)
+	rm -f *.o $(DRIVERS_DIR)/*.o $(MM_DIR)/*.o *.ao init/*.ao $(FS_DIR)/*.o $(LOADER_DIR)/*.o $(HAL_DIR)/*.o $(NETWORK_DIR)/*.o $(TARGET)

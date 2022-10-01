@@ -19,7 +19,7 @@ public:
 
     static void recv_packet_static();
 
-    void transmit(char* data, size_t size);
+    void transmit(u8* data, size_t size);
 
     const uint8_t* mac() const {return m_mac;}
 

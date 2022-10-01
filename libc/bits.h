@@ -51,3 +51,8 @@ static inline int get_on_bit_idx_consecutive(u32 num, u32 num_consecutive) {
 
 #define LSB(x) ((x)&0xFF)
 #define MSB(x) (((x) >> 8) & 0xFF)
+
+static inline uint16_t to_flipped_endianness(uint16_t value)
+{
+    return ((value&0x00FF)<<8) | (value >> 8);
+}
