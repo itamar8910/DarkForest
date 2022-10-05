@@ -49,7 +49,6 @@ cd toolchain
 
 ## Build DarkForest
 ```bash
-export LOCATION_OF_DARKFOREST_REPO=$HOME/DarkForest # change this to where you have placed the repo
 export PATH="$LOCATION_OF_DARKFOREST_REPO/toolchain/cross/bin:$PATH"
 
 # create filesystem image
