@@ -35,6 +35,7 @@
 #include "drivers/PCIBus.h"
 #include "drivers/RTL8139NetworkCard.h"
 #include "Network/Arp.h"
+#include "Network/NetworkManager.h"
 
 #ifdef TESTS
 #include "tests/tests.h"
@@ -180,7 +181,10 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	kprintf("Initializing PCI\n");
 	PCIBus::initialize();
+
 	RTL8139NetworkCard::initialize();
+	Network::NetworkManager::initialize(RTL8139NetworkCard::the().mac());
+	RTL8139NetworkCard::the().enable_receive_transmit();
 
 	VgaTTY::the().write("Initializing File Systems...\n");
 	DevFS::initiailize();

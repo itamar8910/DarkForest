@@ -26,6 +26,16 @@ public:
                                         const uint8_t* payload,
                                         size_t payload_size);
 
+
+    struct __attribute__((__packed__)) EthernetHeader
+    {
+        MAC destination;
+        MAC source;
+        Ethernet::EtherType ethertype;
+        void flip_endianness();
+    };
+
+
 };
 
 }

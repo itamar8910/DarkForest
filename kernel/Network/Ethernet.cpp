@@ -5,15 +5,7 @@
 namespace Network
 {
 
-struct __attribute__((__packed__)) EthernetHeader
-{
-    MAC destination;
-    MAC source;
-    Ethernet::EtherType ethertype;
-    void flip_endianness();
-};
-
-void EthernetHeader::flip_endianness()
+void Ethernet::EthernetHeader::flip_endianness()
 {
     ethertype = (Ethernet::EtherType) to_flipped_endianness((uint16_t)ethertype);
 }
