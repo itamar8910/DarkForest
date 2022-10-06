@@ -6,11 +6,17 @@
 
 namespace Network
 {
-    class Arp final
-    {
-    public:
-        Arp() = delete;
+class Arp final
+{
+public:
 
-        static void send_arp_request(const IPV4 target_ip, const IPV4 sender_ip);
-    };
+    static Arp& the();
+
+    static void send_arp_request(const IPV4 target_ip, const IPV4 sender_ip);
+
+    void on_arp_message_received(const u8* message, size_t size);
+
+private:
+    Arp() = default;
+};
 }

@@ -3,9 +3,16 @@
 #include "cstring.h"
 #include "Ethernet.h"
 #include "bits.h"
+#include "cpu.h"
 
 namespace Network
 {
+
+Arp& Arp::the()
+{
+    static Arp s_arp;
+    return s_arp;
+}
 
 struct __attribute__((__packed__)) ArpMessage
 {
@@ -58,7 +65,7 @@ void Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip)
 
     static constexpr MAC BROADCAST_MAC = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-    memcpy(arp_data.sender_mac.data, RTL8139NetworkCard::the().mac(), MAC_SIZE);
+    memcpy(arp_data.sender_mac.data, RTL8139NetworkCard::the().mac().data, MAC_SIZE);
     memcpy(arp_data.sender_ip_address.data, sender_ip.data, IPV4_SIZE);
     memcpy(arp_data.target_mac.data, BROADCAST_MAC.data, MAC_SIZE);
     memcpy(arp_data.target_ip_address.data, target_ip.data, IPV4_SIZE);
@@ -78,6 +85,12 @@ void Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip)
     // if (blocker.timed_out()) ...
     // auto response = blocker.packet()
     // return response
+}
+
+void Arp::on_arp_message_received(const u8* message, size_t size)
+{
+    (void)message;
+    kprintf("arp_message_received: %d\n", size);
 }
 
 }

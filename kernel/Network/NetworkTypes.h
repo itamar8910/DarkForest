@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "cstring.h"
 
 namespace Network
 {
@@ -16,6 +17,9 @@ namespace Network
     struct MAC
     {
         uint8_t data[MAC_SIZE];
+
+        bool operator==(const MAC& other) const { return !memcmp(data, other.data, sizeof(data)); }
+        bool operator!=(const MAC& other) const { return !(*this==other); }
     };
 
 }

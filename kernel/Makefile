@@ -67,6 +67,7 @@ NETWORK_DIR := Network
 NETWORK_OBJS := \
 	$(NETWORK_DIR)/Arp.o \
 	$(NETWORK_DIR)/Ethernet.o \
+	$(NETWORK_DIR)/NetworkManager.o \
 
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 

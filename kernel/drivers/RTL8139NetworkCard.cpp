@@ -7,6 +7,7 @@
 #include "PIC.h"
 #include "cpu.h"
 #include "cstring.h"
+#include "Network/NetworkManager.h"
 
 #define VENDOR_ID 0x10EC
 #define DEVICE_ID 0x8139
@@ -86,8 +87,7 @@ void RTL8139NetworkCard::recv_packet()
     kprintf("packet:\n");
     print_hexdump(packet, packet_size);
 
-    // TODO:
-    // NetworkManager::the().packet_received(packet);
+    Network::NetworkManager::the().on_packet_received(packet, packet_size);
 
     uint32_t recv_buffer_size = 9708; // 8K + 16 + 1500
 
@@ -115,26 +115,19 @@ RTL8139NetworkCard::RTL8139NetworkCard(PCIBus::PciDeviceMetadata device_metadata
    init_send_buffers();
    setup_interrupt_mask();
    configure_receive();
-   enable_receive_transmit();
-
-   register_interrupt_handler(IRQ_ISRS_BASE + device_metadata.irq_number, isr_rtl8139_entry);
-
-    PIC::enable_irq(device_metadata.irq_number);
-
-
 }
 
 void RTL8139NetworkCard::read_mac_address()
 {
     for (int i = 0; i < 6; ++i)
     {
-        m_mac[i] = IO::inb(m_device_metadata.io_base_address + MAC_REG + i);
+        m_mac.data[i] = IO::inb(m_device_metadata.io_base_address + MAC_REG + i);
     }
     kprintf("MAC: ");
 
     for (int i = 0; i < 6; ++i)
     {
-        kprintf("%x", m_mac[i]);
+        kprintf("%x", m_mac.data[i]);
         if (i != 5)
         {
             kprintf(":");
@@ -178,6 +171,10 @@ void RTL8139NetworkCard::transmit(u8* data, size_t size)
 void RTL8139NetworkCard::enable_receive_transmit()
 {
     IO::outb(m_device_metadata.io_base_address + COMMAND_REG, 0x0C);
+
+    register_interrupt_handler(IRQ_ISRS_BASE + m_device_metadata.irq_number, isr_rtl8139_entry);
+
+    PIC::enable_irq(m_device_metadata.irq_number);
 }
 
 void RTL8139NetworkCard::configure_receive()

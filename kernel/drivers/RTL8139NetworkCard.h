@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "PCIBus.h"
 #include "BigBuffer.h"
+#include "Network/NetworkTypes.h"
 
 class RTL8139NetworkCard
 {
@@ -21,7 +22,8 @@ public:
 
     void transmit(u8* data, size_t size);
 
-    const uint8_t* mac() const {return m_mac;}
+    Network::MAC mac() const {return m_mac;}
+    void enable_receive_transmit();
 
 private:
     RTL8139NetworkCard(PCIBus::PciDeviceMetadata);
@@ -34,7 +36,6 @@ private:
     void init_send_buffers();
     void setup_interrupt_mask();
     void configure_receive();
-    void enable_receive_transmit();
     void recv_packet();
 
     static constexpr size_t NUM_SEND_BUFFERS = 4;
@@ -43,7 +44,7 @@ private:
     shared_ptr<BigBuffer> m_recv_buffer {0};
     uint32_t m_recv_buffer_offset {0};
     uint16_t m_irq_nuber {0};
-    uint8_t m_mac[6] = {};
+    Network::MAC m_mac = {};
     shared_ptr<BigBuffer> m_send_buffers[NUM_SEND_BUFFERS];
     uint32_t m_current_transmit_index {0};
 };
