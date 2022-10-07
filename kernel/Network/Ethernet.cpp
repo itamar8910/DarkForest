@@ -1,6 +1,7 @@
 #include "Ethernet.h"
 #include "cstring.h"
 #include "bits.h"
+#include "drivers/RTL8139NetworkCard.h"
 
 namespace Network
 {
@@ -8,6 +9,16 @@ namespace Network
 void Ethernet::EthernetHeader::flip_endianness()
 {
     ethertype = (Ethernet::EtherType) to_flipped_endianness((uint16_t)ethertype);
+}
+
+void Ethernet::send(const MAC destination,
+                                    const MAC source,
+                                    EtherType ethertype,
+                                    const uint8_t* payload,
+                                    size_t payload_size)
+{
+    auto ether = Ethernet::build(destination, source, ethertype, payload, payload_size);
+    RTL8139NetworkCard::the().transmit(ether->data(), ether->size());
 }
 
 shared_ptr<Vector<u8>> Ethernet::build(const MAC destination,
