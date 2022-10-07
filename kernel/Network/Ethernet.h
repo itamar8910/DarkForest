@@ -20,11 +20,12 @@ public:
         ARP = 0x0806,
     };
 
-    static shared_ptr<Vector<u8>> build(const MAC destination,
+    static void send(const MAC destination,
                                         const MAC source,
                                         EtherType ethertype,
                                         const uint8_t* payload,
                                         size_t payload_size);
+
 
 
     struct __attribute__((__packed__)) EthernetHeader
@@ -35,6 +36,12 @@ public:
         void flip_endianness();
     };
 
+private:
+    static shared_ptr<Vector<u8>> build(const MAC destination,
+                                        const MAC source,
+                                        EtherType ethertype,
+                                        const uint8_t* payload,
+                                        size_t payload_size);
 
 };
 

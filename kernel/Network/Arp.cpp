@@ -78,13 +78,11 @@ bool Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip, MAC& out_
 
     arp_data.flip_endianness();
 
-    auto ether = Ethernet::build(arp_data.target_mac, arp_data.sender_mac, Ethernet::EtherType::ARP, (u8*)&arp_data, sizeof(arp_data));
-
     static constexpr u32 TIMEOUT_MS = 5000;
     shared_ptr<PendingRequestBlocker> blocker (new PendingRequestBlocker(target_ip, TIMEOUT_MS));
     m_arp_blockers.append(blocker);
 
-    RTL8139NetworkCard::the().transmit(ether->data(), ether->size());
+    Ethernet::send(arp_data.target_mac, arp_data.sender_mac, Ethernet::EtherType::ARP, (u8*)&arp_data, sizeof(arp_data));
 
     kprintf("blocking until arp response\n");
 
