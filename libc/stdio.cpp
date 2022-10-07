@@ -5,6 +5,7 @@
 #include "df_unistd.h"
 #include "cstring.h"
 #include "unistd.h"
+#include "stdio_shared.h"
 
 struct FILE
 {
@@ -154,14 +155,6 @@ int rename(const char *, const char *)
     ASSERT_NOT_REACHED();
 }
 
-int snprintf(char * str, size_t n, const char * fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    int rc = vsnprintf(str, n, fmt, args);
-    va_end(args);
-    return rc;
-}
 
 int sscanf(const char *, const char *, ...)
 {
@@ -175,29 +168,15 @@ int vprintf(const char *, va_list)
 
 int vsnprintf(char * str, size_t size, const char * fmt, va_list args)
 {
-    size_t char_index = 0;
-    auto putc_func = [&](char c) {
-        if (char_index < size) {
-            str[char_index] = c;
-        }
-        ++char_index;
-    };
-
-    printf_internal(putc_func, fmt, args);
-
-    if (char_index < size) {
-        str[char_index] = '\0';
-    } else if (size > 0) {
-        str[size - 1] = '\0';
-    }
-
-    return char_index;
+    return vsnprintf_impl(str, size, fmt, args);
 }
 
 int vfprintf(FILE *, const char *, va_list)
 {
     ASSERT_NOT_REACHED();
 }
+
+#ifndef KERNEL
 void kprintf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -205,6 +184,7 @@ void kprintf(const char* fmt, ...) {
     va_end(args);
 
 }
+#endif
 
 #ifdef __cplusplus
 }

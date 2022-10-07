@@ -18,6 +18,7 @@ LIBC_OBJS := \
 	Geometry.o \
 	errno.o \
 	ctype.o \
+	stdio_shared.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \
