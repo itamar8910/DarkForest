@@ -3,11 +3,15 @@
 #include "Arp.h"
 #include "drivers/RTL8139NetworkCard.h"
 
+// #define NETWORK_DBG
+
 namespace Network
 {
 
 NetworkManager::NetworkManager(MAC our_mac) :
-    m_our_mac(our_mac)
+    m_our_mac(our_mac),
+    m_our_ip({192,168,2,20}),
+    m_gateway_ip({192,168,2,1})
 {
 }
 
@@ -39,7 +43,9 @@ void NetworkManager::on_packet_received(u8* packet, size_t size)
 
     if (ethernet_header->destination != m_our_mac)
     {
+#ifdef NETWORK_DBG
         kprintf("Received ethernet packet with unknown destination\n");
+#endif
         return;
     }
 
@@ -49,7 +55,9 @@ void NetworkManager::on_packet_received(u8* packet, size_t size)
             Arp::the().on_arp_message_received(packet + sizeof(Network::Ethernet::EthernetHeader), size - sizeof(Network::Ethernet::EthernetHeader));
             break;
         default:
+#ifdef NETWORK_DBG
             kprintf("Ethernet packet with unknown EtherType: %x\n", ethernet_header->ethertype);
+#endif
             break;
     }
 }

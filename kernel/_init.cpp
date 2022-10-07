@@ -108,7 +108,7 @@ void network_task()
 	(void)data;
 
 	Network::MAC answer {};
-	bool res = Network::Arp::the().send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20}, answer);
+	bool res = Network::Arp::the().send_arp_request(Network::NetworkManager::the().gateway_ip(), Network::NetworkManager::the().our_ip(), answer);
 	if (res)
 	{
 		kprintf("ARP answer:");
