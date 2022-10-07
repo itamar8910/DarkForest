@@ -41,12 +41,14 @@ int64_t __divdi3(int64_t a, int64_t b);
 uint64_t __udivmoddi4(uint64_t num, uint64_t den, uint64_t* rem_p);
 int remove(const char *pathname);
 int rename(const char *oldpath, const char *newpath);
-int snprintf(char *str, size_t size, const char *format, ...);
 int sscanf(const char *str, const char *format, ...);
 int vprintf(const char *format, va_list ap);
 int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 int vfprintf(FILE *stream, const char *format, va_list ap);
+
+#ifndef KERNEL
 void kprintf(const char* fmt, ...);
+#endif
 
 #ifdef __cplusplus
 }
