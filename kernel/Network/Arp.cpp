@@ -3,15 +3,20 @@
 #include "cstring.h"
 #include "Ethernet.h"
 #include "bits.h"
-#include "cpu.h"
+#include "Scheduler.h"
+#include "sleep.h"
 
 namespace Network
 {
 
+Arp* s_arp = nullptr;
 Arp& Arp::the()
 {
-    static Arp s_arp;
-    return s_arp;
+    if (!s_arp)
+    {
+        s_arp = new Arp();
+    }
+    return *s_arp;
 }
 
 struct __attribute__((__packed__)) ArpMessage
@@ -31,7 +36,8 @@ struct __attribute__((__packed__)) ArpMessage
 
     enum : uint16_t
     {
-        Request = 0x1
+        Request = 0x1,
+        Response = 0x2
     } opcode;
 
     MAC sender_mac;
@@ -49,7 +55,7 @@ void ArpMessage::flip_endianness()
     opcode = (__typeof__(opcode)) to_flipped_endianness((uint16_t)opcode);
 }
 
-void Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip)
+bool Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip, MAC& out_answer)
 {
     auto arp_data = ArpMessage{
         .hardware_type = ArpMessage::Ethernet,
@@ -74,23 +80,62 @@ void Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip)
 
     auto ether = Ethernet::build(arp_data.target_mac, arp_data.sender_mac, Ethernet::EtherType::ARP, (u8*)&arp_data, sizeof(arp_data));
 
+    static constexpr u32 TIMEOUT_MS = 5000;
+    shared_ptr<PendingRequestBlocker> blocker (new PendingRequestBlocker(target_ip, TIMEOUT_MS));
+    m_arp_blockers.append(blocker);
+
     RTL8139NetworkCard::the().transmit(ether->data(), ether->size());
 
-    // auto arp_data[28] = ...
-    // auto ether = Ethernet::build(src, dst, Type::Arp, arp_data)
-    // transmit(ether)
-    // // The NetworkManager forwards the packets to the matching layer, e.g Arp / IP.
-    // auto blocker = ArpPacketBlocker(..., timeout=5sec) // Unblocks when get a response to the ARP request
-    // Scheduler::the().block_current(blocker);
-    // if (blocker.timed_out()) ...
-    // auto response = blocker.packet()
-    // return response
+    kprintf("blocking until arp response\n");
+
+
+    Scheduler::the().block_current(blocker.get());
+
+    if (!blocker->has_answer())
+    {
+        kprintf("ARP request timed-out\n");
+        return false;
+    }
+    kprintf("got arp answer\n");
+    out_answer = blocker->answer();
+    return true;
 }
 
-void Arp::on_arp_message_received(const u8* message, size_t size)
+void Arp::on_arp_message_received(u8* message, size_t size)
 {
     (void)message;
     kprintf("arp_message_received: %d\n", size);
+    if (size < sizeof(ArpMessage))
+    {
+        kprintf("ARP message too small\n");
+        return;
+    }
+    ArpMessage* arp_message = reinterpret_cast<ArpMessage*>(message);
+    arp_message->flip_endianness();
+
+    if (arp_message->opcode != ArpMessage::Response)
+    {
+        return;
+    }
+
+    for (auto& blocker : m_arp_blockers)
+    {
+        if (blocker->target() == arp_message->sender_ip_address)
+        {
+            blocker->set_answer(arp_message->sender_mac);
+        }
+    }
+}
+
+Arp::PendingRequestBlocker::PendingRequestBlocker(IPV4 target, u32 timeout_ms) :
+    m_target(target),
+    m_timeout_timestamp(time_since_boot_ms() + timeout_ms)
+{
+}
+
+bool Arp::PendingRequestBlocker::can_unblock()
+{
+    return m_has_answer || (time_since_boot_ms() > m_timeout_timestamp);
 }
 
 }

@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include "cstring.h"
+#include "types/String.h"
 
 namespace Network
 {
@@ -12,6 +13,9 @@ namespace Network
     struct IPV4
     {
         uint8_t data[IPV4_SIZE];
+
+        bool operator==(const IPV4& other) const { return !memcmp(data, other.data, sizeof(data)); }
+        bool operator!=(const IPV4& other) const { return !(*this==other); }
     };
 
     struct MAC
@@ -20,6 +24,8 @@ namespace Network
 
         bool operator==(const MAC& other) const { return !memcmp(data, other.data, sizeof(data)); }
         bool operator!=(const MAC& other) const { return !(*this==other); }
+
+        String to_string() const;
     };
 
 }

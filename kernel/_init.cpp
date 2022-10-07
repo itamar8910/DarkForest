@@ -107,19 +107,17 @@ void network_task()
 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
 	(void)data;
 
-	kprintf("transmit1\n");
-	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
-	// RTL8139NetworkCard::the().transmit(data, sizeof(data));
-	kprintf("transmit2\n");
-	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
-	kprintf("transmit3\n");
-	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
-	kprintf("transmit4\n");
-	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
-	kprintf("transmit5\n");
-	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
-	kprintf("transmit6\n");
-	Network::Arp::send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20});
+	Network::MAC answer {};
+	bool res = Network::Arp::the().send_arp_request(Network::IPV4 {192,168,2,1}, Network::IPV4 {192,168,2,20}, answer);
+	if (res)
+	{
+		kprintf("ARP answer:");
+		kprintf("%s\n", answer.to_string().c_str());
+		kprintf("\n");
+	}
+	else {
+		kprintf("ARP request failed\n");
+	}
 }
 
 void task1()
