@@ -62,4 +62,9 @@ void NetworkManager::on_packet_received(u8* packet, size_t size)
     }
 }
 
+bool NetworkManager::resolve_arp(IPV4 ip, MAC& out_mac)
+{
+    return Arp::the().send_arp_request(ip, our_ip(), out_mac);
+}
+
 }

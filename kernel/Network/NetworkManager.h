@@ -17,7 +17,10 @@ public:
     void transmit(const u8* packet, size_t size);
 
     IPV4 our_ip() const { return m_our_ip; }
+    MAC our_mac() const { return m_our_mac; }
     IPV4 gateway_ip() const { return m_gateway_ip; }
+
+    bool resolve_arp(IPV4 ip, MAC& out_mac);
 
 private:
     NetworkManager(MAC our_mac);
