@@ -18,6 +18,7 @@ public:
     enum class EtherType : uint16_t
     {
         ARP = 0x0806,
+        IPV4 = 0x0800,
     };
 
     static void send(const MAC destination,
