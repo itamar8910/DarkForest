@@ -2,6 +2,7 @@
 #include "NetworkManager.h"
 #include "bits.h"
 #include "Ethernet.h"
+#include "Checksum.h"
 
 namespace Network
 {
@@ -67,27 +68,7 @@ void IpV4::send(IPV4 destination, Protocol protocol, const u8* payload, size_t p
     memcpy(packet.data(), &ip_header, sizeof(IpV4Header));
     memcpy(packet.data() + sizeof(IpV4Header), payload, payload_size);
 
-    uint32_t sum = 0;
-
-    for (size_t index = 0; index < packet_size; index += 2)
-    {
-        uint16_t current = 0;
-        if (index < packet_size - 1)
-        {
-            current = *reinterpret_cast<uint16_t*>(packet.data() + index);
-        } else {
-            current = packet[index]<<8;
-        }
-        sum += current;
-        if (sum > 0xFFFF)
-        {
-            sum -= 0XFFFF;
-        }
-
-    }
-    uint16_t sum_16bit = (uint16_t) sum;
-    uint16_t checksum = ~sum_16bit;
-    reinterpret_cast<IpV4Header*>(packet.data())->header_checksum = checksum;
+    reinterpret_cast<IpV4Header*>(packet.data())->header_checksum = internet_checksum(packet.data(), sizeof(IpV4Header));
 
     MAC target_mac = {};
     if (!NetworkManager::the().resolve_arp(NetworkManager::the().gateway_ip(), target_mac))

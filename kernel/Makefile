@@ -67,6 +67,7 @@ NETWORK_DIR := Network
 NETWORK_OBJS := \
 	$(NETWORK_DIR)/Arp.o \
 	$(NETWORK_DIR)/Ethernet.o \
+	$(NETWORK_DIR)/Icmp.o \
 	$(NETWORK_DIR)/IpV4.o \
 	$(NETWORK_DIR)/NetworkManager.o \
 	$(NETWORK_DIR)/NetworkTypes.o \
