@@ -27,6 +27,7 @@ LIBC_USERSPACE_ONLY_OBJS := \
 	strings.o \
 	math.o \
 	sys/stat.o \
+	sys/socket.o \
 
 ifeq ($(LIBCMODE), USERSPACE)
 LIBC_OBJS += $(LIBC_USERSPACE_ONLY_OBJS)

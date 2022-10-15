@@ -9,6 +9,8 @@
 #include "MM/SharedMemoryManager.h"
 #include "Math.h"
 #include "FileSystem/PtsFS.h"
+#include "sys/socket.h"
+#include "Network/IcmpSocket.h"
 
 u32 g_next_pid;
 
@@ -48,18 +50,11 @@ Process::~Process() {
 }
 
 int Process::syscall_open(const String& path) {
-
-
     auto* file = VFS::the().open(Path(get_full_path(path)));
     if(file == nullptr)
         return -E_NOTFOUND;
-    for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
-        if(m_file_descriptors[i] == nullptr) {
-            m_file_descriptors[i] = file;
-            return i;
-        }
-    }
-    return -E_LIMIT;
+    
+    return allocate_fd(file);
 }
 
 int Process::syscall_ioctl(size_t fd, u32 code, void* data) {
@@ -503,4 +498,37 @@ int Process::syscall_create_terminal(char* name_out)
     memcpy(name_out, name.c_str(), name.len());
     name_out[name.len()] = '\0';
     return E_OK;
+}
+
+int Process::syscall_socket(int domain, int type, int protocol)
+{
+    if (domain != PF_INET)
+    {
+        return -E_NOT_SUPPORTED;
+    }
+    if (type != SOCK_DGRAM)
+    {
+        return -E_NOT_SUPPORTED;
+    }
+    if (protocol != IPPROTO_ICMP)
+    {
+        return -E_NOT_SUPPORTED;
+    }
+
+    auto* socket = new Network::IcmpSocket();
+    return allocate_fd(socket);
+}
+
+int Process::allocate_fd(File* file)
+{
+
+    for(size_t i = 0; i < NUM_FILE_DESCRIPTORS; i++) {
+        if(m_file_descriptors[i] == nullptr) {
+            m_file_descriptors[i] = file;
+            return i;
+        }
+    }
+    
+    delete file;
+    return -E_LIMIT;
 }

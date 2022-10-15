@@ -5,9 +5,10 @@
 class File {
 protected:
     File(const Path& path): m_path(path) {}
-    virtual ~File(){};
 
 public:
+    virtual ~File(){};
+
     virtual int read(size_t count, void* buf) = 0;
     virtual int write(char* data, size_t count) = 0;
     virtual int lseek(int offset, int whence) {(void)offset; (void)whence; return  0;}
@@ -20,4 +21,3 @@ public:
 private:
     Path m_path;
 };
-

@@ -15,6 +15,8 @@ public:
         Invalid,
     };
 
+    static Path empty();
+
     explicit Path(const String& path);
     explicit Path(const Vector<String>& parts, PathType);
 

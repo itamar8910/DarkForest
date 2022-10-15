@@ -101,7 +101,6 @@ Lock& get_test_lock()
 void network_task()
 {
 	sleep_ms(1000);
-	kprintf("***********************\n********************\n");
 	kprintf("network_task transmitting\n");
 
 	u8 data[] = "\xff\xff\xff\xff\xff\xff\x7a\x50\x8d\x2c\x77\x5c\x08\x06\x00\x01" \

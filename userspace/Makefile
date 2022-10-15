@@ -15,6 +15,7 @@ APPS := \
 	WindowServer.app \
 	GuiTerminal.app \
 	gui2.app \
+	ping.app \
 
 CURRENT_DIR := $(realpath ./)
 GLOBAL_DIR := $(realpath ../)
