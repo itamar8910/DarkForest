@@ -47,6 +47,7 @@ public:
     int syscall_create_terminal(char* name_out);
     int syscall_lseek(int fd, int offset, int whence);
     int syscall_has_pending_message();
+    int syscall_socket(int domain, int type, int protocol);
 
 private:
     struct Message
@@ -66,6 +67,7 @@ private:
 
 private:
     String get_full_path(const String& path);
+    int allocate_fd(File*);
 
 private:
     u32 m_pid;

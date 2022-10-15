@@ -15,6 +15,12 @@ Path::Path(const Vector<String>& parts, PathType type)
 {
 }
 
+Path Path::empty()
+{
+    Vector<String> parts;
+    return Path(parts, PathType::Absolute);
+}
+
 bool Path::remove_mount_prefix(const FileSystem& fs, Path& res) const
 {
     auto mount_point = fs.mountpoint();
