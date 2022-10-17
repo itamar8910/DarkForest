@@ -42,7 +42,7 @@ private:
 
     const PCIBus::PciDeviceMetadata m_device_metadata {};
     shared_ptr<BigBuffer> m_recv_buffer {0};
-    uint32_t m_recv_buffer_offset {0};
+    uint16_t m_recv_buffer_offset {0};
     uint16_t m_irq_nuber {0};
     Network::MAC m_mac = {};
     shared_ptr<BigBuffer> m_send_buffers[NUM_SEND_BUFFERS];
