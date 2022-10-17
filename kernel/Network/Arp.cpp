@@ -5,6 +5,7 @@
 #include "bits.h"
 #include "Scheduler.h"
 #include "sleep.h"
+#include "NetworkManager.h"
 
 namespace Network
 {
@@ -99,6 +100,30 @@ bool Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip, MAC& out_
     return true;
 }
 
+void Arp::send_arp_response(const MAC target_mac, const IPV4 target_ip)
+{
+    auto arp_data = ArpMessage{
+        .hardware_type = ArpMessage::Ethernet,
+        .protocol_type = ArpMessage::Ipv4,
+        .hardware_size = 6,
+        .protocol_size = 4,
+        .opcode = ArpMessage::Response,
+        .sender_mac = {},
+        .sender_ip_address = {},
+        .target_mac = {},
+        .target_ip_address = {},
+    };
+
+    memcpy(arp_data.sender_mac.data, RTL8139NetworkCard::the().mac().data, MAC_SIZE);
+    memcpy(arp_data.sender_ip_address.data, NetworkManager::the().our_ip().data, IPV4_SIZE);
+    memcpy(arp_data.target_mac.data, target_mac.data, MAC_SIZE);
+    memcpy(arp_data.target_ip_address.data, target_ip.data, IPV4_SIZE);
+
+    arp_data.flip_endianness();
+
+    Ethernet::send(arp_data.target_mac, arp_data.sender_mac, Ethernet::EtherType::ARP, (u8*)&arp_data, sizeof(arp_data));
+}
+
 void Arp::on_arp_message_received(u8* message, size_t size)
 {
     (void)message;
@@ -111,6 +136,14 @@ void Arp::on_arp_message_received(u8* message, size_t size)
     ArpMessage* arp_message = reinterpret_cast<ArpMessage*>(message);
     arp_message->flip_endianness();
 
+    if (arp_message->opcode == ArpMessage::Request)
+    {
+        if (arp_message->target_ip_address == NetworkManager::the().our_ip())
+        {
+            kprintf("Received ARP request for our IP\n");
+            Network::Arp::the().send_arp_response(arp_message->sender_mac, Network::NetworkManager::the().gateway_ip());
+        }
+    }
     if (arp_message->opcode != ArpMessage::Response)
     {
         return;

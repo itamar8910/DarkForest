@@ -30,18 +30,19 @@ NetworkManager& NetworkManager::the()
 
 void NetworkManager::on_packet_received(u8* packet, size_t size)
 {
+    // TODO: This is called from interrupt handler. We should only queue this packet.
     if (size < sizeof(Network::Ethernet::EthernetHeader))
     {
         kprintf("on_packet_received: packet too small\n");
         return;
     }
 
-    // TODO: Check mac
-
     Ethernet::EthernetHeader* const ethernet_header = reinterpret_cast<Network::Ethernet::EthernetHeader*>(packet);
     ethernet_header->flip_endianness();
 
-    if (ethernet_header->destination != m_our_mac)
+    static constexpr MAC BROADCAST_MAC = {0xff,0xff,0xff,0xff,0xff,0xff};
+
+    if (ethernet_header->destination != m_our_mac && ethernet_header->destination != BROADCAST_MAC)
     {
 #ifdef NETWORK_DBG
         kprintf("Received ethernet packet with unknown destination\n");
@@ -62,9 +63,35 @@ void NetworkManager::on_packet_received(u8* packet, size_t size)
     }
 }
 
+struct ArpCacheEntry
+{
+    IPV4 ip;
+    MAC mac;
+};
+
+static Vector<ArpCacheEntry>* arp_cache = nullptr;
+
 bool NetworkManager::resolve_arp(IPV4 ip, MAC& out_mac)
 {
-    return Arp::the().send_arp_request(ip, our_ip(), out_mac);
+    if (!arp_cache)
+    {
+        arp_cache = new Vector<ArpCacheEntry>();
+    }
+
+    for (auto& entry : *arp_cache)
+    {
+        if (entry.ip == ip)
+        {
+            out_mac = entry.mac;
+            return true;
+        }
+    }
+
+    bool result = Arp::the().send_arp_request(ip, our_ip(), out_mac);
+    if (result)
+        arp_cache->append({ip, out_mac});
+
+    return result;
 }
 
 }

@@ -16,6 +16,7 @@ public:
     static Arp& the();
 
     bool send_arp_request(const IPV4 target_ip, const IPV4 sender_ip, MAC& out_answer);
+    void send_arp_response(const MAC target_mac, const IPV4 target_ip);
 
     void on_arp_message_received(u8* message, size_t size);
 
