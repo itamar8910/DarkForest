@@ -79,8 +79,6 @@ void RTL8139NetworkCard::recv_packet_static()
 
 void RTL8139NetworkCard::recv_packet()
 {
-    // This follows the psuedo-code in realtek's RTL8139 programming guide
-
     auto* current_data = m_recv_buffer->data() + m_recv_buffer_offset;
     uint16_t status = *(uint16_t*)(current_data);
     uint16_t length = *(uint16_t*)(current_data + 2);
@@ -98,21 +96,20 @@ void RTL8139NetworkCard::recv_packet()
     }
 
     auto* packet = current_data + 4;
-    auto packet_size = length - 4;
+    uint16_t packet_size = length - 4;
 #ifdef RTL8139_DBG
-    kprintf("packet:\n");
+    kprintf("received packet\n");
+    kprintf("recv offset: %d\n", m_recv_buffer_offset);
     print_hexdump(packet, packet_size);
 #endif
 
     Network::NetworkManager::the().on_packet_received(packet, packet_size);
 
-    uint32_t recv_buffer_size = 9708; // 8K + 16 + 1500
+    uint16_t recv_buffer_size = 8192; // 8K
 
-    m_recv_buffer_offset = ((m_recv_buffer_offset + length + 4 + 3) & ~3);
+    m_recv_buffer_offset = ((m_recv_buffer_offset + length + 4 + 3) & ~3) % recv_buffer_size;
 
-    IO::out32(m_device_metadata.io_base_address + REG_CAPR, m_recv_buffer_offset - 0x10);
-
-    m_recv_buffer_offset %= recv_buffer_size;
+    IO::out16(m_device_metadata.io_base_address + REG_CAPR, m_recv_buffer_offset - 0x10);
 }
 
 
