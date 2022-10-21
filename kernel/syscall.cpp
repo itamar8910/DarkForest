@@ -8,6 +8,7 @@
 #include "FileSystem/FileUtils.h"
 #include "fork_args.h"
 #include "FileSystem/VFS.h"
+#include "sys/socket.h"
 
 // #define DBG_SYSCALL
 // #define DBG_SYSCALL2
@@ -123,7 +124,8 @@ u32 syscalls_gate(u32 syscall_idx, u32 arg1, u32 arg2, u32 arg3) {
             return Scheduler::the().current().syscall_has_pending_message();
         case Syscall::Socket:
             return Scheduler::the().current().syscall_socket(arg1, arg2, arg3);
-
+        case Syscall::SendTo:
+            return Scheduler::the().current().syscall_sendto((SendToArgs*)arg1);
         default:
             kprintf("invalid syscall: %d\n", syscall_idx);
             ASSERT_NOT_REACHED();

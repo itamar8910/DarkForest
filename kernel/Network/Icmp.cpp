@@ -2,25 +2,15 @@
 #include "Checksum.h"
 #include "IpV4.h"
 #include "bits.h"
+#include "packets.h"
 
 namespace Network
 {
 
-struct __attribute__((__packed__)) IcmpEchoHeader
+void flip_endianness(IcmpEchoHeader& icmp)
 {
-    Icmp::Type type;
-    uint8_t code;
-    uint16_t checksum;
-    uint16_t identifier;
-    uint16_t sequence_number;
-
-    void flip_endianness();
-};
-
-void IcmpEchoHeader::flip_endianness()
-{
-    identifier = to_flipped_endianness(identifier);
-    sequence_number = to_flipped_endianness(sequence_number);
+    icmp.identifier = to_flipped_endianness(icmp.identifier);
+    icmp.sequence_number = to_flipped_endianness(icmp.sequence_number);
 }
 
 void Icmp::send_ping(IPV4 destination, uint16_t id, uint16_t sequence_number)
@@ -29,20 +19,29 @@ void Icmp::send_ping(IPV4 destination, uint16_t id, uint16_t sequence_number)
     u8 icmp_data[sizeof(IcmpEchoHeader) + payload_size] = {};
 
     IcmpEchoHeader icmp_header {
-        .type = Type::Request,
+        .type = IcmpEchoHeader::Type::Request,
         .code=0,
         .checksum=0,
         .identifier=id,
         .sequence_number = sequence_number
     };
 
-    icmp_header.flip_endianness();
+    flip_endianness(icmp_header);
 
     memcpy(icmp_data, &icmp_header, sizeof(icmp_header));
     memset(icmp_data + sizeof(icmp_header), (int)'A', payload_size);
 
     reinterpret_cast<IcmpEchoHeader*>(icmp_data)->checksum = internet_checksum(icmp_data, sizeof(icmp_data));
     IpV4::send(destination, IpV4::Protocol::ICMP, icmp_data, sizeof(icmp_data));
+}
+
+void Icmp::fix_checksum_and_send(IPV4 destination, const u8* buffer, size_t size)
+{
+    Vector<u8> copy(buffer, size);
+    IcmpEchoHeader* icmp_header = reinterpret_cast<IcmpEchoHeader*>(copy.data());
+    flip_endianness(*icmp_header);
+    icmp_header->checksum = internet_checksum(copy.data(), size);
+    IpV4::send(destination, IpV4::Protocol::ICMP, copy.data(), size);
 }
 
 }

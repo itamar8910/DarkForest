@@ -13,14 +13,9 @@ class Icmp final
 public:
     Icmp() = delete;
 
-    enum class Type : uint8_t
-    {
-        Request=8,
-        Reply=0, 
-    };
-
     static void send_ping(IPV4 destination, uint16_t id, uint16_t sequence_number);
 
+    static void fix_checksum_and_send(IPV4 destination, const u8* buffer, size_t size);
 };
 
 }

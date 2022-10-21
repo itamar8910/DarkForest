@@ -10,6 +10,7 @@
 #include "Math.h"
 #include "FileSystem/PtsFS.h"
 #include "sys/socket.h"
+#include "Network/Socket.h"
 #include "Network/IcmpSocket.h"
 
 u32 g_next_pid;
@@ -531,4 +532,17 @@ int Process::allocate_fd(File* file)
     
     delete file;
     return -E_LIMIT;
+}
+
+int Process::syscall_sendto(SendToArgs* args)
+{
+    if(args->sockfd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+
+    auto* file = m_file_descriptors[args->sockfd];
+    if(file == nullptr)
+        return -E_NOTFOUND;
+
+    auto& socket = *reinterpret_cast<Network::Socket*>(file);
+    return socket.sendto(*args);
 }
