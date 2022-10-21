@@ -6,6 +6,8 @@
 #include "types/list.h"
 #include "lock.h"
 
+struct SendToArgs;
+
 #define NUM_FILE_DESCRIPTORS 256
 
 class Process {
@@ -48,6 +50,7 @@ public:
     int syscall_lseek(int fd, int offset, int whence);
     int syscall_has_pending_message();
     int syscall_socket(int domain, int type, int protocol);
+    int syscall_sendto(SendToArgs*);
 
 private:
     struct Message
