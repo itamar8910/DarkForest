@@ -20,6 +20,7 @@
 #define REG_CAPR 0x38 // Current read address
 #define TRANSMIT_START_ADDRESS_0 0x20
 #define TRANSMIT_STATUS_0 0x10
+#define REG_ISR 0x3E // Interrupt status
 
 // #define RTL8139_DBG
 
@@ -50,24 +51,42 @@ void isr_rtl8139_handler(RegisterDump& regs) {
     kprintf("isr_rtl8139_handler interrupt!\n~~~~~~~\n");
 #endif
 
-    auto interrupt_status = IO::in16(RTL8139NetworkCard::the().io_base_address() + 0x3E);
+    for (;;)
+    {
+
+    auto interrupt_status = IO::in16(RTL8139NetworkCard::the().io_base_address() + REG_ISR);
+    IO::out16(RTL8139NetworkCard::the().io_base_address() + REG_ISR, interrupt_status);
 #ifdef RTL8139_DBG
     kprintf("interrupt status: 0x%x\n", interrupt_status);
 #endif
 
-    if (interrupt_status & 0x4) {
+
+    static constexpr int16_t ROK = 0x1; // Recv ok
+    static constexpr int16_t TOK = 0x4; // Transmit ok
+
+    if ((interrupt_status & (ROK | TOK)) == 0)
+    {
+        kprintf("exiting rtl8139 ISR\n");
+        break;
+    }
+
+    if (interrupt_status & TOK) {
 #ifdef RTL8139_DBG
         kprintf("Transmit OK\n");
     #endif
     }
-    if (interrupt_status & 0x1) {
+    if (interrupt_status & ROK) {
 #ifdef RTL8139_DBG
         kprintf("Recv OK\n");
     #endif
-        RTL8139NetworkCard::recv_packet_static();
+        static constexpr int8_t BUFF_EMPTY = 0x1;
+        while((IO::inb(RTL8139NetworkCard::the().io_base_address() + COMMAND_REG) & BUFF_EMPTY) == 0)
+        {
+            RTL8139NetworkCard::recv_packet_static();
+        }
+    }
     }
 
-    IO::out16(RTL8139NetworkCard::the().io_base_address() + 0x3E, 0x5);
     PIC::eoi(RTL8139NetworkCard::the().irq_number());
 }
 
