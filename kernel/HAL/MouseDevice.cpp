@@ -9,8 +9,8 @@ bool MouseReadBlocker::can_unblock() {
 }
 
 RawMouseEvent MouseDevice::mouse_read() {
-    MouseReadBlocker* blocker = new MouseReadBlocker();
-    Scheduler::the().block_current(blocker);
+    MouseReadBlocker blocker;
+    Scheduler::the().block_current(&blocker);
 
     return PS2Mouse::the().consume();
 }

@@ -81,12 +81,13 @@ bool Arp::send_arp_request(const IPV4 target_ip, const IPV4 sender_ip, MAC& out_
 
     static constexpr u32 TIMEOUT_MS = 5000;
     shared_ptr<PendingRequestBlocker> blocker (new PendingRequestBlocker(target_ip, TIMEOUT_MS));
+
+    // TODO: m_arp_blockers needs to just hold pointers to avoid keeping the blockers alive.
     m_arp_blockers.append(blocker);
 
     Ethernet::send(arp_data.target_mac, arp_data.sender_mac, Ethernet::EtherType::ARP, (u8*)&arp_data, sizeof(arp_data));
 
     kprintf("blocking until arp response\n");
-
 
     Scheduler::the().block_current(blocker.get());
 
@@ -126,7 +127,6 @@ void Arp::send_arp_response(const MAC target_mac, const IPV4 target_ip)
 
 void Arp::on_arp_message_received(u8* message, size_t size)
 {
-    (void)message;
     kprintf("arp_message_received: %d\n", size);
     if (size < sizeof(ArpMessage))
     {

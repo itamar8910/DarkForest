@@ -20,7 +20,7 @@ public:
 
     void on_arp_message_received(u8* message, size_t size);
 
-    class PendingRequestBlocker : public TaskBlocker{
+    class PendingRequestBlocker : public TaskBlocker {
     public:
         PendingRequestBlocker(IPV4 target, u32 timeout_ms);
         virtual bool can_unblock() override;

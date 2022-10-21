@@ -7,8 +7,8 @@
 
 void Pipe::block_until_can_read()
 {
-    FileReadableBlocker* blocker = new FileReadableBlocker(this);
-    Scheduler::the().block_current(blocker);
+    FileReadableBlocker blocker(this);
+    Scheduler::the().block_current(&blocker);
 }
 
 int Pipe::read(size_t count, void* buf)

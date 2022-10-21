@@ -158,9 +158,9 @@ int Process::syscall_wait(size_t pid)
     if(waitee==nullptr) {
         return -E_NOTFOUND;
     }
-    auto* blocker = new WaitBlocker();
-    waitee->set_waiter(blocker);
-    Scheduler::the().block_current(blocker);
+    WaitBlocker blocker;
+    waitee->set_waiter(&blocker);
+    Scheduler::the().block_current(&blocker);
     return 0;
 }
 
@@ -371,8 +371,8 @@ int Process::syscall_get_message(char* msg, u32 size, u32* pid)
     kprintf("no messages, blocking..\n");
 #endif
 
-    auto* blocker = new PendingMessageBlocker(m_pid);
-    Scheduler::the().block_current(blocker);
+    PendingMessageBlocker blocker(m_pid);
+    Scheduler::the().block_current(&blocker);
 
     return consume_message(msg, size, pid);
 }
@@ -479,8 +479,8 @@ int Process::syscall_block_until_pending(u32* fds, u32 num_fds, u32* ready_fd_id
 
     u32 ready_fd_idx_in_array = 0;
     PendingInputBlocker::Reason ready_reason = {};
-    PendingInputBlocker* blocker = new PendingInputBlocker(m_pid, pending_files, ready_fd_idx_in_array, ready_reason);
-    Scheduler::the().block_current(blocker);
+    PendingInputBlocker blocker(m_pid, pending_files, ready_fd_idx_in_array, ready_reason);
+    Scheduler::the().block_current(&blocker);
     ASSERT(ready_fd_idx_in_array < num_fds);
     *ready_fd_idx = fds[ready_fd_idx_in_array];
     return static_cast<int>(ready_reason);
