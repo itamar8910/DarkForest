@@ -98,33 +98,6 @@ Lock& get_test_lock()
 	return lock;
 }    
 
-void network_task()
-{
-	sleep_ms(1000);
-	kprintf("network_task transmitting\n");
-
-	u8 data[] = "\xff\xff\xff\xff\xff\xff\x7a\x50\x8d\x2c\x77\x5c\x08\x06\x00\x01" \
-"\x08\x00\x06\x04\x00\x01\x7a\x50\x8d\x2c\x77\x5d\xc0\xa8\x02\x14" \
-"\xff\xff\xff\xff\xff\xff\xc0\xa8\x02\x01\x00\x00\x00\x00\x00\x00" \
-"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-	(void)data;
-
-	Network::MAC answer {};
-	bool res = Network::Arp::the().send_arp_request(Network::NetworkManager::the().gateway_ip(), Network::NetworkManager::the().our_ip(), answer);
-	if (res)
-	{
-		kprintf("ARP answer:");
-		kprintf("%s\n", answer.to_string().c_str());
-		kprintf("\n");
-		Network::Icmp::send_ping(Network::NetworkManager::the().gateway_ip(), 1, 1);
-	}
-	else {
-		kprintf("ARP request failed\n");
-	}
-
-
-}
-
 void task1()
 {
 	int N = 10;
@@ -217,7 +190,7 @@ extern "C" void kernel_main(multiboot_info_t* mbt, unsigned int magic) {
 
 	// VGA::init();
 
-	Scheduler::the().add_process(Process::create(network_task, "network_task"));
+	Scheduler::the().add_process(Process::create(Network::NetworkManager::handle_received_packets_task_static, "handle_network_rx"));
 	// Scheduler::the().add_process(Process::create(task2, "task2"));
 
 	kprintf("enableing interrupts\n");
