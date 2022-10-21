@@ -10,8 +10,8 @@ bool KeyboardReadBlocker::can_unblock() {
 }
 
 KeyEvent keyboard_read() {
-    KeyboardReadBlocker* blocker = new KeyboardReadBlocker();
-    Scheduler::the().block_current(blocker);
+    KeyboardReadBlocker blocker;
+    Scheduler::the().block_current(&blocker);
 
     return PS2Keyboard::the().consume();
 }

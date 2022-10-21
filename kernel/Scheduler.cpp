@@ -109,7 +109,6 @@ void Scheduler::try_unblock_tasks() {
             kprintf("Scheduler: unblocking: %d\n", process->pid());
             #endif
              process->task().meta_data->state = TaskMetaData::State::Runnable;
-            delete process->task().meta_data->blocker;
             process->task().meta_data->blocker = nullptr;
             m_blocked_list.remove(process);
             m_runanble_list.append(process);
