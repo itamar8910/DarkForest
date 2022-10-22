@@ -8,12 +8,13 @@
 #include "kernel/Network/packets.h"
 #include "df_unistd.h"
 #include "NetworkTypes.h"
+#include "unistd.h"
 
 int main(char** argv, size_t argc) {
 
     if (argc != 2)
     {
-        printf("Usage: %s ip\n", argv[0]);
+        printf("Usage: %s <ip>\n", argv[0]);
         return 1;
     }
 
@@ -59,6 +60,9 @@ int main(char** argv, size_t argc) {
         memcpy(icmp_data, &icmp_header, sizeof(icmp_header));
         memset(icmp_data + sizeof(icmp_header), (int)'A', payload_size);
 
+        u32 timestamp = df_time_since_boot_ms();
+        memcpy(icmp_data + sizeof(icmp_header), &timestamp, sizeof(u32));
+
         if (sendto(sock, icmp_data, sizeof(icmp_data), 0, &dest, sizeof(dest)) < 0)
         {
             printf("sendto() failed\n");
@@ -82,7 +86,12 @@ int main(char** argv, size_t argc) {
         const IcmpEchoHeader* response = reinterpret_cast<const IcmpEchoHeader*>(icmp_data);
         auto incoming_ip = Network::IPV4::from_u32(incoming_addr.sin_addr.s_addr);
 
-        printf("Ping response from: %s. icmp_seq=%d\n", incoming_ip.to_string().c_str(), response->sequence_number);
+        u32 incoming_timestamp {0};
+        memcpy(&incoming_timestamp, icmp_data + sizeof(IcmpEchoHeader), sizeof(u32));
+        u32 roundtrip_time = df_time_since_boot_ms() - incoming_timestamp;
+
+        printf("Ping response from %s: seq=%d rtt=%dms\n", incoming_ip.to_string().c_str(), response->sequence_number, roundtrip_time);
+
         ++sequence_number;
 
         if (i != NUM_PINGS - 1)
