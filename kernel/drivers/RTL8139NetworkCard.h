@@ -4,7 +4,7 @@
 #include "constants.h"
 #include "PCIBus.h"
 #include "BigBuffer.h"
-#include "Network/NetworkTypes.h"
+#include "NetworkTypes.h"
 
 class RTL8139NetworkCard
 {

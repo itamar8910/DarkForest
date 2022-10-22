@@ -1,7 +1,7 @@
 #pragma once
 
 #include "types.h"
-#include "Network/NetworkTypes.h"
+#include "NetworkTypes.h"
 #include "lock.h"
 #include "TaskBlocker.h"
 #include "types/list.h"
