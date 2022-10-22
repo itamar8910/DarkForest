@@ -187,7 +187,7 @@ namespace ATADisk{
         if(!(start + count < MAX_SECTOR))
         {
             kprintf("~~~~~~~~~~~~~~~~~~~~~~~~~\nNOTE: this seems to happen sometimes\n"
-            "Run ./fs_resetsh and then ./fs_setup.sh");
+            "Run fs_scripts/fs_reset.sh && fs_scripts/fs_setup.sh");
         }
         ASSERT(start + count < MAX_SECTOR);
     }
