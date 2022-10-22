@@ -19,6 +19,7 @@ LIBC_OBJS := \
 	errno.o \
 	ctype.o \
 	stdio_shared.o \
+	NetworkTypes.o \
 
 LIBC_USERSPACE_ONLY_OBJS := \
 	unistd.o \

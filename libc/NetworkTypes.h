@@ -21,6 +21,8 @@ namespace Network
 
         static IPV4 from_u32(u32 ipv4);
         u32 to_u32();
+
+        static bool from_string(String str, IPV4& out);
     };
 
     struct MAC

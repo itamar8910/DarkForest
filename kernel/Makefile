@@ -71,7 +71,6 @@ NETWORK_OBJS := \
 	$(NETWORK_DIR)/IcmpSocket.o \
 	$(NETWORK_DIR)/IpV4.o \
 	$(NETWORK_DIR)/NetworkManager.o \
-	$(NETWORK_DIR)/NetworkTypes.o \
 
 INCLUDE := -I. -I.. -I$(LIBC_INCLUDE) -Imode/
 

@@ -44,4 +44,37 @@ u32 IPV4::to_u32()
     return data[0]<<24 | data[1] << 16 | data[2] << 8 | data[3];
 }
 
+bool IPV4::from_string(String str, IPV4& out)
+{
+    Vector<char> current_number;
+    size_t current_number_index = 0;
+
+    size_t char_index;
+    for (char_index = 0; char_index < str.len() && current_number_index < 4; ++char_index)
+    {
+        if (str[char_index] != '.')
+        {
+            current_number.append(str[char_index]);
+        }
+        if (str[char_index] == '.' || char_index == (str.len() - 1)) 
+        {
+            if (current_number.empty())
+            {
+                return false;
+            }
+            current_number.append('\0');
+            auto octet = atoi(current_number.data());
+            if (octet < 0 || octet > 255)
+            {
+                return false;
+            }
+            out.data[current_number_index++] = octet;
+            current_number.clear();
+            continue;
+        }
+    }
+
+    return char_index == str.len() && current_number_index == 4;
+}
+
 }
