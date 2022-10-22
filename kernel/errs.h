@@ -10,4 +10,5 @@ enum ERRS {
     E_INVALID_SIZE,
     E_TAKEN,
     E_NOT_SUPPORTED,
+    E_TIMED_OUT,
 };

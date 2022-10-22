@@ -70,6 +70,11 @@ int main(char** argv, size_t argc) {
         int res = recvfrom(sock, icmp_data, sizeof(icmp_data), 0, &incoming_addr, &incoming_addr_len);
         if (res < 0)
         {
+            if (res == -E_TIMED_OUT)
+            {
+                printf("Timed Out\n");
+                return 1;
+            }
             printf("recvfrom failed: %d\n", -res);
             return 1;
         }
