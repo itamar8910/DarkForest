@@ -16,6 +16,11 @@ namespace Network
 
         bool operator==(const IPV4& other) const { return !memcmp(data, other.data, sizeof(data)); }
         bool operator!=(const IPV4& other) const { return !(*this==other); }
+
+        String to_string() const;
+
+        static IPV4 from_u32(u32 ipv4);
+        u32 to_u32();
     };
 
     struct MAC

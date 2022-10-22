@@ -3,6 +3,7 @@
 #include "Arp.h"
 #include "drivers/RTL8139NetworkCard.h"
 #include "Scheduler.h"
+#include "IpV4.h"
 
 // #define NETWORK_DBG
 
@@ -109,11 +110,16 @@ void NetworkManager::handle_packet(u8* packet, size_t size)
         return;
     }
 
+    u8* data_after_ether_header = packet + sizeof(Network::Ethernet::EthernetHeader);
+    size_t size_after_ether_header = size - sizeof(Network::Ethernet::EthernetHeader);
+
     switch (ethernet_header->ethertype)
     {
         case Ethernet::EtherType::ARP:
-            Arp::the().on_arp_message_received(packet + sizeof(Network::Ethernet::EthernetHeader), size - sizeof(Network::Ethernet::EthernetHeader));
+            Arp::the().on_arp_message_received(data_after_ether_header, size_after_ether_header);
             break;
+        case Ethernet::EtherType::IPV4:
+            IpV4::on_packet_received(data_after_ether_header, size_after_ether_header);
         default:
 #ifdef NETWORK_DBG
             kprintf("Ethernet packet with unknown EtherType: %x\n", ethernet_header->ethertype);
