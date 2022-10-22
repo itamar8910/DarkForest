@@ -5,6 +5,7 @@
 #include "errs.h"
 #include "TaskBlocker.h"
 #include "Scheduler.h"
+#include "sleep.h"
 
 namespace Network
 {
@@ -83,26 +84,38 @@ void IcmpSocket::on_received(PacketAndSource packet_and_source)
 
 class PendingPacketsBlocker : public TaskBlocker {
 public:
-    PendingPacketsBlocker(IcmpSocket& socket)
-        : m_socket(socket) {};
-    virtual bool can_unblock() override
-    {
-        return m_socket.has_pending_packets();
-    }
+    PendingPacketsBlocker(IcmpSocket& socket);
+    virtual bool can_unblock() override;
     ~PendingPacketsBlocker() override = default;
+    bool timed_out() const { return m_timed_out; }
 
 private:
     const IcmpSocket& m_socket;
+    u32 m_timeout_ms {0};
+    bool m_timed_out {false};
 };
+
+bool PendingPacketsBlocker::can_unblock()
+{
+    if (time_since_boot_ms() > m_timeout_ms)
+    {
+        m_timed_out = true;
+        return true;
+    }
+    return m_socket.has_pending_packets();
+}
 
 int IcmpSocket::recvfrom(RecvFromArgs& args)
 {
     while (m_pending_packets.empty())
     {
         kprintf("IcmpSocket:: blocking until there's a pending packet");
-        // TODO: Add timeout
         PendingPacketsBlocker blocker(*this);
         Scheduler::the().block_current(&blocker);
+        if (blocker.timed_out())
+        {
+            return -E_TIMED_OUT;
+        }
     }
 
     LOCKER(m_lock);
@@ -122,6 +135,13 @@ int IcmpSocket::recvfrom(RecvFromArgs& args)
     args.dest_addr->sin_addr.s_addr = packet.source.to_u32();
     *args.addrlen = sizeof(sockaddr_in);
     return packet.packet.size();
+}
+
+static constexpr u32 ICMP_TIMEOUT_MS = 3000;
+PendingPacketsBlocker::PendingPacketsBlocker(IcmpSocket& socket)
+    : m_socket(socket),
+      m_timeout_ms(time_since_boot_ms() + ICMP_TIMEOUT_MS)
+{
 }
 
 }
