@@ -68,6 +68,12 @@ public:
         return cpy;
     }
 
+    T front()
+    {
+        Iterator front = begin();
+        return *front;
+    }
+
     void append(T&& t){
         Node* node = new Node(t);
         m_size++;
@@ -145,7 +151,7 @@ public:
         m_size = 0;
     }
 
-    bool empty() {return m_size == 0;}
+    bool empty() const {return m_size == 0;}
 
 
 private:
