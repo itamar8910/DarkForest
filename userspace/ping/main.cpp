@@ -7,8 +7,24 @@
 #include "sys/socket.h"
 #include "kernel/Network/packets.h"
 #include "df_unistd.h"
+#include "NetworkTypes.h"
 
-int main(char**, size_t) {
+int main(char** argv, size_t argc) {
+
+    if (argc != 2)
+    {
+        printf("Usage: %s ip\n", argv[0]);
+        return 1;
+    }
+
+    Network::IPV4 ip{};
+    if (!Network::IPV4::from_string(argv[1], ip))
+    {
+        printf("Failed to parse ip address\n");
+        return 1;
+    }
+
+    printf("Pinging: %s\n", ip.to_string().c_str());
 
     int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_ICMP);
     if (sock < 0)
@@ -17,15 +33,13 @@ int main(char**, size_t) {
         return 1;
     }
 
-    printf("socket fd: %d\n", sock);
-
     uint16_t id = 8;
     uint16_t sequence_number = 1;
 
     sockaddr_in dest {
         .sin_family = PF_INET,
         .sin_port = 0,
-        .sin_addr = {0x08080808},
+        .sin_addr = {ip.to_u32()},
     };
 
     static constexpr size_t NUM_PINGS = 3;
@@ -61,8 +75,9 @@ int main(char**, size_t) {
         }
 
         const IcmpEchoHeader* response = reinterpret_cast<const IcmpEchoHeader*>(icmp_data);
+        auto incoming_ip = Network::IPV4::from_u32(incoming_addr.sin_addr.s_addr);
 
-        printf("Ping response. icmp_seq=%d\n", response->sequence_number);
+        printf("Ping response from: %s. icmp_seq=%d\n", incoming_ip.to_string().c_str(), response->sequence_number);
         ++sequence_number;
 
         if (i != NUM_PINGS - 1)
