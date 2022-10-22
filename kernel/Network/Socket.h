@@ -20,6 +20,7 @@ public:
     int write(char* data, size_t count) override = 0;
 
     virtual int sendto(SendToArgs&) = 0;
+    virtual int recvfrom(RecvFromArgs&) = 0;
 };
 
 }

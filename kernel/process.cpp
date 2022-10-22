@@ -546,3 +546,17 @@ int Process::syscall_sendto(SendToArgs* args)
     auto& socket = *reinterpret_cast<Network::Socket*>(file);
     return socket.sendto(*args);
 }
+
+int Process::syscall_recvfrom(RecvFromArgs* args)
+{
+    if(args->sockfd >= NUM_FILE_DESCRIPTORS)
+        return -E_NOTFOUND;
+
+    auto* file = m_file_descriptors[args->sockfd];
+    if(file == nullptr)
+        return -E_NOTFOUND;
+
+    auto& socket = *reinterpret_cast<Network::Socket*>(file);
+    return socket.recvfrom(*args);
+}
+

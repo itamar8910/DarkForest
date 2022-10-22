@@ -21,4 +21,17 @@ int sendto(int sockfd, const void *buf, size_t len, int flags, const struct sock
     return Syscall::invoke(Syscall::SendTo, (u32)&args);
 }
 
+int recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr_in *dest_addr, size_t* addrlen)
+{
+    RecvFromArgs args{
+        .sockfd = sockfd,
+        .buf=buf,
+        .len=len,
+        .flags=flags,
+        .dest_addr=dest_addr,
+        .addrlen=addrlen
+    };
+    return Syscall::invoke(Syscall::RecvFrom, (u32)&args);
+}
+
 }
