@@ -7,6 +7,7 @@
 #include "lock.h"
 
 struct SendToArgs;
+struct RecvFromArgs;
 
 #define NUM_FILE_DESCRIPTORS 256
 
@@ -51,6 +52,7 @@ public:
     int syscall_has_pending_message();
     int syscall_socket(int domain, int type, int protocol);
     int syscall_sendto(SendToArgs*);
+    int syscall_recvfrom(RecvFromArgs*);
 
 private:
     struct Message
