@@ -3,6 +3,7 @@
 #include "bits.h"
 #include "Ethernet.h"
 #include "Checksum.h"
+#include "Icmp.h"
 
 namespace Network
 {
@@ -77,6 +78,32 @@ void IpV4::send(IPV4 destination, Protocol protocol, const u8* payload, size_t p
         return;
     }
     Ethernet::send(target_mac, NetworkManager::the().our_mac(), Ethernet::EtherType::IPV4, packet.data(), packet.size());
+}
+
+void IpV4::on_packet_received(u8* packet, size_t size)
+{
+    IpV4Header* header = reinterpret_cast<IpV4Header*>(packet);
+    header->flip_endianness();
+
+    if (header->destination_address != NetworkManager::the().our_ip())
+    {
+        kprintf("Received IP packet for unknown destination\n");
+        return;
+    }
+
+    const auto header_size = header->header_length_in_words * sizeof(u32);
+    u8* packet_after_ip_header = packet + header_size;
+    size_t packet_size_after_ip_header = size - header_size;
+
+    switch (header->protocol)
+    {
+        case IpV4::Protocol::ICMP:
+            Icmp::the().on_packet_received(packet_after_ip_header, packet_size_after_ip_header, header->source_address);
+            break;
+        default:
+            kprintf("Unknown IP protocol: %d\n", header->protocol);
+            return;
+    }
 }
 
 }

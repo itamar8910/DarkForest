@@ -18,6 +18,7 @@ public:
     };
 
     static void send(IPV4 destination, Protocol protocol, const u8* payload, size_t payload_size);
+    static void on_packet_received(u8* packet, size_t size);
 
 };
 

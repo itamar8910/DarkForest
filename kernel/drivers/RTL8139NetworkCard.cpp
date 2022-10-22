@@ -66,7 +66,6 @@ void isr_rtl8139_handler(RegisterDump& regs) {
 
     if ((interrupt_status & (ROK | TOK)) == 0)
     {
-        kprintf("exiting rtl8139 ISR\n");
         break;
     }
 
