@@ -109,7 +109,6 @@ int IcmpSocket::recvfrom(RecvFromArgs& args)
 {
     while (m_pending_packets.empty())
     {
-        kprintf("IcmpSocket:: blocking until there's a pending packet");
         PendingPacketsBlocker blocker(*this);
         Scheduler::the().block_current(&blocker);
         if (blocker.timed_out())
@@ -119,7 +118,6 @@ int IcmpSocket::recvfrom(RecvFromArgs& args)
     }
 
     LOCKER(m_lock);
-    kprintf("Icmp: there is a pending packet");
 
     ASSERT(!m_pending_packets.empty()); // TODO: Fix race..
 
