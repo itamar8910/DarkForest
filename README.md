@@ -21,6 +21,7 @@ Screenshot:
 - userspace shell (cd, ls, cat, touch, mkdir)
 - shared memory
 - Graphical Window Server
+- Basic networking: RTL8139 driver and userspace ping utility
 
 ## Build prerequisites
 
@@ -78,6 +79,12 @@ cd doom/
 # Play Doom :)
 ```
 
+## Networking
+Setup packet routing through the host:
+```bash
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables -t nat -A POSTROUTING -o <gateway_interface> -j MASQUERADE
+```
 
 I take a lot of inspiration from Andreas Kling's amazing [SerenityOS](https://github.com/SerenityOS/serenity) - check it out!
 
